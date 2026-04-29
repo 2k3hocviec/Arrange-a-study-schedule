@@ -18,6 +18,7 @@ import { Course } from './modules/courses/entities/course.entity';
 import { Enrollment } from './modules/enrollments/entities/enrollment.entity';
 import { Classroom } from './modules/classrooms/entities/classroom.entity';
 import { Schedule } from './modules/schedules/entities/schedule.entity';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -39,7 +40,7 @@ import { Schedule } from './modules/schedules/entities/schedule.entity';
         Schedule,
       ],
       synchronize: true,
-      logging: true,
+      logging: ['error'],
     }),
     TypeOrmModule.forFeature([
       User,
@@ -59,6 +60,7 @@ import { Schedule } from './modules/schedules/entities/schedule.entity';
     CoursesModule,
     SchedulesModule,
     EnrollmentsModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
