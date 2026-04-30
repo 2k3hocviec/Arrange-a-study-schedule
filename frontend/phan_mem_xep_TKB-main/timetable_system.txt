@@ -1,0 +1,180 @@
+
+CREATE DATABASE IF NOT EXISTS timetable_system;
+USE timetable_system;
+
+DROP TABLE IF EXISTS systemlogs;
+DROP TABLE IF EXISTS notifications;
+DROP TABLE IF EXISTS registrations;
+DROP TABLE IF EXISTS schedules;
+DROP TABLE IF EXISTS teacher_availability;
+DROP TABLE IF EXISTS room_availability;
+DROP TABLE IF EXISTS coursesections;
+DROP TABLE IF EXISTS subjects;
+DROP TABLE IF EXISTS rooms;
+DROP TABLE IF EXISTS timeslots;
+DROP TABLE IF EXISTS users;
+
+-- 1. Bảng Người dùng
+CREATE TABLE users (
+    user_id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    full_name VARCHAR(100) NOT NULL,
+    email VARCHAR(100),
+    role ENUM('Sinh viên','Giảng viên','Quản trị viên','Admin hệ thống') NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 2. Bảng Môn học
+CREATE TABLE subjects (
+    subject_id VARCHAR(20) PRIMARY KEY,
+    subject_name VARCHAR(150) NOT NULL,
+    credits INT NOT NULL,
+    required_equipment TEXT
+);
+
+-- 3. Bảng Phòng học
+CREATE TABLE rooms (
+    room_id VARCHAR(20) PRIMARY KEY,
+    capacity INT NOT NULL,
+    equipment TEXT,
+    is_active BOOLEAN DEFAULT TRUE
+);
+
+-- 4. Bảng Khung giờ học
+CREATE TABLE timeslots (
+    slot_id INT AUTO_INCREMENT PRIMARY KEY,
+    slot_name VARCHAR(20) NOT NULL,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    session ENUM('Sáng','Chiều','Tối')
+);
+
+-- 5. Bảng Lớp học phần
+CREATE TABLE coursesections (
+    section_id VARCHAR(20) PRIMARY KEY,
+    subject_id VARCHAR(20) NOT NULL,
+    semester_name VARCHAR(50),
+    expected_students INT,
+
+    FOREIGN KEY (subject_id)
+    REFERENCES subjects(subject_id)
+    ON DELETE CASCADE
+);
+
+-- 6. Bảng Thời khóa biểu
+CREATE TABLE schedules (
+    schedule_id INT AUTO_INCREMENT PRIMARY KEY,
+    section_id VARCHAR(20) NOT NULL,
+    teacher_id INT NOT NULL,
+    room_id VARCHAR(20) NOT NULL,
+    slot_id INT NOT NULL,
+    day_of_week TINYINT CHECK (day_of_week BETWEEN 2 AND 8),
+
+    FOREIGN KEY (section_id)
+    REFERENCES coursesections(section_id)
+    ON DELETE CASCADE,
+
+    FOREIGN KEY (teacher_id)
+    REFERENCES users(user_id)
+    ON DELETE CASCADE,
+
+    FOREIGN KEY (room_id)
+    REFERENCES rooms(room_id)
+    ON DELETE CASCADE,
+
+    FOREIGN KEY (slot_id)
+    REFERENCES timeslots(slot_id)
+    ON DELETE CASCADE,
+
+    UNIQUE KEY unique_room_busy (room_id, slot_id, day_of_week),
+    UNIQUE KEY unique_teacher_busy (teacher_id, slot_id, day_of_week)
+);
+
+-- 7. Bảng Đăng ký môn học
+CREATE TABLE registrations (
+    registration_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    section_id VARCHAR(20) NOT NULL,
+    status ENUM('Chờ duyệt','Đã duyệt','Đã hủy') DEFAULT 'Chờ duyệt',
+
+    FOREIGN KEY (user_id)
+    REFERENCES users(user_id)
+    ON DELETE CASCADE,
+
+    FOREIGN KEY (section_id)
+    REFERENCES coursesections(section_id)
+    ON DELETE CASCADE,
+
+    UNIQUE KEY unique_registration (user_id, section_id)
+);
+
+-- 8. Bảng Thông báo
+CREATE TABLE notifications (
+    notification_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    title VARCHAR(200),
+    content TEXT,
+    is_read BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (user_id)
+    REFERENCES users(user_id)
+    ON DELETE CASCADE
+);
+
+-- 9. Bảng Nhật ký hệ thống
+CREATE TABLE systemlogs (
+    log_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    action_type VARCHAR(50),
+    description TEXT,
+    ip_address VARCHAR(45),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    FOREIGN KEY (user_id)
+    REFERENCES users(user_id)
+);
+
+-- 10. Bảng Thời gian rảnh của giảng viên
+CREATE TABLE teacher_availability (
+    availability_id INT AUTO_INCREMENT PRIMARY KEY,
+    teacher_id INT NOT NULL,
+    slot_id INT NOT NULL,
+    day_of_week TINYINT CHECK (day_of_week BETWEEN 2 AND 8),
+
+    FOREIGN KEY (teacher_id)
+    REFERENCES users(user_id)
+    ON DELETE CASCADE,
+
+    FOREIGN KEY (slot_id)
+    REFERENCES timeslots(slot_id)
+    ON DELETE CASCADE
+);
+
+-- 11. Bảng Phòng học còn trống
+CREATE TABLE room_availability (
+    availability_id INT AUTO_INCREMENT PRIMARY KEY,
+    room_id VARCHAR(20) NOT NULL,
+    slot_id INT NOT NULL,
+    day_of_week TINYINT CHECK (day_of_week BETWEEN 2 AND 8),
+
+    FOREIGN KEY (room_id)
+    REFERENCES rooms(room_id)
+    ON DELETE CASCADE,
+
+    FOREIGN KEY (slot_id)
+    REFERENCES timeslots(slot_id)
+    ON DELETE CASCADE
+);
+
+
+-- Xóa dữ liệu cũ nếu có để tránh trùng username
+DELETE FROM users;
+
+-- Chèn tài khoản mẫu (Lưu ý: Role phải khớp 100% với logic ở Backend)
+INSERT INTO users (username, password, full_name, email, role) VALUES 
+('sv01', '123456', 'Nguyễn Văn Sinh Viên', 'sv@ptit.edu.vn', 'Sinh viên'),
+('gv01', '123456', 'Trần Thị Giảng Viên', 'gv@ptit.edu.vn', 'Giảng viên'),
+('qtv01', '123456', 'Lê Quản Trị Viên', 'qtv@ptit.edu.vn', 'Quản trị viên'),
+('admin01', '123456', 'Vua Hệ Thống', 'admin@ptit.edu.vn', 'Quản trị hệ thống');
