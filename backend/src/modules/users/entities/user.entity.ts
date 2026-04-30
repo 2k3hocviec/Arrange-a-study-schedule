@@ -31,7 +31,7 @@ export class User {
   @OneToOne(() => Student, (student) => student.user_id)
   student!: Student;
 
-  @OneToOne(() => Teacher, (teacher) => teacher.user_id)
+  @OneToOne(() => Teacher, (teacher) => teacher.user)
   teacher!: Teacher;
 
   @Column({ type: 'enum', enum: ['student', 'teacher', 'admin', 'sysadmin'] })

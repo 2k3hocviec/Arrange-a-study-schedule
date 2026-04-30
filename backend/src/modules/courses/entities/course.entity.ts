@@ -1,6 +1,6 @@
 import { Subject } from 'src/modules/subjects/entities/subject.entity';
 import { Teacher } from 'src/modules/teachers/entities/teacher.entity';
-import { Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class Course {
@@ -8,8 +8,10 @@ export class Course {
   id!: number;
 
   @ManyToOne(() => Subject)
-  subject_id!: Subject;
+  @JoinColumn({ name: 'subject_id' })
+  subject!: Subject;
 
   @ManyToOne(() => Teacher)
-  teacher_id!: Teacher;
+  @JoinColumn({ name: 'teacher_id' })
+  teacher!: Teacher;
 }

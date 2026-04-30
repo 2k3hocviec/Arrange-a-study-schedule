@@ -33,8 +33,13 @@ export class UsersService {
     return this.usersRepository.update(id, updateUserDto);
   }
 
-  remove(id: number) {
-    return this.usersRepository.delete({ id });
+  async remove(id: number) {
+    const user = await this.usersRepository.findOneBy({ id });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    await this.usersRepository.delete({ id });
+    return user;
   }
 
   findByEmail(email: string) {

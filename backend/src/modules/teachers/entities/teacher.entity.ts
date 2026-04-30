@@ -1,21 +1,23 @@
 import { User } from 'src/modules/users/entities/user.entity';
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  OneToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
 
 @Entity()
 export class Teacher {
-  @PrimaryGeneratedColumn()
-  id!: number;
+  @OneToOne(() => User, (user) => user.teacher)
+  @JoinColumn({ name: 'user_id' })
+  user!: User;
+
+  @Column()
+  user_id!: number;
+
+  @PrimaryColumn({ unique: true })
+  teacher_id!: string;
 
   @Column()
   name!: string;
+  @Column()
+  degree!: string;
 
-  @OneToOne(() => User, (user) => user.teacher)
-  @JoinColumn()
-  user_id!: User;
+  @Column()
+  expertise!: string;
 }
