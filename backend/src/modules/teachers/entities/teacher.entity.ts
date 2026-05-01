@@ -7,7 +7,7 @@ export class Teacher {
   @JoinColumn({ name: 'user_id' })
   user!: User;
 
-  @Column()
+  @Column({ name: 'user_id' })
   user_id!: number;
 
   @PrimaryColumn({ unique: true })

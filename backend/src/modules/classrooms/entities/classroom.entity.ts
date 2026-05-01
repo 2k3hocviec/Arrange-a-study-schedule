@@ -1,13 +1,19 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, PrimaryColumn, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class Classroom {
-  @PrimaryGeneratedColumn()
-  id!: number;
+  @PrimaryColumn({ unique: true })
+  id!: string;
 
   @Column()
-  roomName!: string;
-
-  @Column({ nullable: true })
   capacity!: number;
+
+  @Column({ type: 'enum', enum: ['Theory', 'Practice'] })
+  type!: string;
+
+  @Column()
+  description!: string;
+
+  @Column({ type: 'enum', enum: ['Ready', 'Maintaince', 'Used'] })
+  status!: string;
 }

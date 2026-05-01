@@ -1,4 +1,5 @@
 export class CreateStudentDto {
-  id!: number;
-  userID!: number;
+  student_id!: string;
+  name!: string;
+  user_id!: number;
 }

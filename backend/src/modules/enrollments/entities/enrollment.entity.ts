@@ -1,6 +1,6 @@
 import { Course } from 'src/modules/courses/entities/course.entity';
 import { Student } from 'src/modules/students/entities/student.entity';
-import { Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class Enrollment {
@@ -8,8 +8,10 @@ export class Enrollment {
   id!: number;
 
   @ManyToOne(() => Student)
+  @JoinColumn({ name: 'student_id' })
   student_id!: Student;
 
   @ManyToOne(() => Course)
+  @JoinColumn({ name: 'course_id' })
   course_id!: Course;
 }

@@ -4,18 +4,22 @@ import {
   Entity,
   JoinColumn,
   OneToOne,
+  PrimaryColumn,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
 @Entity()
 export class Student {
-  @PrimaryGeneratedColumn()
-  id!: number;
+  @PrimaryColumn()
+  student_id!: string;
 
   @Column()
   name!: string;
 
   @OneToOne(() => User, (user) => user.student)
-  @JoinColumn()
-  user_id!: User;
+  @JoinColumn({ name: 'user_id' })
+  user!: User;
+
+  @Column({ name: 'user_id' })
+  user_id!: number;
 }

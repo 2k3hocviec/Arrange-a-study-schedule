@@ -1,6 +1,12 @@
 import { Classroom } from 'src/modules/classrooms/entities/classroom.entity';
 import { Course } from 'src/modules/courses/entities/course.entity';
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity()
 export class Schedule {
@@ -8,6 +14,7 @@ export class Schedule {
   id!: number;
 
   @ManyToOne(() => Course)
+  @JoinColumn({ name: 'course_id' })
   course_id!: Course;
 
   @ManyToOne(() => Classroom)
@@ -16,9 +23,6 @@ export class Schedule {
   @Column()
   dayOfWeek!: string;
 
-  @Column()
-  startTime!: string;
-
-  @Column()
-  endTime!: string;
+  @Column({ type: 'enum', enum: ['Morning', 'Afternoon', 'Evening'] })
+  role!: string;
 }

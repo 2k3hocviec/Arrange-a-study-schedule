@@ -1,26 +1,55 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateSubjectDto } from './dto/create-subject.dto';
 import { UpdateSubjectDto } from './dto/update-subject.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Subject } from './entities/subject.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class SubjectsService {
-  create(createSubjectDto: CreateSubjectDto) {
-    return 'This action adds a new subject';
+  constructor(
+    @InjectRepository(Subject)
+    private readonly subjectRepository: Repository<Subject>,
+  ) {}
+  async create(createSubjectDto: CreateSubjectDto) {
+    const subjectOld = await this.subjectRepository.findOneBy({
+      subject_id: createSubjectDto.subject_id,
+    });
+
+    if (subjectOld) {
+      throw new BadRequestException('Subject_ID already exists');
+    }
+
+    const subject = await this.subjectRepository.create(createSubjectDto);
+
+    await this.subjectRepository.save(subject);
+    return subject;
   }
 
-  findAll() {
-    return `This action returns all subjects`;
+  async findAll() {
+    return await this.subjectRepository.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} subject`;
+  async findOne(id: string) {
+    return await this.subjectRepository.findOneBy({ subject_id: id });
   }
 
-  update(id: number, updateSubjectDto: UpdateSubjectDto) {
-    return `This action updates a #${id} subject`;
+  async update(id: string, updateSubjectDto: UpdateSubjectDto) {
+    const subjectOld = await this.subjectRepository.findOneBy({
+      subject_id: id,
+    });
+
+    if (!subjectOld) {
+      throw new BadRequestException('Subject does not exists');
+    }
+
+    return await this.subjectRepository.update(
+      { subject_id: id },
+      updateSubjectDto,
+    );
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} subject`;
+  async remove(id: string) {
+    return this.subjectRepository.delete(id);
   }
 }

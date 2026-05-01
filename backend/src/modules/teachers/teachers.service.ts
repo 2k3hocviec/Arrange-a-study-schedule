@@ -37,15 +37,15 @@ export class TeachersService {
       throw new BadRequestException('This Objects does not teacher');
     }
 
-    return this.teachersRepository.save(createTeacherDto);
+    return await this.teachersRepository.save(createTeacherDto);
   }
 
-  findAll() {
-    return this.teachersRepository.find();
+  async findAll() {
+    return await this.teachersRepository.find();
   }
 
-  findOne(id: string) {
-    return this.teachersRepository.findOneBy({ teacher_id: id });
+  async findOne(id: string) {
+    return await this.teachersRepository.findOneBy({ teacher_id: id });
   }
 
   async update(id: string, updateTeacherDto: UpdateTeacherDto) {

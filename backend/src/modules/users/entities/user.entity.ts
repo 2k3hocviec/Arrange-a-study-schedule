@@ -28,7 +28,7 @@ export class User {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt!: Date;
 
-  @OneToOne(() => Student, (student) => student.user_id)
+  @OneToOne(() => Student, (student) => student.user)
   student!: Student;
 
   @OneToOne(() => Teacher, (teacher) => teacher.user)

@@ -14,15 +14,15 @@ export class UsersService {
   async create(createUserDto: CreateUserDto) {
     const user = await this.usersRepository.create(createUserDto);
     user.createdAt = new Date();
-    return this.usersRepository.save(user);
+    return await this.usersRepository.save(user);
   }
 
-  findAll() {
-    return this.usersRepository.find();
+  async findAll() {
+    return await this.usersRepository.find();
   }
 
-  findOne(id: number) {
-    return this.usersRepository.findOneBy({ id });
+  async findOne(id: number) {
+    return await this.usersRepository.findOneBy({ id });
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) {
@@ -42,7 +42,7 @@ export class UsersService {
     return user;
   }
 
-  findByEmail(email: string) {
-    return this.usersRepository.findOneBy({ email });
+  async findByEmail(email: string) {
+    return await this.usersRepository.findOneBy({ email });
   }
 }
