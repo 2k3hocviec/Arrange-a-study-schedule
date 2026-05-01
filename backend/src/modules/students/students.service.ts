@@ -97,22 +97,22 @@ export class StudentsService {
   //   };
   // }
 
-  async getStudentCourse(id: string) {
-    const student = await this.studentRepository.findOneBy({
-      student_id: id,
-    });
-    if (!student) {
-      throw new NotFoundException(`Student with ID ${id} not found`);
-    }
+  // async getStudentCourse(id: string) {
+  //   const student = await this.studentRepository.findOneBy({
+  //     student_id: id,
+  //   });
+  //   if (!student) {
+  //     throw new NotFoundException(`Student with ID ${id} not found`);
+  //   }
 
-    //  Tìm tất cả enrollments của học sinh
-    const enrollments = await this.enrollmentRepository.find({
-      where: { student_id: { student_id: id } },
-      relations: ['course_id'],
-    });
+  //   //  Tìm tất cả enrollments của học sinh
+  //   const enrollments = await this.enrollmentRepository.find({
+  //     where: { student_id: { student_id: id } },
+  //     relations: ['course_id'],
+  //   });
 
-    console.log(student);
+  //   console.log(student);
 
-    return enrollments;
-  }
+  //   return enrollments;
+  // }
 }

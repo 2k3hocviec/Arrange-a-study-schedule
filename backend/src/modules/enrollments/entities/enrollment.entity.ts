@@ -1,17 +1,32 @@
 import { Course } from 'src/modules/courses/entities/course.entity';
 import { Student } from 'src/modules/students/entities/student.entity';
-import { Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity()
 export class Enrollment {
   @PrimaryGeneratedColumn()
-  id!: number;
+  enrollment_id!: number;
+
+  @Column()
+  student_id!: string;
+
+  @Column()
+  course_id!: string;
 
   @ManyToOne(() => Student)
   @JoinColumn({ name: 'student_id' })
-  student_id!: Student;
+  student!: Student;
 
   @ManyToOne(() => Course)
   @JoinColumn({ name: 'course_id' })
-  course_id!: Course;
+  course!: Course;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  createdAt!: Date;
 }

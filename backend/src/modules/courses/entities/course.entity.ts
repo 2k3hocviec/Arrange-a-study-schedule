@@ -1,9 +1,12 @@
+import { Schedule } from 'src/modules/schedules/entities/schedule.entity';
 import { Subject } from 'src/modules/subjects/entities/subject.entity';
 import { Teacher } from 'src/modules/teachers/entities/teacher.entity';
 import {
+  Column,
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryColumn,
   PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -20,4 +23,13 @@ export class Course {
   @ManyToOne(() => Teacher)
   @JoinColumn({ name: 'teacher_id' })
   teacher!: Teacher;
+
+  @OneToMany(() => Schedule, (schedule) => schedule.course)
+  schedule!: Schedule[];
+
+  @Column()
+  subject_id!: string;
+
+  @Column()
+  teacher_id!: string;
 }

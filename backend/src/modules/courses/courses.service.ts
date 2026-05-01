@@ -1,26 +1,63 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Course } from './entities/course.entity';
+import { Repository } from 'typeorm';
+import { TeachersModule } from '../teachers/teachers.module';
+import { TeachersService } from '../teachers/teachers.service';
+import { SubjectsService } from '../subjects/subjects.service';
 
 @Injectable()
 export class CoursesService {
-  create(createCourseDto: CreateCourseDto) {
-    return 'This action adds a new course';
+  constructor(
+    @InjectRepository(Course)
+    private readonly courseRepository: Repository<Course>,
+    private readonly teacherService: TeachersService,
+    private readonly subjectService: SubjectsService,
+  ) {}
+  async create(createCourseDto: CreateCourseDto) {
+    const teacher = await this.teacherService.findOne(
+      createCourseDto.teacher_id,
+    );
+    const subject = await this.subjectService.findOne(
+      createCourseDto.subject_id,
+    );
+    const oldCourse = await this.courseRepository.findOneBy({
+      course_id: createCourseDto.course_id,
+    });
+
+    if (!teacher || !subject || oldCourse) {
+      throw new BadRequestException(
+        'Not teacher or Not subject or Have oldcourse',
+      );
+    }
+
+    return await this.courseRepository.save(createCourseDto);
   }
 
   findAll() {
-    return `This action returns all courses`;
+    return this.courseRepository.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} course`;
+  findOne(id: string) {
+    return this.courseRepository.findOneBy({ course_id: id });
   }
 
-  update(id: number, updateCourseDto: UpdateCourseDto) {
-    return `This action updates a #${id} course`;
+  async update(id: string, updateCourseDto: UpdateCourseDto) {
+    const teacher = await this.teacherService.findOne(
+      updateCourseDto.teacher_id,
+    );
+    const subject = await this.subjectService.findOne(
+      updateCourseDto.subject_id,
+    );
+    if (!teacher || !subject) {
+      throw new BadRequestException('Not teacher or Not subject');
+    }
+    return await this.courseRepository.update(id, updateCourseDto);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} course`;
+  async remove(id: string) {
+    return await this.courseRepository.delete(id);
   }
 }

@@ -1,4 +1,11 @@
-import { Column, Entity, PrimaryColumn, PrimaryGeneratedColumn } from 'typeorm';
+import { Schedule } from 'src/modules/schedules/entities/schedule.entity';
+import {
+  Column,
+  Entity,
+  OneToMany,
+  PrimaryColumn,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity()
 export class Classroom {
@@ -16,4 +23,7 @@ export class Classroom {
 
   @Column({ type: 'enum', enum: ['Ready', 'Maintaince', 'Used'] })
   status!: string;
+
+  @OneToMany(() => Schedule, (schedule) => schedule.room)
+  schedule!: Schedule[];
 }

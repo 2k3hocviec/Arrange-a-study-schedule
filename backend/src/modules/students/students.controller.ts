@@ -43,7 +43,7 @@ export class StudentsController {
   // Lấy môn học
   @Get(':id/courses')
   getCourse(@Param('id') id: string) {
-    return this.studentsService.getStudentCourse(id);
+    //return this.studentsService.getStudentCourse(id);
   }
 
   @Patch(':id')

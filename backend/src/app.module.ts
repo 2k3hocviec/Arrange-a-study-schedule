@@ -41,6 +41,7 @@ import { AuthModule } from './auth/auth.module';
       ],
       synchronize: true,
       logging: ['error'],
+      // logging: true,
     }),
     TypeOrmModule.forFeature([
       User,

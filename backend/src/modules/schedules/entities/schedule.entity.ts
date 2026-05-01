@@ -8,6 +8,16 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
+export enum DayOfWeek {
+  MONDAY = 2,
+  TUESDAY = 3,
+  WEDNESDAY = 4,
+  THURSDAY = 5,
+  FRIDAY = 6,
+  SATURDAY = 7,
+  SUNDAY = 8,
+}
+
 @Entity()
 export class Schedule {
   @PrimaryGeneratedColumn()
@@ -15,14 +25,26 @@ export class Schedule {
 
   @ManyToOne(() => Course)
   @JoinColumn({ name: 'course_id' })
-  course_id!: Course;
-
-  @ManyToOne(() => Classroom)
-  classroom_id!: Classroom;
+  course!: Course;
 
   @Column()
-  dayOfWeek!: string;
+  course_id!: string;
 
-  @Column({ type: 'enum', enum: ['Morning', 'Afternoon', 'Evening'] })
-  role!: string;
+  @ManyToOne(() => Classroom, (room) => room.schedule)
+  @JoinColumn({ name: 'room_id' })
+  room!: Classroom;
+
+  @Column({ name: 'room_id' })
+  room_id!: string;
+  @Column({
+    type: 'enum',
+    enum: DayOfWeek,
+  })
+  dayOfWeek!: DayOfWeek;
+
+  @Column()
+  start_slot!: number;
+
+  @Column()
+  end_slot!: number;
 }
