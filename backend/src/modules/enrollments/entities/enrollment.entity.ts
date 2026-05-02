@@ -10,8 +10,8 @@ import {
 
 @Entity()
 export class Enrollment {
-  @PrimaryGeneratedColumn()
-  enrollment_id!: number;
+  @PrimaryGeneratedColumn('uuid')
+  enrollment_id!: string;
 
   @Column()
   student_id!: string;

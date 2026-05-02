@@ -2,19 +2,18 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateScheduleDto } from './dto/create-schedule.dto';
 import { UpdateScheduleDto } from './dto/update-schedule.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { LessThan, MoreThan, Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Schedule } from './entities/schedule.entity';
-import { log } from 'console';
 import { CoursesService } from '../courses/courses.service';
-import { Course } from '../courses/entities/course.entity';
+import { ClassroomsService } from '../classrooms/classrooms.service';
 
 @Injectable()
 export class SchedulesService {
   constructor(
     @InjectRepository(Schedule)
     private readonly scheduleRepository: Repository<Schedule>,
-    @InjectRepository(Course)
-    private readonly courseRepository: Repository<Course>,
+    private readonly courseService: CoursesService,
+    private readonly classroomService: ClassroomsService,
   ) {}
 
   private async checkClassroomConflict(dto: CreateScheduleDto) {
@@ -22,16 +21,16 @@ export class SchedulesService {
       .createQueryBuilder('schedule')
       .where('schedule.room_id = :roomId', { roomId: dto.room_id })
       .andWhere('schedule.dayOfWeek = :day', { day: String(dto.dayOfWeek) })
-      .andWhere('schedule.start_slot < :endNew', { endNew: dto.end_slot })
-      .andWhere('schedule.end_slot> :startNew', { startNew: dto.start_slot })
+      .andWhere('schedule.start_slot <= :endNew', { endNew: dto.end_slot })
+      .andWhere('schedule.end_slot >= :startNew', { startNew: dto.start_slot })
       .getOne();
   }
 
   private async checkTeacherConflict(dto: CreateScheduleDto) {
     // 1. Tìm thông tin khóa học hiện tại để biết giáo viên là ai
-    const currentCourse = await this.courseRepository.findOne({
-      where: { course_id: dto.course_id },
-    });
+    const currentCourse = await this.courseService.findOneByCourseID(
+      dto.course_id,
+    );
 
     if (!currentCourse) return null;
 
@@ -43,8 +42,8 @@ export class SchedulesService {
       .where('schedule.dayOfWeek = :dayOfWeek', {
         dayOfWeek: String(dto.dayOfWeek),
       })
-      .andWhere('schedule.start_slot < :end_slot', { end_slot: dto.end_slot })
-      .andWhere('schedule.end_slot > :start_slot', {
+      .andWhere('schedule.start_slot <= :end_slot', { end_slot: dto.end_slot })
+      .andWhere('schedule.end_slot >= :start_slot', {
         start_slot: dto.start_slot,
       })
       .andWhere('course.teacher_id = :teacherId', {
@@ -56,6 +55,22 @@ export class SchedulesService {
   }
 
   async create(createScheduleDto: CreateScheduleDto) {
+    const classroom = await this.classroomService.findOne(
+      createScheduleDto.room_id,
+    );
+
+    if (!classroom) {
+      throw new BadRequestException(`Classroom not exist`);
+    }
+
+    const course = await this.courseService.findOne(
+      createScheduleDto.course_id,
+    );
+
+    if (!course) {
+      throw new BadRequestException(`Course not exist`);
+    }
+
     // Kiểm tra classroom không trùng lịch
     const classroomConflict =
       await this.checkClassroomConflict(createScheduleDto);
@@ -77,22 +92,38 @@ export class SchedulesService {
     return await this.scheduleRepository.save(createScheduleDto);
   }
 
+  async findExistingSchedules(courseIDs: string[]) {
+    return await this.scheduleRepository.find({
+      where: { course_id: In(courseIDs) },
+    });
+  }
+
   findAll() {
     return this.scheduleRepository.find({ relations: ['course', 'room'] });
   }
 
-  findOne(id: number) {
+  findOneWithRoom(schedule_id: string) {
     return this.scheduleRepository.findOne({
-      where: { id },
+      where: { schedule_id },
       relations: ['course', 'room'],
     });
   }
 
-  update(id: number, updateScheduleDto: UpdateScheduleDto) {
+  findScheduleWithCourseID(courseID: string) {
+    return this.scheduleRepository.findOne({
+      where: { course_id: courseID },
+    });
+  }
+
+  findOne(id: string) {
+    return this.scheduleRepository.findBy({ schedule_id: id });
+  }
+
+  update(id: string, updateScheduleDto: UpdateScheduleDto) {
     return `This action updates a #${id} schedule`;
   }
 
-  remove(id: number) {
+  remove(id: string) {
     return this.scheduleRepository.delete(id);
   }
 }

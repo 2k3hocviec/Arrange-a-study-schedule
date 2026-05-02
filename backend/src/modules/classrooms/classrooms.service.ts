@@ -18,7 +18,7 @@ export class ClassroomsService {
   async create(createClassroomDto: CreateClassroomDto) {
     // Kiểm tra classrooms tồn tại chưa
     const classroom = await this.classroomsRepository.findOneBy({
-      id: createClassroomDto.id,
+      classroom_id: createClassroomDto.id,
     });
     if (classroom) {
       throw new BadRequestException('Classroom already exists');
@@ -35,28 +35,33 @@ export class ClassroomsService {
     return await this.classroomsRepository.find();
   }
 
-  async findOne(id: string) {
-    return `This action returns a #${id} classroom`;
+  async findOne(classroom_id: string) {
+    return await this.classroomsRepository.findOneBy({ classroom_id });
   }
 
   async update(id: string, updateclassroomsDto: UpdateClassroomDto) {
     const classrooms = await this.classroomsRepository.findOneBy({
-      id: id,
+      classroom_id: id,
     });
 
     if (!classrooms) {
       throw new NotFoundException('classrooms not found');
     }
-    return this.classroomsRepository.update({ id: id }, updateclassroomsDto);
+    return this.classroomsRepository.update(
+      { classroom_id: id },
+      updateclassroomsDto,
+    );
   }
 
   async remove(id: string) {
-    const teacher = await this.classroomsRepository.findOneBy({ id: id });
+    const teacher = await this.classroomsRepository.findOneBy({
+      classroom_id: id,
+    });
     if (!teacher) {
       throw new NotFoundException('Classroom not found');
     }
 
-    await this.classroomsRepository.delete({ id: id });
+    await this.classroomsRepository.delete({ classroom_id: id });
     return teacher;
   }
 }

@@ -9,19 +9,19 @@ import {
 } from 'typeorm';
 
 export enum DayOfWeek {
-  MONDAY = 2,
-  TUESDAY = 3,
-  WEDNESDAY = 4,
-  THURSDAY = 5,
-  FRIDAY = 6,
-  SATURDAY = 7,
-  SUNDAY = 8,
+  MONDAY = '2',
+  TUESDAY = '3',
+  WEDNESDAY = '4',
+  THURSDAY = '5',
+  FRIDAY = '6',
+  SATURDAY = '7',
+  SUNDAY = '8',
 }
 
 @Entity()
 export class Schedule {
-  @PrimaryGeneratedColumn()
-  id!: number;
+  @PrimaryGeneratedColumn('uuid')
+  schedule_id!: string;
 
   @ManyToOne(() => Course)
   @JoinColumn({ name: 'course_id' })

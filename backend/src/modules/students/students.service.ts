@@ -51,8 +51,8 @@ export class StudentsService {
     return `This action returns all students`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} student`;
+  findOneByStudentID(student_id: string) {
+    return this.studentRepository.findOneBy({ student_id });
   }
 
   update(id: number, updateStudentDto: UpdateStudentDto) {

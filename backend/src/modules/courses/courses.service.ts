@@ -60,4 +60,10 @@ export class CoursesService {
   async remove(id: string) {
     return await this.courseRepository.delete(id);
   }
+
+  async findOneByCourseID(course_id: string) {
+    return await this.courseRepository.findOne({
+      where: { course_id: course_id },
+    });
+  }
 }

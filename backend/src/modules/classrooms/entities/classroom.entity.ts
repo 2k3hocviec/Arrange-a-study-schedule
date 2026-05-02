@@ -10,7 +10,7 @@ import {
 @Entity()
 export class Classroom {
   @PrimaryColumn({ unique: true })
-  id!: string;
+  classroom_id!: string;
 
   @Column()
   capacity!: number;
