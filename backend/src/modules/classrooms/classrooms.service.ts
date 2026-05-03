@@ -18,8 +18,11 @@ export class ClassroomsService {
   async create(createClassroomDto: CreateClassroomDto) {
     // Kiểm tra classrooms tồn tại chưa
     const classroom = await this.classroomsRepository.findOneBy({
-      classroom_id: createClassroomDto.id,
+      classroom_id: createClassroomDto.classroom_id,
     });
+
+    console.log(classroom);
+
     if (classroom) {
       throw new BadRequestException('Classroom already exists');
     }
