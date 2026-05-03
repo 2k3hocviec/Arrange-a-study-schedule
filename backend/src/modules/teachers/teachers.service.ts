@@ -49,6 +49,15 @@ export class TeachersService {
   }
 
   async update(id: string, updateTeacherDto: UpdateTeacherDto) {
+    const user = await this.userService.findOne(updateTeacherDto.user_id);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (user.role !== 'teacher') {
+      throw new BadRequestException('This Objects does not teacher');
+    }
+
     const teacher = await this.teachersRepository.findOneBy({ teacher_id: id });
 
     if (!teacher) {
