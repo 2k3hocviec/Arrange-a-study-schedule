@@ -11,7 +11,7 @@ const AdminSchedule = () => {
   const [repair, setRepair] = useState(false);
   const [formData, setFormData] = useState({
     course_id: "",
-    room_id: "",
+    classroom_id: "",
     dayOfWeek: "",
     start_slot: "",
     end_slot: "",
@@ -45,7 +45,7 @@ const AdminSchedule = () => {
   const handleClickCreate = () => {
     setFormData({
       course_id: "",
-      room_id: "",
+      classroom_id: "",
       dayOfWeek: "",
       start_slot: "",
       end_slot: "",
@@ -105,7 +105,7 @@ const AdminSchedule = () => {
           </div>
           <div style={{ ...cardStyle, borderLeftColor: "#f39c12" }}>
             <strong>Phòng đang sử dụng:</strong>{" "}
-            {new Set(schedules.map((s) => s.room_id)).size}
+            {new Set(schedules.map((s) => s.classroom_id)).size}
           </div>
         </div>
 
@@ -146,8 +146,8 @@ const AdminSchedule = () => {
               <div>
                 <label style={labelStyle}>Phòng học</label>
                 <select
-                  name="room_id"
-                  value={formData.room_id}
+                  name="classroom_id"
+                  value={formData.classroom_id}
                   onChange={handleInputChange}
                   style={inputStyle}
                   required
@@ -176,7 +176,7 @@ const AdminSchedule = () => {
                   <option value="5">Thứ 5</option>
                   <option value="6">Thứ 6</option>
                   <option value="7">Thứ 7</option>
-                  <option value="8">Thứ 7</option>
+                  <option value="8">Chủ Nhật</option>
                 </select>
               </div>
               <div>

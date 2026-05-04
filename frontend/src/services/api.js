@@ -130,10 +130,10 @@ export const coursesAPI = {
 
 export const schedulesAPI = {
   getAll: () => api.get("/schedules"),
-  create: ({ course_id, room_id, dayOfWeek, start_slot, end_slot }) => {
+  create: ({ course_id, classroom_id, dayOfWeek, start_slot, end_slot }) => {
     return api.post("/schedules", {
       course_id,
-      room_id,
+      classroom_id,
       dayOfWeek,
       start_slot,
       end_slot,
@@ -144,11 +144,11 @@ export const schedulesAPI = {
   },
   update: (
     schedule_id,
-    { course_id, room_id, dayOfWeek, start_slot, end_slot },
+    { course_id, classroom_id, dayOfWeek, start_slot, end_slot },
   ) => {
     return api.patch(`/schedules/${schedule_id}`, {
       course_id,
-      room_id,
+      classroom_id,
       dayOfWeek,
       start_slot,
       end_slot,
