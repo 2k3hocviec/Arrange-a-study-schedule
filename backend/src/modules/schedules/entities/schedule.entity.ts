@@ -31,11 +31,11 @@ export class Schedule {
   course_id!: string;
 
   @ManyToOne(() => Classroom, (room) => room.schedule)
-  @JoinColumn({ name: 'room_id' })
+  @JoinColumn({ name: 'classroom_id' })
   room!: Classroom;
 
-  @Column({ name: 'room_id' })
-  room_id!: string;
+  @Column({ name: 'classroom_id' })
+  classroom_id!: string;
   @Column({
     type: 'enum',
     enum: DayOfWeek,

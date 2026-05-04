@@ -19,7 +19,7 @@ export class SchedulesService {
   private async checkClassroomConflict(dto: CreateScheduleDto) {
     return await this.scheduleRepository
       .createQueryBuilder('schedule')
-      .where('schedule.room_id = :roomId', { roomId: dto.room_id })
+      .where('schedule.classroom_id = :roomId', { roomId: dto.classroom_id })
       .andWhere('schedule.dayOfWeek = :day', { day: String(dto.dayOfWeek) })
       .andWhere('schedule.start_slot <= :endNew', { endNew: dto.end_slot })
       .andWhere('schedule.end_slot >= :startNew', { startNew: dto.start_slot })
@@ -58,7 +58,7 @@ export class SchedulesService {
 
   async create(createScheduleDto: CreateScheduleDto) {
     const classroom = await this.classroomService.findOne(
-      createScheduleDto.room_id,
+      createScheduleDto.classroom_id,
     );
 
     if (!classroom) {
@@ -79,7 +79,7 @@ export class SchedulesService {
 
     if (classroomConflict) {
       throw new BadRequestException(
-        `Classroom ${createScheduleDto.room_id} already has schedule at this time`,
+        `Classroom ${createScheduleDto.classroom_id} already has schedule at this time`,
       );
     }
 
@@ -91,7 +91,14 @@ export class SchedulesService {
       );
     }
 
-    return await this.scheduleRepository.save(createScheduleDto);
+    const schedule = this.scheduleRepository.create({
+      course_id: createScheduleDto.course_id,
+      classroom_id: createScheduleDto.classroom_id,
+      dayOfWeek: createScheduleDto.dayOfWeek,
+      start_slot: createScheduleDto.start_slot,
+      end_slot: createScheduleDto.end_slot,
+    });
+    return await this.scheduleRepository.save(schedule);
   }
 
   async findExistingSchedules(courseIDs: string[]) {
@@ -123,7 +130,7 @@ export class SchedulesService {
 
   async update(id: string, updateScheduleDto: UpdateScheduleDto) {
     const classroom = await this.classroomService.findOne(
-      updateScheduleDto.room_id,
+      updateScheduleDto.classroom_id,
     );
 
     if (!classroom) {
@@ -144,7 +151,7 @@ export class SchedulesService {
 
     if (classroomConflict) {
       throw new BadRequestException(
-        `Classroom ${updateScheduleDto.room_id} already has schedule at this time`,
+        `Classroom ${updateScheduleDto.classroom_id} already has schedule at this time`,
       );
     }
 
