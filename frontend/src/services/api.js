@@ -64,8 +64,6 @@ export const teachersAPI = {
     api.delete(`/teachers/${teacher_id}`);
   },
   update: (teacher_id, { user_id, name, degree, expertise }) => {
-    console.log(teacher_id);
-
     api.patch(`/teachers/${teacher_id}`, { user_id, name, degree, expertise });
   },
 };
@@ -132,24 +130,28 @@ export const coursesAPI = {
 
 export const schedulesAPI = {
   getAll: () => api.get("/schedules"),
-  create: ({ classroom_id, capacity, type, description, status }) => {
-    return api.post("classrooms", {
-      classroom_id,
-      capacity,
-      type,
-      description,
-      status,
+  create: ({ course_id, room_id, dayOfWeek, start_slot, end_slot }) => {
+    return api.post("/schedules", {
+      course_id,
+      room_id,
+      dayOfWeek,
+      start_slot,
+      end_slot,
     });
   },
-  delete: (classroom_id) => {
-    return api.delete(`/classrooms/${classroom_id}`);
+  delete: (schedule_id) => {
+    return api.delete(`/schedules/${schedule_id}`);
   },
-  update: (classroom_id, { capacity, type, description, status }) => {
-    return api.patch(`/classrooms/${classroom_id}`, {
-      capacity,
-      type,
-      description,
-      status,
+  update: (
+    schedule_id,
+    { course_id, room_id, dayOfWeek, start_slot, end_slot },
+  ) => {
+    return api.patch(`/schedules/${schedule_id}`, {
+      course_id,
+      room_id,
+      dayOfWeek,
+      start_slot,
+      end_slot,
     });
   },
 };

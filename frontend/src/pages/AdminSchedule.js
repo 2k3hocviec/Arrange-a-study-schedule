@@ -1,19 +1,11 @@
 import React, { useEffect, useState } from "react";
-import {
-  schedulesAPI,
-  teachersAPI,
-  roomsAPI,
-  subjectsAPI,
-  coursesAPI,
-} from "../services/api";
+import { schedulesAPI, coursesAPI, roomsAPI } from "../services/api";
 import toast from "react-hot-toast";
 
 const AdminSchedule = () => {
   const [schedules, setSchedules] = useState([]);
-  const [teachers, setTeachers] = useState([]); // Để đổ vào select Giảng viên
-  const [rooms, setRooms] = useState([]); // Để đổ vào select Phòng học
-  const [subjects, setSubjects] = useState([]); // Để đổ vào select Môn học
-  const [courses, setCourses] = useState([]); // Để đổ vào select Môn học
+  const [courses, setCourses] = useState([]);
+  const [rooms, setRooms] = useState([]);
 
   const [showForm, setShowForm] = useState(false);
   const [repair, setRepair] = useState(false);
@@ -28,18 +20,14 @@ const AdminSchedule = () => {
   // 1. Fetch tất cả dữ liệu cần thiết
   const fetchData = async () => {
     try {
-      const [resSchedules, resTeachers, resRooms, resSubjects] =
-        await Promise.all([
-          schedulesAPI.getAll(),
-          teachersAPI.getAll(),
-          roomsAPI.getAll(),
-          subjectsAPI.getAll(),
-          coursesAPI.getAll(),
-        ]);
+      const [resSchedules, resCourses, resRooms] = await Promise.all([
+        schedulesAPI.getAll(),
+        coursesAPI.getAll(),
+        roomsAPI.getAll(),
+      ]);
       setSchedules(resSchedules.data);
-      setTeachers(resTeachers.data);
+      setCourses(resCourses.data);
       setRooms(resRooms.data);
-      setSubjects(resSubjects.data);
     } catch (e) {
       toast.error("Không thể tải dữ liệu lịch học");
     }
@@ -56,13 +44,11 @@ const AdminSchedule = () => {
 
   const handleClickCreate = () => {
     setFormData({
-      schedule_id: "",
-      class_id: "",
-      subject_id: "",
-      teacher_id: "",
-      classroom_id: "",
-      date: "",
-      slot: "",
+      course_id: "",
+      room_id: "",
+      dayOfWeek: "",
+      start_slot: "",
+      end_slot: "",
     });
     setRepair(false);
     setShowForm(!showForm);
@@ -92,14 +78,12 @@ const AdminSchedule = () => {
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm("Bạn có chắc muốn hủy lịch học này?")) {
-      try {
-        await schedulesAPI.delete(id);
-        fetchData();
-        toast.success("Đã hủy lịch học!");
-      } catch (err) {
-        toast.error("Không thể xóa lịch này");
-      }
+    try {
+      await schedulesAPI.delete(id);
+      fetchData();
+      toast.success("Đã hủy lịch học!");
+    } catch (err) {
+      toast.error("Không thể xóa lịch này");
     }
   };
 
@@ -116,11 +100,12 @@ const AdminSchedule = () => {
             <strong>Tổng số lịch:</strong> {schedules.length}
           </div>
           <div style={{ ...cardStyle, borderLeftColor: "#8e44ad" }}>
-            <strong>Lớp đang học:</strong> {schedules.length > 0 ? "12" : "0"}
+            <strong>Khóa học:</strong>{" "}
+            {new Set(schedules.map((s) => s.course_id)).size}
           </div>
           <div style={{ ...cardStyle, borderLeftColor: "#f39c12" }}>
             <strong>Phòng đang sử dụng:</strong>{" "}
-            {new Set(schedules.map((s) => s.classroom_id)).size}
+            {new Set(schedules.map((s) => s.room_id)).size}
           </div>
         </div>
 
@@ -142,46 +127,18 @@ const AdminSchedule = () => {
               }}
             >
               <div>
-                <label style={labelStyle}>Mã lớp học</label>
-                <input
-                  name="class_id"
-                  value={formData.class_id}
-                  onChange={handleInputChange}
-                  style={inputStyle}
-                  required
-                  placeholder="VD: D21CQCN01"
-                />
-              </div>
-              <div>
-                <label style={labelStyle}>Môn học</label>
+                <label style={labelStyle}>Khóa học</label>
                 <select
-                  name="subject_id"
-                  value={formData.subject_id}
+                  name="course_id"
+                  value={formData.course_id}
                   onChange={handleInputChange}
                   style={inputStyle}
                   required
                 >
-                  <option value="">-- Chọn môn học --</option>
-                  {subjects.map((s) => (
-                    <option key={s.subject_id} value={s.subject_id}>
-                      {s.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label style={labelStyle}>Giảng viên</label>
-                <select
-                  name="teacher_id"
-                  value={formData.teacher_id}
-                  onChange={handleInputChange}
-                  style={inputStyle}
-                  required
-                >
-                  <option value="">-- Chọn giảng viên --</option>
-                  {teachers.map((t) => (
-                    <option key={t.teacher_id} value={t.teacher_id}>
-                      {t.name}
+                  <option value="">-- Chọn khóa học --</option>
+                  {courses.map((c) => (
+                    <option key={c.course_id} value={c.course_id}>
+                      {`${c.course_id} : ${c.subject_id}`}
                     </option>
                   ))}
                 </select>
@@ -189,8 +146,8 @@ const AdminSchedule = () => {
               <div>
                 <label style={labelStyle}>Phòng học</label>
                 <select
-                  name="classroom_id"
-                  value={formData.classroom_id}
+                  name="room_id"
+                  value={formData.room_id}
                   onChange={handleInputChange}
                   style={inputStyle}
                   required
@@ -204,30 +161,82 @@ const AdminSchedule = () => {
                 </select>
               </div>
               <div>
-                <label style={labelStyle}>Ngày học</label>
-                <input
-                  type="date"
-                  name="date"
-                  value={formData.date}
-                  onChange={handleInputChange}
-                  style={inputStyle}
-                  required
-                />
-              </div>
-              <div>
-                <label style={labelStyle}>Tiết học (Slot)</label>
+                <label style={labelStyle}>Thứ học</label>
                 <select
-                  name="slot"
-                  value={formData.slot}
+                  name="dayOfWeek"
+                  value={formData.dayOfWeek}
                   onChange={handleInputChange}
                   style={inputStyle}
                   required
                 >
-                  <option value="">-- Chọn ca --</option>
-                  <option value="1-3">Sáng (1-3)</option>
-                  <option value="4-6">Sáng (4-6)</option>
-                  <option value="7-9">Chiều (7-9)</option>
-                  <option value="10-12">Chiều (10-12)</option>
+                  <option value="">-- Chọn thứ --</option>
+                  <option value="2">Thứ 2</option>
+                  <option value="3">Thứ 3</option>
+                  <option value="4">Thứ 4</option>
+                  <option value="5">Thứ 5</option>
+                  <option value="6">Thứ 6</option>
+                  <option value="7">Thứ 7</option>
+                  <option value="8">Thứ 7</option>
+                </select>
+              </div>
+              <div>
+                <label style={labelStyle}>Tiết bắt đầu</label>
+                <select
+                  name="start_slot"
+                  value={formData.start_slot}
+                  onChange={handleInputChange}
+                  style={inputStyle}
+                  required
+                >
+                  <option value="">-- Chọn tiết --</option>
+                  <option value="1">Tiết 1</option>
+                  <option value="2">Tiết 2</option>
+                  <option value="3">Tiết 3</option>
+                  <option value="4">Tiết 4</option>
+                  <option value="5">Tiết 5</option>
+                  <option value="6">Tiết 6</option>
+                  <option value="7">Tiết 7</option>
+                  <option value="8">Tiết 8</option>
+                  <option value="9">Tiết 9</option>
+                  <option value="10">Tiết 10</option>
+                  <option value="11">Tiết 11</option>
+                  <option value="12">Tiết 12</option>
+                  <option value="13">Tiết 13</option>
+                  <option value="14">Tiết 14</option>
+                  <option value="15">Tiết 15</option>
+                  <option value="16">Tiết 16</option>
+                  <option value="17">Tiết 17</option>
+                  <option value="18">Tiết 18</option>
+                </select>
+              </div>
+              <div>
+                <label style={labelStyle}>Tiết kết thúc</label>
+                <select
+                  name="end_slot"
+                  value={formData.end_slot}
+                  onChange={handleInputChange}
+                  style={inputStyle}
+                  required
+                >
+                  <option value="">-- Chọn tiết --</option>
+                  <option value="1">Tiết 1</option>
+                  <option value="2">Tiết 2</option>
+                  <option value="3">Tiết 3</option>
+                  <option value="4">Tiết 4</option>
+                  <option value="5">Tiết 5</option>
+                  <option value="6">Tiết 6</option>
+                  <option value="7">Tiết 7</option>
+                  <option value="8">Tiết 8</option>
+                  <option value="9">Tiết 9</option>
+                  <option value="10">Tiết 10</option>
+                  <option value="11">Tiết 11</option>
+                  <option value="12">Tiết 12</option>
+                  <option value="13">Tiết 13</option>
+                  <option value="14">Tiết 14</option>
+                  <option value="15">Tiết 15</option>
+                  <option value="16">Tiết 16</option>
+                  <option value="17">Tiết 17</option>
+                  <option value="18">Tiết 18</option>
                 </select>
               </div>
             </div>
@@ -249,11 +258,11 @@ const AdminSchedule = () => {
           <thead style={{ background: "#34495e", color: "white" }}>
             <tr>
               <th style={{ padding: "12px" }}>Mã lịch học</th>
-              <th>Mã môn học</th>
-              <th>Tên Môn Học</th>
+              <th>Mã khóa học</th>
               <th>Phòng</th>
-              <th>Giáo Viên</th>
-              <th>Thời gian</th>
+              <th>Thứ học</th>
+              <th>Tiết bắt đầu</th>
+              <th>Tiết kết thúc</th>
               <th>Thao tác</th>
             </tr>
           </thead>
@@ -267,12 +276,10 @@ const AdminSchedule = () => {
                   {s.schedule_id}
                 </td>
                 <td>{s.course_id}</td>
-                <td>{s.teacher_name || s.teacher_id}</td>
-                <td>{s.classroom_id}</td>
-                <td></td>
-                <td>
-                  {s.date} (Tiết {s.slot})
-                </td>
+                <td>{s.room_id}</td>
+                <td>{s.dayOfWeek}</td>
+                <td>{s.start_slot}</td>
+                <td>{s.end_slot}</td>
                 <td>
                   <button
                     onClick={() => handleOpenUpdate(s)}

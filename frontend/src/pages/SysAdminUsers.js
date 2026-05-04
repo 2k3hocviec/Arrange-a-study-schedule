@@ -69,7 +69,6 @@ const SysAdminUsers = () => {
 
   const handleDeleteUser = async (id) => {
     try {
-      console.log(id);
       await usersAPI.delete(id);
       await fetchUsers();
       window.location.reload();

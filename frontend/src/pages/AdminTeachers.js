@@ -18,7 +18,7 @@ const AdminTeachers = () => {
 
   const fetchTeachers = async () => {
     try {
-      const respone = await teachersAPI.getAll(`?_t=${Date.now()}`);
+      const respone = await teachersAPI.getAll();
       setTeachers(respone.data);
     } catch (e) {
       toast.error("Don't load sucess data");
@@ -93,8 +93,8 @@ const AdminTeachers = () => {
         degree: "",
         expertise: "",
       });
-      setShowForm(!showForm);
-      setRepair(!repair);
+      setShowForm(false);
+      setRepair(false);
       await fetchTeachers();
       toast.success("Cập nhật giáo viên thành công!");
     } catch (err) {
@@ -110,7 +110,6 @@ const AdminTeachers = () => {
 
   const handleDeleteTeacher = async (id) => {
     try {
-      console.log(id);
       await teachersAPI.delete(id);
       toast.success("Xóa thành công!");
       await fetchTeachers();
