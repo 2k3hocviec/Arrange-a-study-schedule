@@ -19,6 +19,9 @@ import { Enrollment } from './modules/enrollments/entities/enrollment.entity';
 import { Classroom } from './modules/classrooms/entities/classroom.entity';
 import { Schedule } from './modules/schedules/entities/schedule.entity';
 import { AuthModule } from './auth/auth.module';
+import { APP_GUARD } from '@nestjs/core';
+import { JwtAuthGuard } from './guard/jwt.guard';
+import { RoleGuard } from './guard/role.guard';
 
 @Module({
   imports: [
@@ -65,6 +68,10 @@ import { AuthModule } from './auth/auth.module';
     AuthModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    { provide: APP_GUARD, useClass: JwtAuthGuard },
+    { provide: APP_GUARD, useClass: RoleGuard },
+  ],
 })
 export class AppModule {}

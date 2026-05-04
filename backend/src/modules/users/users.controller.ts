@@ -12,8 +12,10 @@ import {
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { JwtGuard } from 'src/guard/jwt.guard';
 import { AuthService } from 'src/auth/auth.service';
+import { Roles } from 'src/role/roles.decorator';
+import { JwtAuthGuard } from 'src/guard/jwt.guard';
+import { RoleGuard } from 'src/guard/role.guard';
 
 @Controller('users')
 export class UsersController {
@@ -23,31 +25,30 @@ export class UsersController {
   ) {}
 
   @Get('profile')
-  @UseGuards(JwtGuard)
   getProfile(@Request() req) {
     return req.user;
   }
-
+  @Roles('sysadmin')
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
   }
-
+  @Roles('sysadmin')
   @Get()
   findAll() {
     return this.usersService.findAll();
   }
-
+  @Roles('sysadmin')
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.usersService.findOne(+id);
   }
-
+  @Roles('sysadmin')
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(+id, updateUserDto);
   }
-
+  @Roles('sysadmin')
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.usersService.remove(+id);
