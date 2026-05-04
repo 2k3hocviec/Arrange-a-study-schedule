@@ -17,7 +17,7 @@ const SysAdminUsers = () => {
   };
   useEffect(() => {
     fetchUsers();
-  });
+  }, []);
 
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
@@ -55,6 +55,7 @@ const SysAdminUsers = () => {
       });
       setShowForm(false);
       await fetchUsers();
+      window.location.reload();
       toast.success("Create user success!");
     } catch (err) {
       console.log(err);
@@ -68,10 +69,9 @@ const SysAdminUsers = () => {
 
   const handleDeleteUser = async (id) => {
     try {
-      console.log(id);
       await usersAPI.delete(id);
-      toast.success("Xóa thành công!");
       await fetchUsers();
+      window.location.reload();
     } catch (error) {
       console.error(error);
       toast.error("Xóa thất bại!");
@@ -103,6 +103,7 @@ const SysAdminUsers = () => {
       setShowForm(!showForm);
       setRepair(!repair);
       await fetchUsers();
+      window.location.reload();
       toast.success("Update user success!");
     } catch (err) {
       console.log(err);
