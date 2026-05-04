@@ -23,14 +23,9 @@ export class CoursesService {
     const subject = await this.subjectService.findOne(
       createCourseDto.subject_id,
     );
-    const oldCourse = await this.courseRepository.findOneBy({
-      course_id: createCourseDto.course_id,
-    });
 
-    if (!teacher || !subject || oldCourse) {
-      throw new BadRequestException(
-        'Not teacher or Not subject or Have oldcourse',
-      );
+    if (!teacher || !subject) {
+      throw new BadRequestException('Not teacher or Not subject');
     }
 
     return await this.courseRepository.save(createCourseDto);

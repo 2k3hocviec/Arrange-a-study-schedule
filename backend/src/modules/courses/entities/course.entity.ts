@@ -7,13 +7,12 @@ import {
   JoinColumn,
   ManyToOne,
   OneToMany,
-  PrimaryColumn,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
 @Entity()
 export class Course {
-  @PrimaryColumn()
+  @PrimaryGeneratedColumn('uuid')
   course_id!: string;
 
   @ManyToOne(() => Subject)
