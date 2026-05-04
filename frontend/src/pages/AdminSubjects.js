@@ -97,154 +97,156 @@ const AdminSubjects = () => {
   };
 
   return (
-    <div>
-      <h2 style={{ color: "#2c3e50", marginBottom: "20px" }}>
-        📚 QUẢN LÝ DANH MỤC MÔN HỌC
-      </h2>
-      <button
-        onClick={handleClickCreateSubject}
-        style={{
-          marginBottom: "20px",
-          padding: "10px 20px",
-          background: "#27ae60",
-          color: "white",
-          border: "none",
-          borderRadius: "4px",
-          cursor: "pointer",
-        }}
-      >
-        + Thêm môn học mới
-      </button>
-
-      {showForm && (
-        <form
-          onSubmit={repair ? handleSubmitUpdate : handleSubmit}
+    <>
+      <div>
+        <h2 style={{ color: "#2c3e50", marginBottom: "20px" }}>
+          📚 QUẢN LÝ DANH MỤC MÔN HỌC
+        </h2>
+        <button
+          onClick={handleClickCreateSubject}
           style={{
-            marginBottom: "30px",
-            border: "1px solid #ccc",
-            padding: "20px",
-            backgroundColor: "#f9f9f9",
+            marginBottom: "20px",
+            padding: "10px 20px",
+            background: "#27ae60",
+            color: "white",
+            border: "none",
+            borderRadius: "4px",
+            cursor: "pointer",
           }}
         >
-          <h3>{repair ? "Cập nhật môn học" : "Tạo môn học mới"}</h3>
+          + Thêm môn học mới
+        </button>
 
-          <div style={{ marginBottom: "15px" }}>
-            <label>Mã Môn Học: </label>
-            <input
-              type="text"
-              name="subject_id"
-              placeholder="Nhập mã môn (VD: INT1306)"
-              value={formData.subject_id}
-              onChange={handleInputChange}
-              required
-              disabled={repair}
-              style={{ width: "100%", padding: "8px" }}
-            />
-          </div>
-
-          <div style={{ marginBottom: "15px" }}>
-            <label>Tên Môn Học: </label>
-            <input
-              type="text"
-              name="name"
-              placeholder="Nhập tên môn học"
-              value={formData.name}
-              onChange={handleInputChange}
-              required
-              style={{ width: "100%", padding: "8px" }}
-            />
-          </div>
-
-          <div style={{ marginBottom: "15px" }}>
-            <label>Số Tín Chỉ: </label>
-            <input
-              type="number"
-              name="credits"
-              placeholder="Nhập số tín chỉ"
-              value={formData.credits}
-              onChange={handleInputChange}
-              required
-              min="1"
-              max="10"
-              style={{ width: "100%", padding: "8px" }}
-            />
-          </div>
-
-          <button
-            type="submit"
+        {showForm && (
+          <form
+            onSubmit={repair ? handleSubmitUpdate : handleSubmit}
             style={{
-              padding: "10px 20px",
-              background: repair ? "#3498db" : "#27ae60",
-              color: "white",
-              border: "none",
-              cursor: "pointer",
-              borderRadius: "4px",
+              marginBottom: "30px",
+              border: "1px solid #ccc",
+              padding: "20px",
+              backgroundColor: "#f9f9f9",
             }}
           >
-            {repair ? "Cập nhật Môn Học" : "Tạo Môn Học"}
-          </button>
-        </form>
-      )}
+            <h3>{repair ? "Cập nhật môn học" : "Tạo môn học mới"}</h3>
 
-      <table
-        style={{
-          width: "100%",
-          background: "white",
-          borderCollapse: "collapse",
-          boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
-        }}
-      >
-        <thead style={{ background: "#8e44ad", color: "white" }}>
-          <tr>
-            <th style={{ padding: "12px" }}>Mã môn</th>
-            <th>Tên môn học</th>
-            <th>Số tín chỉ</th>
-            <th>Thao tác</th>
-          </tr>
-        </thead>
-        <tbody>
-          {subjects.map((subject) => (
-            <tr
-              key={subject.subject_id}
-              style={{ borderBottom: "1px solid #eee", textAlign: "center" }}
+            <div style={{ marginBottom: "15px" }}>
+              <label>Mã Môn Học: </label>
+              <input
+                type="text"
+                name="subject_id"
+                placeholder="Nhập mã môn (VD: INT1306)"
+                value={formData.subject_id}
+                onChange={handleInputChange}
+                required
+                disabled={repair}
+                style={{ width: "100%", padding: "8px" }}
+              />
+            </div>
+
+            <div style={{ marginBottom: "15px" }}>
+              <label>Tên Môn Học: </label>
+              <input
+                type="text"
+                name="name"
+                placeholder="Nhập tên môn học"
+                value={formData.name}
+                onChange={handleInputChange}
+                required
+                style={{ width: "100%", padding: "8px" }}
+              />
+            </div>
+
+            <div style={{ marginBottom: "15px" }}>
+              <label>Số Tín Chỉ: </label>
+              <input
+                type="number"
+                name="credits"
+                placeholder="Nhập số tín chỉ"
+                value={formData.credits}
+                onChange={handleInputChange}
+                required
+                min="1"
+                max="10"
+                style={{ width: "100%", padding: "8px" }}
+              />
+            </div>
+
+            <button
+              type="submit"
+              style={{
+                padding: "10px 20px",
+                background: repair ? "#3498db" : "#27ae60",
+                color: "white",
+                border: "none",
+                cursor: "pointer",
+                borderRadius: "4px",
+              }}
             >
-              <td style={{ padding: "12px" }}>{subject.subject_id}</td>
-              <td>{subject.name}</td>
-              <td>{subject.credits}</td>
-              <td>
-                <button
-                  onClick={() => handleOpenFormUpdateSubject(subject)}
-                  style={{
-                    marginRight: "5px",
-                    padding: "5px 10px",
-                    background: "#3498db",
-                    color: "white",
-                    border: "none",
-                    cursor: "pointer",
-                    borderRadius: "3px",
-                  }}
-                >
-                  Sửa
-                </button>
-                <button
-                  onClick={() => handleDeleteSubject(subject.subject_id)}
-                  style={{
-                    padding: "5px 10px",
-                    background: "#e74c3c",
-                    color: "white",
-                    border: "none",
-                    cursor: "pointer",
-                    borderRadius: "3px",
-                  }}
-                >
-                  Xóa
-                </button>
-              </td>
+              {repair ? "Cập nhật Môn Học" : "Tạo Môn Học"}
+            </button>
+          </form>
+        )}
+
+        <table
+          style={{
+            width: "100%",
+            background: "white",
+            borderCollapse: "collapse",
+            boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
+          }}
+        >
+          <thead style={{ background: "#8e44ad", color: "white" }}>
+            <tr>
+              <th style={{ padding: "12px" }}>Mã môn</th>
+              <th>Tên môn học</th>
+              <th>Số tín chỉ</th>
+              <th>Thao tác</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody>
+            {subjects.map((subject) => (
+              <tr
+                key={subject.subject_id}
+                style={{ borderBottom: "1px solid #eee", textAlign: "center" }}
+              >
+                <td style={{ padding: "12px" }}>{subject.subject_id}</td>
+                <td>{subject.name}</td>
+                <td>{subject.credits}</td>
+                <td>
+                  <button
+                    onClick={() => handleOpenFormUpdateSubject(subject)}
+                    style={{
+                      marginRight: "5px",
+                      padding: "5px 10px",
+                      background: "#3498db",
+                      color: "white",
+                      border: "none",
+                      cursor: "pointer",
+                      borderRadius: "3px",
+                    }}
+                  >
+                    Sửa
+                  </button>
+                  <button
+                    onClick={() => handleDeleteSubject(subject.subject_id)}
+                    style={{
+                      padding: "5px 10px",
+                      background: "#e74c3c",
+                      color: "white",
+                      border: "none",
+                      cursor: "pointer",
+                      borderRadius: "3px",
+                    }}
+                  >
+                    Xóa
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
   );
 };
 export default AdminSubjects;

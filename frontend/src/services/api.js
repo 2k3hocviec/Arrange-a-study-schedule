@@ -92,21 +92,64 @@ export const subjectsAPI = {
 
 export const roomsAPI = {
   getAll: () => api.get("/classrooms"),
-  create: ({ subject_id, name, credits }) => {
+  create: ({ classroom_id, capacity, type, description, status }) => {
     return api.post("classrooms", {
-      subject_id,
-      name,
-      credits,
+      classroom_id,
+      capacity,
+      type,
+      description,
+      status,
     });
   },
-  delete: (id) => {
-    return api.delete(`/classrooms/${id}`);
+  delete: (classroom_id) => {
+    return api.delete(`/classrooms/${classroom_id}`);
   },
-  update: (id, { subject_code, subject_name, credits }) => {
-    return api.patch(`/classrooms/${id}`, {
-      subject_code,
-      subject_name,
-      credits,
+  update: (classroom_id, { capacity, type, description, status }) => {
+    return api.patch(`/classrooms/${classroom_id}`, {
+      capacity,
+      type,
+      description,
+      status,
+    });
+  },
+};
+
+export const coursesAPI = {
+  getAll: () => api.get("/courses"),
+  create: ({ subject_id, teacher_id }) => {
+    return api.post("/courses", {
+      subject_id,
+      teacher_id,
+    });
+  },
+  delete: (course_id) => {
+    return api.delete(`/courses/${course_id}`);
+  },
+  update: (course_id, { subject_id, teacher_id }) => {
+    return api.patch(`/courses/${course_id}`, { subject_id, teacher_id });
+  },
+};
+
+export const schedulesAPI = {
+  getAll: () => api.get("/schedules"),
+  create: ({ classroom_id, capacity, type, description, status }) => {
+    return api.post("classrooms", {
+      classroom_id,
+      capacity,
+      type,
+      description,
+      status,
+    });
+  },
+  delete: (classroom_id) => {
+    return api.delete(`/classrooms/${classroom_id}`);
+  },
+  update: (classroom_id, { capacity, type, description, status }) => {
+    return api.patch(`/classrooms/${classroom_id}`, {
+      capacity,
+      type,
+      description,
+      status,
     });
   },
 };
