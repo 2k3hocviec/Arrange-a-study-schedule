@@ -28,7 +28,7 @@ import { AuthModule } from './auth/auth.module';
       port: 3306,
       username: 'root',
       password: '',
-      database: 'banhang',
+      database: 'school',
       entities: [
         User,
         Student,
@@ -40,6 +40,7 @@ import { AuthModule } from './auth/auth.module';
         Schedule,
       ],
       synchronize: true,
+      charset: 'utf8mb4',
       logging: ['error'],
       // logging: true,
     }),

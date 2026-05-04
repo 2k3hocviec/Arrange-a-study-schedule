@@ -43,7 +43,6 @@ export class StudentsService {
 
     const newStudent = this.studentRepository.create(createStudentDto);
 
-    console.log('Creating student:', newStudent);
     return await this.studentRepository.save(newStudent);
   }
 

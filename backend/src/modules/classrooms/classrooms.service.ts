@@ -21,16 +21,12 @@ export class ClassroomsService {
       classroom_id: createClassroomDto.classroom_id,
     });
 
-    console.log(classroom);
-
     if (classroom) {
       throw new BadRequestException('Classroom already exists');
     }
 
     const newClassroom =
       await this.classroomsRepository.save(createClassroomDto);
-    console.log('New Classroom:', newClassroom);
-    console.log('Capacity:', newClassroom.capacity);
     return newClassroom;
   }
 

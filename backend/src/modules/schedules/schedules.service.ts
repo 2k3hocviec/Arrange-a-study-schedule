@@ -26,7 +26,9 @@ export class SchedulesService {
       .getOne();
   }
 
-  private async checkTeacherConflict(dto: CreateScheduleDto) {
+  private async checkTeacherConflict(
+    dto: CreateScheduleDto | UpdateScheduleDto,
+  ) {
     // 1. Tìm thông tin khóa học hiện tại để biết giáo viên là ai
     const currentCourse = await this.courseService.findOneByCourseID(
       dto.course_id,
@@ -119,8 +121,42 @@ export class SchedulesService {
     return this.scheduleRepository.findBy({ schedule_id: id });
   }
 
-  update(id: string, updateScheduleDto: UpdateScheduleDto) {
-    return `This action updates a #${id} schedule`;
+  async update(id: string, updateScheduleDto: UpdateScheduleDto) {
+    const classroom = await this.classroomService.findOne(
+      updateScheduleDto.room_id,
+    );
+
+    if (!classroom) {
+      throw new BadRequestException(`Classroom not exist`);
+    }
+
+    const course = await this.courseService.findOne(
+      updateScheduleDto.course_id,
+    );
+
+    if (!course) {
+      throw new BadRequestException(`Course not exist`);
+    }
+
+    // Kiểm tra classroom không trùng lịch
+    const classroomConflict =
+      await this.checkClassroomConflict(updateScheduleDto);
+
+    if (classroomConflict) {
+      throw new BadRequestException(
+        `Classroom ${updateScheduleDto.room_id} already has schedule at this time`,
+      );
+    }
+
+    // Kiểm tra teacher hôm đó có lịch học không
+    const teacherConflict = await this.checkTeacherConflict(updateScheduleDto);
+    if (teacherConflict) {
+      throw new BadRequestException(
+        `Teacher already has schedule on ${updateScheduleDto.dayOfWeek} at this time`,
+      );
+    }
+
+    return await this.scheduleRepository.update(id, updateScheduleDto);
   }
 
   remove(id: string) {
