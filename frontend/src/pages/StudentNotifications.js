@@ -1,18 +1,25 @@
-import React from 'react';
+import React from "react";
+import { notifications } from "./studentData";
 
-const StudentNotifications = () => {
-    return (
-        <div>
-            <h2 style={{ color: '#2c3e50', marginBottom: '20px' }}>THÔNG BÁO</h2>
-            <div style={{ background: '#fff9c4', padding: '15px', marginBottom: '15px', borderLeft: '5px solid #f1c40f', borderRadius: '4px' }}>
-                <strong style={{ display: 'block', marginBottom: '5px' }}>⚠️ Thông báo nghỉ học</strong>
-                Môn Lập trình mạng ngày 15/04 nghỉ học do Giảng viên bận họp. Lịch học bù sẽ được thông báo sau.
-            </div>
-            <div style={{ background: '#e1f5fe', padding: '15px', borderLeft: '5px solid #3498db', borderRadius: '4px' }}>
-                <strong style={{ display: 'block', marginBottom: '5px' }}>📅 Lịch đăng ký học kỳ mới</strong>
-                Cổng đăng ký môn học cho học kỳ 2 sẽ chính thức mở từ ngày 20/04. Sinh viên lưu ý kiểm tra số dư học phí.
-            </div>
+const StudentNotifications = ({ registeredIds = [] }) => {
+  const relevantNotifications = notifications.filter(
+    (item) => item.type === "system" || registeredIds.includes(item.courseId),
+  );
+
+  return (
+    <div>
+      <h2 style={{ color: "#2c3e50", marginBottom: "8px" }}>SV_BM 4 - THÔNG BÁO</h2>
+      <p style={{ color: "#7f8c8d", marginBottom: "20px" }}>Sinh viên chỉ nhận thông báo toàn trường hoặc liên quan đến môn đã đăng ký.</p>
+
+      {relevantNotifications.map((item) => (
+        <div key={item.id} style={{ background: item.type === "system" ? "#fff9c4" : "#e1f5fe", padding: "18px", marginBottom: "15px", borderLeft: `5px solid ${item.type === "system" ? "#f1c40f" : "#3498db"}`, borderRadius: "8px", boxShadow: "0 2px 7px rgba(0,0,0,0.06)" }}>
+          <strong style={{ display: "block", marginBottom: "8px", color: "#2c3e50" }}>THÔNG BÁO: {item.title}</strong>
+          <div style={{ marginBottom: "8px", color: "#34495e" }}>MÔ TẢ: {item.description}</div>
+          <div style={{ color: "#7f8c8d", fontSize: "14px" }}>THỜI GIAN: {item.time}</div>
         </div>
-    );
+      ))}
+    </div>
+  );
 };
+
 export default StudentNotifications;
