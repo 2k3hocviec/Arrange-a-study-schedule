@@ -7,6 +7,8 @@ import {
   Param,
   Delete,
   UseGuards,
+  Request,
+  ForbiddenException,
 } from '@nestjs/common';
 import { StudentsService } from './students.service';
 import { CreateStudentDto } from './dto/create-student.dto';
@@ -30,10 +32,28 @@ export class StudentsController {
     return this.studentsService.findAll();
   }
 
+  @Get('me')
+  @Roles('student')
+  getMyInfo(@Request() req) {
+    return this.studentsService.findByUserId(req.user.sub);
+  }
+
   @Roles('admin')
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.studentsService.findOneByStudentID(id);
+  }
+
+  @Roles('admin')
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() updateStudentDto: UpdateStudentDto) {
+    return this.studentsService.update(id, updateStudentDto);
+  }
+
+  @Roles('admin')
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.studentsService.remove(id);
   }
 
   // @Get(':id/schedules')
@@ -46,16 +66,5 @@ export class StudentsController {
   @Get(':id/courses')
   getCourse(@Param('id') id: string) {
     //return this.studentsService.getStudentCourse(id);
-  }
-
-  @Roles('admin')
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateStudentDto: UpdateStudentDto) {
-    return this.studentsService.update(+id, updateStudentDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.studentsService.remove(+id);
   }
 }

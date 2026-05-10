@@ -46,20 +46,48 @@ export class StudentsService {
     return await this.studentRepository.save(newStudent);
   }
 
-  findAll() {
-    return `This action returns all students`;
+  async findAll() {
+    return await this.studentRepository.find();
   }
 
   findOneByStudentID(student_id: string) {
     return this.studentRepository.findOneBy({ student_id });
   }
 
-  update(id: number, updateStudentDto: UpdateStudentDto) {
-    return `This action updates a #${id} student`;
+  async update(id: string, updateStudentDto: UpdateStudentDto) {
+    const user = await this.userService.findOne(updateStudentDto.user_id);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (user.role !== 'student') {
+      throw new BadRequestException('This Objects does not student');
+    }
+
+    const student = await this.studentRepository.findOneBy({ student_id: id });
+
+    if (!student) {
+      throw new NotFoundException('Student not found');
+    }
+    return this.studentRepository.update({ student_id: id }, updateStudentDto);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} student`;
+  async remove(student_id: string) {
+    const student = await this.studentRepository.findOneBy({
+      student_id: student_id,
+    });
+    if (!student) {
+      throw new NotFoundException('Student not found');
+    }
+    return this.studentRepository.delete({ student_id });
+  }
+
+  async findByUserId(user_id: number) {
+    const student = await this.studentRepository.findOneBy({ user_id });
+    if (!student) {
+      throw new NotFoundException('Student not found for this user');
+    }
+    return student;
   }
 
   // async getStudentSchedule(studentId: number) {

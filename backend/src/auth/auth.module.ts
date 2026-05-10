@@ -10,7 +10,7 @@ import { JwtStrategy } from './jwt.strategy';
     forwardRef(() => UsersModule),
     JwtModule.register({
       secret: '123',
-      signOptions: { expiresIn: '1m' },
+      signOptions: { expiresIn: '1h' },
     }),
   ],
   controllers: [AuthController],
