@@ -156,4 +156,25 @@ export const schedulesAPI = {
   },
 };
 
+export const studentsAPI = {
+  getAll: () => api.get("/students"),
+  create: ({ user_id, student_id, name }) => {
+    api.post("/students", {
+      student_id,
+      name,
+      user_id,
+    });
+  },
+  delete: (student_id) => {
+    api.delete(`/students/${student_id}`);
+  },
+  update: (student_id, { user_id, name }) => {
+    api.patch(`/students/${student_id}`, { user_id, name });
+  },
+
+  getByUserId: (user_id) => api.get(`/students/by-user/${user_id}`),
+
+  getMe: () => api.get("/students/me"),
+};
+
 export default api;

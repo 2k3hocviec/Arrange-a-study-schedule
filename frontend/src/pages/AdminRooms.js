@@ -19,6 +19,7 @@ const AdminRooms = () => {
     try {
       const response = await roomsAPI.getAll();
       setRooms(response.data);
+      console.log(response.data);
     } catch (e) {
       toast.error("Không thể tải dữ liệu phòng học");
     }

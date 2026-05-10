@@ -276,7 +276,7 @@ const AdminSchedule = () => {
                   {s.schedule_id}
                 </td>
                 <td>{s.course_id}</td>
-                <td>{s.room_id}</td>
+                <td>{s.classroom_id}</td>
                 <td>{s.dayOfWeek}</td>
                 <td>{s.start_slot}</td>
                 <td>{s.end_slot}</td>

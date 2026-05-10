@@ -4,6 +4,7 @@ import AdminSchedule from "./AdminSchedule";
 import AdminRooms from "./AdminRooms";
 import AdminTeachers from "./AdminTeachers";
 import AdminSubjectsAndCourses from "./AdminSubjectsAndCourses";
+import AdminStudents from "./AdminStudent";
 
 const AdminDashboard = () => {
   const navItemStyle = {
@@ -96,6 +97,11 @@ const AdminDashboard = () => {
                 👥 Quản lý giảng viên
               </Link>
             </li>
+            <li style={navItemStyle}>
+              <Link to="/admin/students" style={linkStyle}>
+                👥 Quản lý sinh viên
+              </Link>
+            </li>
           </ul>
         </nav>
         <button
@@ -122,6 +128,7 @@ const AdminDashboard = () => {
           <Route path="schedule" element={<AdminSchedule />} />
           <Route path="rooms" element={<AdminRooms />} />
           <Route path="teachers" element={<AdminTeachers />} />
+          <Route path="students" element={<AdminStudents />} />
         </Routes>
       </div>
     </div>
