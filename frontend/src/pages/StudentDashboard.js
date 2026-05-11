@@ -272,6 +272,7 @@ const StudentDashboard = () => {
               <StudentRegister
                 registeredIds={registeredIds}
                 setRegisteredIds={setRegisteredIds}
+                studentInfo={studentInfo}
               />
             }
           />

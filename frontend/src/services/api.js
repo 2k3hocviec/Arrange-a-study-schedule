@@ -126,6 +126,8 @@ export const coursesAPI = {
   update: (course_id, { subject_id, teacher_id }) => {
     return api.patch(`/courses/${course_id}`, { subject_id, teacher_id });
   },
+
+  getInfoCourse: () => api.get("/courses/student"),
 };
 
 export const schedulesAPI = {
@@ -175,6 +177,16 @@ export const studentsAPI = {
   getByUserId: (user_id) => api.get(`/students/by-user/${user_id}`),
 
   getMe: () => api.get("/students/me"),
+};
+
+export const enrollmentsAPI = {
+  create: ({ student_id, course_id }) => {
+    return api.post("/enrollments", { student_id, course_id });
+  },
+  getByStudentId: (student_id) => api.get(`/enrollments/student/${student_id}`),
+  delete: ({ student_id, course_id }) => {
+    return api.delete(`/enrollments/del`, { data: { student_id, course_id } });
+  },
 };
 
 export default api;
