@@ -1,30 +1,28 @@
 import React, { useEffect, useState } from "react";
-import { teachersAPI } from "../services/api";
+import { studentsAPI } from "../services/api";
 import toast from "react-hot-toast";
 
-const AdminTeachers = () => {
-  const [teachers, setTeachers] = useState([]);
+const AdminStudents = () => {
+  const [students, setStudents] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
     user_id: 0,
-    teacher_id: "",
+    student_id: "",
     name: "",
-    degree: "",
-    expertise: "",
   });
   const [repair, setRepair] = useState(false);
 
-  const fetchTeachers = async () => {
+  const fetchStudents = async () => {
     try {
-      const response = await teachersAPI.getAll();
-      setTeachers(response.data);
+      const response = await studentsAPI.getAll();
+      setStudents(response.data);
     } catch (e) {
       toast.error("Don't load sucess data");
     }
   };
 
   useEffect(() => {
-    fetchTeachers();
+    fetchStudents();
   }, []);
 
   const handleInputChange = (e) => {
@@ -42,75 +40,59 @@ const AdminTeachers = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (
-      !formData.teacher_id ||
-      formData.user_id === 0 ||
-      !formData.name ||
-      !formData.degree ||
-      !formData.expertise
-    ) {
+    if (!formData.student_id || formData.user_id === 0 || !formData.name) {
       toast.error("Vui lòng điền đầy đủ thông tin.");
       return;
     }
     try {
-      await teachersAPI.create(formData);
+      await studentsAPI.create(formData);
+      await fetchStudents();
       setFormData({
         teacher_id: "",
         user_id: 0,
         name: "",
-        degree: "",
-        expertise: "",
       });
       setShowForm(false);
-      await fetchTeachers();
-      toast.success("Tạo giáo viên thành công!");
+      toast.success("Tạo sinh viên thành công!");
     } catch (err) {
-      toast.error("Tạo giáo viên thất bại!");
+      toast.error("Tạo sinh viên thất bại!");
     }
   };
 
   const handleSubmitUpdate = async (e) => {
     e.preventDefault();
-    if (
-      !formData.teacher_id ||
-      formData.user_id === 0 ||
-      !formData.name ||
-      !formData.degree ||
-      !formData.expertise
-    ) {
+    if (!formData.student_id || formData.user_id === 0 || !formData.name) {
       toast.error("Vui lòng điền đầy đủ thông tin.");
       return;
     }
 
     try {
-      await teachersAPI.update(formData.teacher_id, formData);
+      await studentsAPI.update(formData.student_id, formData);
+      await fetchStudents();
       setFormData({
-        teacher_id: "",
+        student_id: "",
         user_id: 0,
         name: "",
-        degree: "",
-        expertise: "",
       });
       setShowForm(false);
       setRepair(false);
-      await fetchTeachers();
-      toast.success("Cập nhật giáo viên thành công!");
+      toast.success("Cập nhật sinh viên thành công!");
     } catch (err) {
-      toast.error("Cập nhật giáo viên thất bại!");
+      toast.error("Cập nhật sinh viên thất bại!");
     }
   };
 
-  const handleOpenFormUpdateTeacher = async (teacher) => {
-    setFormData(teacher);
+  const handleOpenFormUpdateTeacher = async (student) => {
+    setFormData(student);
     setRepair(true);
     setShowForm(true);
   };
 
-  const handleDeleteTeacher = async (id) => {
+  const handleDeleteStudent = async (id) => {
     try {
-      await teachersAPI.delete(id);
+      await studentsAPI.delete(id);
       toast.success("Xóa thành công!");
-      await fetchTeachers();
+      await fetchStudents();
       // window.location.reload();
     } catch (error) {
       console.error(error);
@@ -121,7 +103,7 @@ const AdminTeachers = () => {
   return (
     <div>
       <h2 style={{ color: "#2c3e50", marginBottom: "20px" }}>
-        👥 QUẢN LÝ GIẢNG VIÊN
+        👥 QUẢN LÝ SINH VIÊN
       </h2>
 
       <button
@@ -135,7 +117,7 @@ const AdminTeachers = () => {
         }}
         onClick={handleClickCreateTeacher}
       >
-        + Thêm giảng viên mới
+        + Thêm sinh viên mới
       </button>
 
       {showForm && (
@@ -147,15 +129,15 @@ const AdminTeachers = () => {
             padding: "20px",
           }}
         >
-          <h3>{repair ? "Cập nhật thông tin giáo viên" : "Tạo giáo viên"} </h3>
+          <h3>{repair ? "Cập nhật thông tin sinh viên" : "Tạo sinh viên"} </h3>
 
           <div style={{ marginBottom: "10px", marginRight: "20px" }}>
-            <label>Mã Giáo Viên: </label>
+            <label>Mã Sinh Viên: </label>
             <input
               type="text"
-              name="teacher_id"
-              placeholder="Nhập mã giáo viên"
-              value={formData.teacher_id}
+              name="student_id"
+              placeholder="Nhập mã sinh viên"
+              value={formData.student_id}
               onChange={handleInputChange}
               required
               disabled={repair}
@@ -181,34 +163,8 @@ const AdminTeachers = () => {
             <input
               type="text"
               name="name"
-              placeholder="Nhập họ tên giáo viên"
+              placeholder="Nhập họ tên sinh viên"
               value={formData.name}
-              onChange={handleInputChange}
-              required
-              style={{ width: "100%", padding: "8px" }}
-            />
-          </div>
-
-          <div style={{ marginBottom: "10px", marginRight: "20px" }}>
-            <label>Học vị: </label>
-            <input
-              type="text"
-              name="degree"
-              placeholder="Ví dụ: Thạc sĩ, Tiến sĩ"
-              value={formData.degree}
-              onChange={handleInputChange}
-              required
-              style={{ width: "100%", padding: "8px" }}
-            />
-          </div>
-
-          <div style={{ marginBottom: "10px", marginRight: "20px" }}>
-            <label>Chuyên môn: </label>
-            <input
-              type="text"
-              name="expertise"
-              placeholder="Ví dụ: Toán học, Tiếng Anh"
-              value={formData.expertise}
               onChange={handleInputChange}
               required
               style={{ width: "100%", padding: "8px" }}
@@ -219,7 +175,7 @@ const AdminTeachers = () => {
             type="submit"
             style={{ padding: "10px 20px", cursor: "pointer" }}
           >
-            {repair ? "Cập nhật Giảng Viên" : "Tạo Giảng viên"}
+            {repair ? "Cập nhật sinh viên" : "Tạo sinh viên"}
           </button>
         </form>
       )}
@@ -234,23 +190,19 @@ const AdminTeachers = () => {
       >
         <thead style={{ background: "#34495e", color: "white" }}>
           <tr>
-            <th style={{ padding: "12px" }}>Mã GV</th>
+            <th style={{ padding: "12px" }}>Mã Sinh viên</th>
             <th>Họ tên</th>
-            <th>Học vị</th>
-            <th>Chuyên môn</th>
-            <th>Thao tác</th>
+            <th>Chức năng</th>
           </tr>
         </thead>
         <tbody>
-          {teachers.map((t) => (
+          {students.map((t) => (
             <tr
-              key={t.teacher_id}
+              key={t.student_id}
               style={{ borderBottom: "1px solid #eee", textAlign: "center" }}
             >
-              <td style={{ padding: "12px" }}>{t.teacher_id}</td>
+              <td style={{ padding: "12px" }}>{t.student_id}</td>
               <td style={{ fontWeight: "bold" }}>{t.name}</td>
-              <td>{t.degree}</td>
-              <td>{t.expertise}</td>
               <td>
                 <button
                   style={{ cursor: "pointer", marginRight: "5px" }}
@@ -260,7 +212,7 @@ const AdminTeachers = () => {
                 </button>
                 <button
                   style={{ color: "red", cursor: "pointer" }}
-                  onClick={() => handleDeleteTeacher(t.teacher_id)}
+                  onClick={() => handleDeleteStudent(t.student_id)}
                 >
                   Xóa
                 </button>
@@ -273,4 +225,4 @@ const AdminTeachers = () => {
   );
 };
 
-export default AdminTeachers;
+export default AdminStudents;

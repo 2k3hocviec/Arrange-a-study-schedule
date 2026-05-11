@@ -126,14 +126,16 @@ export const coursesAPI = {
   update: (course_id, { subject_id, teacher_id }) => {
     return api.patch(`/courses/${course_id}`, { subject_id, teacher_id });
   },
+
+  getInfoCourse: () => api.get("/courses/student"),
 };
 
 export const schedulesAPI = {
   getAll: () => api.get("/schedules"),
-  create: ({ course_id, room_id, dayOfWeek, start_slot, end_slot }) => {
+  create: ({ course_id, classroom_id, dayOfWeek, start_slot, end_slot }) => {
     return api.post("/schedules", {
       course_id,
-      room_id,
+      classroom_id,
       dayOfWeek,
       start_slot,
       end_slot,
@@ -144,15 +146,46 @@ export const schedulesAPI = {
   },
   update: (
     schedule_id,
-    { course_id, room_id, dayOfWeek, start_slot, end_slot },
+    { course_id, classroom_id, dayOfWeek, start_slot, end_slot },
   ) => {
     return api.patch(`/schedules/${schedule_id}`, {
       course_id,
-      room_id,
+      classroom_id,
       dayOfWeek,
       start_slot,
       end_slot,
     });
+  },
+};
+
+export const studentsAPI = {
+  getAll: () => api.get("/students"),
+  create: ({ user_id, student_id, name }) => {
+    api.post("/students", {
+      student_id,
+      name,
+      user_id,
+    });
+  },
+  delete: (student_id) => {
+    api.delete(`/students/${student_id}`);
+  },
+  update: (student_id, { user_id, name }) => {
+    api.patch(`/students/${student_id}`, { user_id, name });
+  },
+
+  getByUserId: (user_id) => api.get(`/students/by-user/${user_id}`),
+
+  getMe: () => api.get("/students/me"),
+};
+
+export const enrollmentsAPI = {
+  create: ({ student_id, course_id }) => {
+    return api.post("/enrollments", { student_id, course_id });
+  },
+  getByStudentId: (student_id) => api.get(`/enrollments/student/${student_id}`),
+  delete: ({ student_id, course_id }) => {
+    return api.delete(`/enrollments/del`, { data: { student_id, course_id } });
   },
 };
 
