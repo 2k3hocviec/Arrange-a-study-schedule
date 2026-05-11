@@ -97,7 +97,14 @@ export class EnrollmentsService {
     return `This action updates a #${id} enrollment`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} enrollment`;
+  async remove({ student_id, course_id }) {
+    return await this.enrollmentRepository.delete({
+      student_id,
+      course_id,
+    });
+  }
+
+  async findEnrollOfStudentId(student_id: string) {
+    return await this.enrollmentRepository.findBy({ student_id: student_id });
   }
 }

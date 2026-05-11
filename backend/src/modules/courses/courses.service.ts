@@ -61,4 +61,24 @@ export class CoursesService {
       where: { course_id: course_id },
     });
   }
+
+  async findInfoCourse() {
+    return this.courseRepository.find({
+      relations: ['subject', 'teacher', 'schedule'],
+      select: {
+        course_id: true,
+        subject: {
+          subject_id: true,
+          name: true,
+          credits: true,
+        },
+        schedule: {
+          schedule_id: true,
+          dayOfWeek: true,
+          start_slot: true,
+          end_slot: true,
+        },
+      },
+    });
+  }
 }

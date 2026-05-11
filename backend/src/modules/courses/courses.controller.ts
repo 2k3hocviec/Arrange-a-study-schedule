@@ -16,13 +16,19 @@ import { Roles } from 'src/role/roles.decorator';
 export class CoursesController {
   constructor(private readonly coursesService: CoursesService) {}
 
+  @Roles('student')
+  @Get('student')
+  findInfoCourseForStudent() {
+    return this.coursesService.findInfoCourse();
+  }
+
   @Roles('admin')
   @Post()
   create(@Body() createCourseDto: CreateCourseDto) {
     return this.coursesService.create(createCourseDto);
   }
 
-  @Roles('admin')
+  @Roles('admin', 'student')
   @Get()
   findAll() {
     return this.coursesService.findAll();
