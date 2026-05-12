@@ -22,6 +22,7 @@ import { AuthModule } from './auth/auth.module';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './guard/jwt.guard';
 import { RoleGuard } from './guard/role.guard';
+import { ChatbotModule } from './chatbot/chatbot.module';
 
 @Module({
   imports: [
@@ -66,6 +67,7 @@ import { RoleGuard } from './guard/role.guard';
     SchedulesModule,
     EnrollmentsModule,
     AuthModule,
+    ChatbotModule,
   ],
   controllers: [AppController],
   providers: [
