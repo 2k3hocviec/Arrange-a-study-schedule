@@ -122,7 +122,6 @@ export class EnrollmentHelperService {
       studentId,
       courseId,
     );
-
     if (conflict) {
       return {
         canEnroll: false,
@@ -142,7 +141,6 @@ export class EnrollmentHelperService {
         reason: 'Môn học không tồn tại',
       };
     }
-
     const courseCredits = course.subject?.credits || 0;
 
     // Nếu hết tất cả kiểm tra

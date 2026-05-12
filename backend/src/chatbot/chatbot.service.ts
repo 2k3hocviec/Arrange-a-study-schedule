@@ -119,7 +119,6 @@ export class ChatbotService {
     switch (name) {
       case 'getAvailableCourses':
         // Gợi ý các môn học phù hợp với ngày rảnh
-        console.log('Vào được gợi ý ngày rảnh');
         if (args.freeDays) {
           return await this.enrollmentHelper.suggestCoursesForFreeDays(
             sid,
@@ -151,8 +150,6 @@ export class ChatbotService {
         };
 
       case 'suggestCoursesForFreeDay':
-        console.log('Gọi fuction kiểm tra ngày rảnh');
-
         return await this.enrollmentHelper.suggestCoursesForFreeDays(
           sid,
           args.freeDays,
@@ -182,10 +179,9 @@ export class ChatbotService {
 THÔNG TIN SINH VIÊN:
 - ID: ${studentId || 'chưa xác định'}
 
-QUYUY TRÌNH:
+QUY TRÌNH:
 1. Hỏi sinh viên thông tin gì họ cần:
    - Muốn xem các môn có thể đăng ký?
-   - Có ngày rảnh? Hôm nào?
    - Muốn kiểm tra xung đột lịch?
    
 2. SỬ DỤNG TOOLS:
@@ -212,8 +208,6 @@ LƯU Ý QUAN TRỌNG:
     });
 
     const chat = model.startChat({ history });
-    // console.log(chat);
-
     // Agentic loop: Gemini có thể gọi tool nhiều vòng
     let result = await chat.sendMessage(message);
 
@@ -235,7 +229,6 @@ LƯU Ý QUAN TRỌNG:
       const functionResponses = await Promise.all(
         functionCalls.map(async (part) => {
           const { name, args } = part.functionCall!;
-          console.log({ name, args, studentId });
           const output = await this.executeFunctionCall(name, args, studentId);
           return {
             functionResponse: {
