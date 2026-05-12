@@ -49,6 +49,7 @@ export class EnrollmentHelperService {
   /**
    * Kiểm tra sinh viên đã đăng ký môn này chưa
    */
+
   async isAlreadyEnrolled(
     studentId: string,
     courseId: string,
@@ -57,21 +58,6 @@ export class EnrollmentHelperService {
       where: { student_id: studentId, course_id: courseId },
     });
     return !!enrollment;
-  }
-
-  /**
-   * Tính tổng tín chỉ sinh viên đã đăng ký
-   */
-  async getStudentTotalCredits(studentId: string): Promise<number> {
-    const enrollments = await this.enrollmentRepository.find({
-      where: { student_id: studentId },
-      relations: ['course', 'course.subject'],
-    });
-
-    return enrollments.reduce((total, enrollment) => {
-      const credits = enrollment.course?.subject?.credits || 0;
-      return total + credits;
-    }, 0);
   }
 
   /**
@@ -113,41 +99,11 @@ export class EnrollmentHelperService {
   }
 
   /**
-   * Kiểm tra số chỗ còn trống của lớp học
-   */
-  async getCourseCapacity(courseId: string) {
-    const course = await this.courseRepository.findOne({
-      where: { course_id: courseId },
-    });
-
-    if (!course) {
-      return { available: false, remaining: 0, capacity: 0, enrolled: 0 };
-    }
-
-    // Đếm số sinh viên đã đăng ký
-    const enrolled = await this.enrollmentRepository.countBy({
-      course_id: courseId,
-    });
-
-    // Lấy capacity từ course (nếu có field này)
-    const capacity = (course as any).capacity || 60; // Default 60
-    const remaining = capacity - enrolled;
-
-    return {
-      available: remaining > 0,
-      remaining: Math.max(0, remaining),
-      capacity,
-      enrolled,
-    };
-  }
-
-  /**
    * Kiểm tra có thể đăng ký được không (toàn bộ điều kiện)
    */
   async canEnroll(
     studentId: string,
     courseId: string,
-    maxCredits: number = 18,
   ): Promise<{
     canEnroll: boolean;
     reason?: string;
@@ -166,19 +122,11 @@ export class EnrollmentHelperService {
       studentId,
       courseId,
     );
+
     if (conflict) {
       return {
         canEnroll: false,
         reason: `Trùng lịch với môn ${conflictWith}`,
-      };
-    }
-
-    // 3. Check chỗ trống
-    const capacity = await this.getCourseCapacity(courseId);
-    if (!capacity.available) {
-      return {
-        canEnroll: false,
-        reason: 'Lớp học đã hết chỗ',
       };
     }
 
@@ -195,15 +143,7 @@ export class EnrollmentHelperService {
       };
     }
 
-    const currentCredits = await this.getStudentTotalCredits(studentId);
     const courseCredits = course.subject?.credits || 0;
-
-    if (currentCredits + courseCredits > maxCredits) {
-      return {
-        canEnroll: false,
-        reason: `Vượt quá tín chỉ tối đa. Hiện tại: ${currentCredits}, thêm ${courseCredits} = ${currentCredits + courseCredits} (max ${maxCredits})`,
-      };
-    }
 
     // Nếu hết tất cả kiểm tra
     return {
@@ -214,11 +154,19 @@ export class EnrollmentHelperService {
   /**
    * Gợi ý các môn phù hợp trong những ngày rảnh
    */
-  async suggestCoursesForFreeDays(
-    studentId: string,
-    freeDays: string[],
-    maxCredits: number = 18,
-  ) {
+  async suggestCoursesForFreeDays(studentId: string, freeDays: string[]) {
+    const normalizeDay = (day: string): string => {
+      if (
+        day.toLowerCase().includes('chủ') ||
+        day.toLowerCase().includes('nhật')
+      )
+        return '8';
+      const match = day.match(/\d/);
+      return match ? match[0] : day;
+    };
+
+    const normalizedFreeDays = freeDays.map(normalizeDay);
+
     // Lấy tất cả lịch công
     const allSchedules = await this.scheduleRepository
       .createQueryBuilder('schedule')
@@ -228,20 +176,15 @@ export class EnrollmentHelperService {
 
     // Filter theo ngày rảnh
     const schedulesOnFreeDays = allSchedules.filter((s) =>
-      freeDays.includes(s.dayOfWeek),
+      normalizedFreeDays.includes(s.dayOfWeek),
     );
 
     // Kiểm tra từng môn
     const suggestions = await Promise.all(
       schedulesOnFreeDays.map(async (schedule) => {
-        const canEnroll = await this.canEnroll(
-          studentId,
-          schedule.course_id,
-          maxCredits,
-        );
+        const canEnroll = await this.canEnroll(studentId, schedule.course_id);
 
         if (canEnroll.canEnroll) {
-          const capacity = await this.getCourseCapacity(schedule.course_id);
           return {
             courseId: schedule.course_id,
             courseName: schedule.course?.subject_id,
@@ -250,8 +193,6 @@ export class EnrollmentHelperService {
             startSlot: schedule.start_slot,
             endSlot: schedule.end_slot,
             classroomId: schedule.classroom_id,
-            remainingSeats: capacity.remaining,
-            score: capacity.remaining, // Ưu tiên môn có chỗ ít
           };
         }
 
@@ -260,9 +201,6 @@ export class EnrollmentHelperService {
     );
 
     // Lọc bỏ null và sort theo score
-    return suggestions
-      .filter((s) => s !== null)
-      .sort((a, b) => (a?.score || 0) - (b?.score || 0))
-      .slice(0, 5); // Giới hạn 5 gợi ý
+    return suggestions.filter((s) => s !== null).slice(0, 3); // Giới hạn 5 gợi ý
   }
 }

@@ -3,6 +3,7 @@ import { Controller, Post, Body, UseGuards, Request } from '@nestjs/common';
 import { ChatbotService } from './chatbot.service';
 import { ChatDto } from '../chatbot/dto/chatbot.dto';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { log } from 'console';
 
 @ApiTags('Chatbot')
 @Controller('chatbot')

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { GoogleGenerativeAI, SchemaType } from '@google/generative-ai';
 import { EnrollmentHelperService } from './enrollment-helper.service';
+import { log } from 'console';
 
 @Injectable()
 export class ChatbotService {
@@ -11,14 +12,8 @@ export class ChatbotService {
     private configService: ConfigService,
     private enrollmentHelper: EnrollmentHelperService,
   ) {
-    // this.genAI = new GoogleGenerativeAI(
-    //   this.configService.get<string>(
-    //     'AIzaSyAfi1PenB8scL86iOKZEdeQRYfY5CgrLVY',
-    //   )!,
-    // );
-
     this.genAI = new GoogleGenerativeAI(
-      'AIzaSyAfi1PenB8scL86iOKZEdeQRYfY5CgrLVY',
+      this.configService.get<string>('GEMINI_API_KEY')!,
     );
   }
 
@@ -124,11 +119,11 @@ export class ChatbotService {
     switch (name) {
       case 'getAvailableCourses':
         // Gợi ý các môn học phù hợp với ngày rảnh
+        console.log('Vào được gợi ý ngày rảnh');
         if (args.freeDays) {
           return await this.enrollmentHelper.suggestCoursesForFreeDays(
             sid,
             args.freeDays,
-            18,
           );
         }
         // Nếu không có ngày rảnh, trả về thông tin tổng quát
@@ -156,14 +151,15 @@ export class ChatbotService {
         };
 
       case 'suggestCoursesForFreeDay':
+        console.log('Gọi fuction kiểm tra ngày rảnh');
+
         return await this.enrollmentHelper.suggestCoursesForFreeDays(
           sid,
           args.freeDays,
-          18,
         );
 
       case 'canEnroll':
-        return await this.enrollmentHelper.canEnroll(sid, args.courseId, 18);
+        return await this.enrollmentHelper.canEnroll(sid, args.courseId);
 
       default:
         return { error: 'Function không tồn tại' };
@@ -176,14 +172,15 @@ export class ChatbotService {
     studentId: string,
     history: any[] = [],
   ): Promise<string> {
+    const modelName =
+      this.configService.get<string>('GEMINI_MODEL') || 'gemini-2.5-flash';
     const model = this.genAI.getGenerativeModel({
-      model: 'gemini-2.5-flash',
+      model: modelName,
       tools: this.getTools() as any,
       systemInstruction: `Bạn là trợ lý AI thông minh giúp sinh viên đăng ký môn học tại trường.
 
 THÔNG TIN SINH VIÊN:
 - ID: ${studentId || 'chưa xác định'}
-- Tín chỉ tối đa: 18
 
 QUYUY TRÌNH:
 1. Hỏi sinh viên thông tin gì họ cần:
@@ -197,14 +194,10 @@ QUYUY TRÌNH:
    - checkScheduleConflict: Kiểm tra xung đột lịch
 
 3. PHÂN TÍCH KỸ:
-   - Kiểm tra tín chỉ còn lại
-   - So sánh với độ khó của môn
    - Đảm bảo không trùng giờ
 
 4. GỢI Ý THÔNG MINH:
-   - Ưu tiên môn lớp vừa đầy (cơ hội cao)
    - Xen kẽ ngày để lịch không quá dày
-   - Tránh quá nhiều môn cực khó trong 1 kỳ
 
 PHONG CÁCH:
 - Tiếng Việt lịch sự, thân thiện
@@ -219,6 +212,7 @@ LƯU Ý QUAN TRỌNG:
     });
 
     const chat = model.startChat({ history });
+    // console.log(chat);
 
     // Agentic loop: Gemini có thể gọi tool nhiều vòng
     let result = await chat.sendMessage(message);
@@ -230,6 +224,8 @@ LƯU Ý QUAN TRỌNG:
       // Tìm function calls trong response
       const functionCalls = parts.filter((p) => p.functionCall);
 
+      console.log(functionCalls);
+
       if (functionCalls.length === 0) {
         // Không còn function call → trả về text cuối
         return response.text();
@@ -239,6 +235,7 @@ LƯU Ý QUAN TRỌNG:
       const functionResponses = await Promise.all(
         functionCalls.map(async (part) => {
           const { name, args } = part.functionCall!;
+          console.log({ name, args, studentId });
           const output = await this.executeFunctionCall(name, args, studentId);
           return {
             functionResponse: {
