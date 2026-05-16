@@ -75,4 +75,31 @@ export class TeachersService {
     await this.teachersRepository.delete({ teacher_id: id });
     return teacher;
   }
+
+  async findTeacherCoursesWithDetails(teacherId: string) {
+    return await this.teachersRepository.findOne({
+      where: { teacher_id: teacherId },
+      relations: ['course', 'course.schedule', 'course.subject'],
+      select: {
+        teacher_id: true,
+        course: {
+          course_id: true,
+          subject_id: true,
+          teacher_id: true,
+          subject: {
+            subject_id: true,
+            name: true,
+            credits: true,
+          },
+          schedule: {
+            schedule_id: true,
+            classroom_id: true,
+            dayOfWeek: true,
+            start_slot: true,
+            end_slot: true,
+          },
+        },
+      },
+    });
+  }
 }
