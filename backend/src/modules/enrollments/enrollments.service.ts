@@ -97,20 +97,20 @@ export class EnrollmentsService {
     return `This action updates a #${id} enrollment`;
   }
 
-  async remove({ student_id, course_id }) {
+  async remove({ studentId, courseId }) {
     return await this.enrollmentRepository.delete({
-      student_id,
-      course_id,
+      student_id: studentId,
+      course_id: courseId,
     });
   }
 
-  async findEnrollOfStudentId(student_id: string) {
-    return await this.enrollmentRepository.findBy({ student_id: student_id });
+  async findEnrollOfStudentId(studentId: string) {
+    return await this.enrollmentRepository.findBy({ student_id: studentId });
   }
 
-  async findStudentCoursesWithDetails(student_id: string) {
+  async findStudentCoursesWithDetails(studentId: string) {
     return await this.enrollmentRepository.find({
-      where: { student_id: student_id },
+      where: { student_id: studentId },
       relations: ['course', 'course.schedule', 'course.subject'],
       select: {
         student_id: true,

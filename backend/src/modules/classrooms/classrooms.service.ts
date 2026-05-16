@@ -34,8 +34,10 @@ export class ClassroomsService {
     return await this.classroomsRepository.find();
   }
 
-  async findOne(classroom_id: string) {
-    return await this.classroomsRepository.findOneBy({ classroom_id });
+  async findOne(classroomId: string) {
+    return await this.classroomsRepository.findOneBy({
+      classroom_id: classroomId,
+    });
   }
 
   async update(id: string, updateclassroomsDto: UpdateClassroomDto) {

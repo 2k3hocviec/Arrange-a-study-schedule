@@ -10,6 +10,7 @@ import {
 import { EnrollmentsService } from './enrollments.service';
 import { CreateEnrollmentDto } from './dto/create-enrollment.dto';
 import { UpdateEnrollmentDto } from './dto/update-enrollment.dto';
+import { Student } from '../students/entities/student.entity';
 
 @Controller('enrollments')
 export class EnrollmentsController {
@@ -50,6 +51,9 @@ export class EnrollmentsController {
 
   @Delete('del')
   remove(@Body() body: { student_id: string; course_id: string }) {
-    return this.enrollmentsService.remove(body);
+    return this.enrollmentsService.remove({
+      studentId: body.student_id,
+      courseId: body.course_id,
+    });
   }
 }

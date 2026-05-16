@@ -50,8 +50,8 @@ export class StudentsService {
     return await this.studentRepository.find();
   }
 
-  findOneByStudentID(student_id: string) {
-    return this.studentRepository.findOneBy({ student_id });
+  findOneByStudentID(studentId: string) {
+    return this.studentRepository.findOneBy({ student_id: studentId });
   }
 
   async update(id: string, updateStudentDto: UpdateStudentDto) {
@@ -72,74 +72,21 @@ export class StudentsService {
     return this.studentRepository.update({ student_id: id }, updateStudentDto);
   }
 
-  async remove(student_id: string) {
+  async remove(studentId: string) {
     const student = await this.studentRepository.findOneBy({
-      student_id: student_id,
+      student_id: studentId,
     });
     if (!student) {
       throw new NotFoundException('Student not found');
     }
-    return this.studentRepository.delete({ student_id });
+    return this.studentRepository.delete({ student_id: studentId });
   }
 
-  async findByUserId(user_id: number) {
-    const student = await this.studentRepository.findOneBy({ user_id });
+  async findByUserId(userId: number) {
+    const student = await this.studentRepository.findOneBy({ user_id: userId });
     if (!student) {
       throw new NotFoundException('Student not found for this user');
     }
     return student;
   }
-
-  // async getStudentSchedule(studentId: number) {
-  //   // Kiểm tra học sinh tồn tại
-  //   const student = await this.studentRepository.findOneBy({ id: studentId });
-  //   if (!student) {
-  //     throw new NotFoundException(`Student with ID ${studentId} not found`);
-  //   }
-
-  //   // Tìm tất cả enrollments của học sinh
-  //   const enrollments = await this.enrollmentRepository.find({
-  //     where: { student_id: { id: studentId } },
-  //     relations: ['course_id'],
-  //   });
-
-  //   if (enrollments.length === 0) {
-  //     return { message: 'No courses enrolled', schedules: [] };
-  //   }
-
-  //   // Lấy tất cả course IDs
-  //   const courseIds = enrollments.map((e) => e.course_id.id);
-
-  //   // Tìm schedules cho những courses này
-  //   const schedules = await this.scheduleRepository.find({
-  //     where: courseIds.map((courseId) => ({ course_id: { id: courseId } })),
-  //     relations: ['course_id', 'classroom_id'],
-  //   });
-
-  //   return {
-  //     studentId,
-  //     studentName: student.name,
-  //     enrollments: enrollments.length,
-  //     schedules,
-  //   };
-  // }
-
-  // async getStudentCourse(id: string) {
-  //   const student = await this.studentRepository.findOneBy({
-  //     student_id: id,
-  //   });
-  //   if (!student) {
-  //     throw new NotFoundException(`Student with ID ${id} not found`);
-  //   }
-
-  //   //  Tìm tất cả enrollments của học sinh
-  //   const enrollments = await this.enrollmentRepository.find({
-  //     where: { student_id: { student_id: id } },
-  //     relations: ['course_id'],
-  //   });
-
-  //   console.log(student);
-
-  //   return enrollments;
-  // }
 }

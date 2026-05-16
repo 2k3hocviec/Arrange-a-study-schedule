@@ -56,9 +56,9 @@ export class CoursesService {
     return await this.courseRepository.delete(id);
   }
 
-  async findOneByCourseID(course_id: string) {
+  async findOneByCourseID(courseId: string) {
     return await this.courseRepository.findOne({
-      where: { course_id: course_id },
+      where: { course_id: courseId },
     });
   }
 
