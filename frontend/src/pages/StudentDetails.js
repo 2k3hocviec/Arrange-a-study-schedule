@@ -1,7 +1,12 @@
 import React from "react";
 import { formatTime } from "./studentData";
+import { enrollmentsAPI } from "../services/api";
 
-const StudentDetails = ({ registeredCourses = [] }) => {
+const StudentDetails = ({ registeredCourses = [], studentInfo }) => {
+  console.log(studentInfo);
+  const data = enrollmentsAPI.getCoursesWithDetails(studentInfo.student_id);
+  console.log(data);
+
   return (
     <div>
       <h2 style={{ color: "#2c3e50", marginBottom: "8px" }}>

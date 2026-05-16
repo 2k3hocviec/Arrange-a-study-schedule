@@ -1,5 +1,6 @@
 import axios from "axios";
 
+// const API_URL = "http://192.168.1.227:8000";
 const API_URL = "http://localhost:8000";
 
 const api = axios.create({
@@ -190,6 +191,10 @@ export const enrollmentsAPI = {
   },
   getByStudentId: (student_id) => {
     return api.get(`/enrollments/student/${student_id}`);
+  },
+  getCoursesWithDetails: (student_id) => {
+    console.log(student_id);
+    return api.get(`/enrollments/student/${student_id}/courses-details`);
   },
   delete: ({ student_id, course_id }) => {
     return api.delete(`/enrollments/del`, { data: { student_id, course_id } });
