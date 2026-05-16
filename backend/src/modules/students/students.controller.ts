@@ -55,16 +55,4 @@ export class StudentsController {
   remove(@Param('id') id: string) {
     return this.studentsService.remove(id);
   }
-
-  // @Get(':id/schedules')
-  // @Roles('student', 'admin')
-  // getSchedule(@Param('id') id: string) {
-  //   return this.studentsService.getStudentSchedule(+id);
-  // }
-
-  // Lấy môn học
-  @Get(':id/courses')
-  getCourse(@Param('id') id: string) {
-    //return this.studentsService.getStudentCourse(id);
-  }
 }

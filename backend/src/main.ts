@@ -11,10 +11,12 @@ async function bootstrap() {
   app.useGlobalFilters(new AllHttpExceptionFilter());
   app.enableCors({
     origin: 'http://localhost:3000', // Cho phép frontend này
+    // origi: true // cho toàn bộ front end đăng nhập
     credentials: true, // Cho phép cookies
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   });
   await app.listen(8000);
+  // await app.listen(8000, '0.0.0.0');
 }
 bootstrap();

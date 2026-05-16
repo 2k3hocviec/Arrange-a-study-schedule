@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { GoogleGenerativeAI, SchemaType } from '@google/generative-ai';
 import { EnrollmentHelperService } from './enrollment-helper.service';
-import { log } from 'console';
 
 @Injectable()
 export class ChatbotService {

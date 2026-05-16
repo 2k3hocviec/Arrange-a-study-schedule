@@ -30,6 +30,11 @@ export class EnrollmentsController {
     return this.enrollmentsService.findEnrollOfStudentId(id);
   }
 
+  @Get('student/:id/courses-details')
+  findStudentCoursesWithDetails(@Param('id') studentId: string) {
+    return this.enrollmentsService.findStudentCoursesWithDetails(studentId);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.enrollmentsService.findOne(+id);

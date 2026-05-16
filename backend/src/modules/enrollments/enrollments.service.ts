@@ -107,4 +107,33 @@ export class EnrollmentsService {
   async findEnrollOfStudentId(student_id: string) {
     return await this.enrollmentRepository.findBy({ student_id: student_id });
   }
+
+  async findStudentCoursesWithDetails(student_id: string) {
+    return await this.enrollmentRepository.find({
+      where: { student_id: student_id },
+      relations: ['course', 'course.schedule', 'course.subject'],
+      select: {
+        student_id: true,
+        enrollment_id: true,
+        course_id: true,
+        course: {
+          course_id: true,
+          subject_id: true,
+          teacher_id: true,
+          subject: {
+            subject_id: true,
+            name: true,
+            credits: true,
+          },
+          schedule: {
+            schedule_id: true,
+            classroom_id: true,
+            dayOfWeek: true,
+            start_slot: true,
+            end_slot: true,
+          },
+        },
+      },
+    });
+  }
 }
