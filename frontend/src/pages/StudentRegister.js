@@ -1,7 +1,8 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import toast from "react-hot-toast";
-import { hasTimeConflict, MAX_CREDITS, REGISTRATION_OPEN } from "./studentData";
+import { REGISTRATION_OPEN } from "./studentData";
 import { coursesAPI, enrollmentsAPI } from "../services/api";
+import ChatBox from "../components/ChatBox";
 
 // Helper function format schedules array
 const formatSchedules = (schedules) => {
@@ -27,6 +28,26 @@ const StudentRegister = ({
   const [error, setError] = useState(null);
   const [enrollingCourseId, setEnrollingCourseId] = useState(null);
 
+  // Filter courses based on keyword
+  const filteredCourses = React.useMemo(() => {
+    if (!keyword) return courses;
+
+    const lowerKeyword = keyword.toLowerCase();
+    return courses.filter((course) => {
+      const courseId = (course.course_id || "").toLowerCase();
+      const subjectId = (course.subject?.subject_id || "").toLowerCase();
+      const subjectName = (course.subject?.name || "").toLowerCase();
+      const teacherName = (course.teacher?.name || "").toLowerCase();
+
+      return (
+        courseId.includes(lowerKeyword) ||
+        subjectId.includes(lowerKeyword) ||
+        subjectName.includes(lowerKeyword) ||
+        teacherName.includes(lowerKeyword)
+      );
+    });
+  }, [courses, keyword]);
+
   useEffect(() => {
     const fetchCourses = async () => {
       try {
@@ -45,6 +66,16 @@ const StudentRegister = ({
 
     fetchCourses();
   }, []);
+
+  // Hàm cập nhật lại danh sách courses từ API
+  const refreshCourses = async () => {
+    try {
+      const res = await coursesAPI.getInfoCourse();
+      setCourses(res.data);
+    } catch (err) {
+      console.error("Error refreshing courses:", err);
+    }
+  };
 
   // Fetch enrolled courses for current student
   useEffect(() => {
@@ -85,7 +116,10 @@ const StudentRegister = ({
       });
 
       setRegisteredIds([...registeredIds, course.course_id]);
-      toast.success(`Đã đăng ký ${course.name}`);
+      toast.success(`Đã đăng ký ${course.subject?.name || "môn học"}`);
+
+      // Cập nhật lại danh sách courses để hiển thị remaining_capacity mới
+      await refreshCourses();
     } catch (err) {
       toast.error(
         err.response?.data?.message || "Đăng ký thất bại. Vui lòng thử lại.",
@@ -96,17 +130,24 @@ const StudentRegister = ({
   };
 
   const cancelCourse = async (course) => {
-    console.log({
-      student_id: studentInfo.student_id,
-      course_id: course.course_id,
-    });
+    try {
+      await enrollmentsAPI.delete({
+        student_id: studentInfo.student_id,
+        course_id: course.course_id,
+      });
 
-    setRegisteredIds(registeredIds.filter((id) => id !== course.course_id));
-    await enrollmentsAPI.delete({
-      student_id: studentInfo.student_id,
-      course_id: course.course_id,
-    });
-    toast.success(`Đã hủy ${course.name}`);
+      setRegisteredIds(registeredIds.filter((id) => id !== course.course_id));
+      toast.success(`Đã hủy ${course.subject?.name || "môn học"}`);
+
+      // Cập nhật lại danh sách courses để hiển thị remaining_capacity mới
+      await refreshCourses();
+    } catch (err) {
+      console.error("Error canceling course:", err);
+      toast.error(
+        err.response?.data?.message ||
+          "Hủy đăng ký thất bại. Vui lòng thử lại.",
+      );
+    }
   };
 
   return (
@@ -182,6 +223,12 @@ const StudentRegister = ({
             >
               📭 Không tìm thấy môn học phù hợp
             </div>
+          ) : filteredCourses.length === 0 ? (
+            <div
+              style={{ textAlign: "center", color: "#7f8c8d", padding: "20px" }}
+            >
+              🔍 Không tìm thấy môn học phù hợp với từ khóa "{keyword}"
+            </div>
           ) : (
             <table
               style={{
@@ -198,26 +245,43 @@ const StudentRegister = ({
                   }}
                 >
                   <th style={{ padding: "12px" }}>STT</th>
+                  <th>Mã khóa học</th>
                   <th>Mã môn học</th>
                   <th>Tên môn học</th>
                   <th>Số tín chỉ</th>
                   <th>Thời gian</th>
+                  <th>Còn lại</th>
                   <th>Thao tác</th>
                 </tr>
               </thead>
               <tbody>
-                {courses.map((course, index) => {
+                {filteredCourses.map((course, index) => {
                   const isRegistered = registeredIds.includes(course.course_id);
+                  const remainingCapacity =
+                    course.remaining_capacity !== undefined
+                      ? course.remaining_capacity
+                      : 0;
+                  const isFull = remainingCapacity <= 0;
+
                   return (
                     <tr
                       key={course.course_id}
                       style={{ borderBottom: "1px solid #eee" }}
                     >
                       <td style={{ padding: "12px" }}>{index + 1}</td>
+                      <td>{course.course_id}</td>
                       <td>{course.subject?.subject_id}</td>
                       <td>{course.subject?.name}</td>
                       <td>{course.subject?.credits}</td>
                       <td>{formatSchedules(course.schedule)}</td>
+                      <td
+                        style={{
+                          fontWeight: "bold",
+                          color: isFull ? "#e74c3c" : "#27ae60",
+                        }}
+                      >
+                        {remainingCapacity}
+                      </td>
                       <td>
                         {isRegistered ? (
                           <button
@@ -233,12 +297,27 @@ const StudentRegister = ({
                           >
                             Hủy
                           </button>
+                        ) : isFull ? (
+                          <button
+                            disabled
+                            style={{
+                              background: "#95a5a6",
+                              color: "white",
+                              border: "none",
+                              padding: "8px 14px",
+                              borderRadius: "6px",
+                              cursor: "not-allowed",
+                              opacity: 0.6,
+                            }}
+                          >
+                            Hết chỗ
+                          </button>
                         ) : (
                           <button
                             onClick={() => registerCourse(course)}
                             disabled={enrollingCourseId === course.course_id}
                             style={{
-                              background: "red",
+                              background: "#27ae60",
                               color: "white",
                               border: "none",
                               padding: "8px 14px",
@@ -267,6 +346,9 @@ const StudentRegister = ({
           )}
         </div>
       )}
+
+      {/* Chat Box */}
+      <ChatBox studentInfo={studentInfo} />
     </div>
   );
 };

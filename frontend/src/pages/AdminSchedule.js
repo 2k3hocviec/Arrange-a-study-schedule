@@ -199,14 +199,6 @@ const AdminSchedule = () => {
                   <option value="8">Tiết 8</option>
                   <option value="9">Tiết 9</option>
                   <option value="10">Tiết 10</option>
-                  <option value="11">Tiết 11</option>
-                  <option value="12">Tiết 12</option>
-                  <option value="13">Tiết 13</option>
-                  <option value="14">Tiết 14</option>
-                  <option value="15">Tiết 15</option>
-                  <option value="16">Tiết 16</option>
-                  <option value="17">Tiết 17</option>
-                  <option value="18">Tiết 18</option>
                 </select>
               </div>
               <div>
@@ -229,14 +221,6 @@ const AdminSchedule = () => {
                   <option value="8">Tiết 8</option>
                   <option value="9">Tiết 9</option>
                   <option value="10">Tiết 10</option>
-                  <option value="11">Tiết 11</option>
-                  <option value="12">Tiết 12</option>
-                  <option value="13">Tiết 13</option>
-                  <option value="14">Tiết 14</option>
-                  <option value="15">Tiết 15</option>
-                  <option value="16">Tiết 16</option>
-                  <option value="17">Tiết 17</option>
-                  <option value="18">Tiết 18</option>
                 </select>
               </div>
             </div>

@@ -278,11 +278,21 @@ const StudentDashboard = () => {
           />
           <Route
             path="details"
-            element={<StudentDetails registeredCourses={registeredCourses} />}
+            element={
+              <StudentDetails
+                registeredCourses={registeredCourses}
+                studentInfo={studentInfo}
+              />
+            }
           />
           <Route
             path="notifications"
-            element={<StudentNotifications registeredIds={registeredIds} />}
+            element={
+              <StudentNotifications
+                registeredIds={registeredIds}
+                studentInfo={studentInfo}
+              />
+            }
           />
         </Routes>
       </div>
