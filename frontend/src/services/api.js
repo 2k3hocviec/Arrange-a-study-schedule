@@ -120,17 +120,22 @@ export const roomsAPI = {
 
 export const coursesAPI = {
   getAll: () => api.get("/courses"),
-  create: ({ subject_id, teacher_id }) => {
+  create: ({ subject_id, teacher_id, capacity }) => {
     return api.post("/courses", {
       subject_id,
       teacher_id,
+      capacity,
     });
   },
   delete: (course_id) => {
     return api.delete(`/courses/${course_id}`);
   },
-  update: (course_id, { subject_id, teacher_id }) => {
-    return api.patch(`/courses/${course_id}`, { subject_id, teacher_id });
+  update: (course_id, { subject_id, teacher_id, capacity }) => {
+    return api.patch(`/courses/${course_id}`, {
+      subject_id,
+      teacher_id,
+      capacity,
+    });
   },
 
   getInfoCourse: () => api.get("/courses/student"),
