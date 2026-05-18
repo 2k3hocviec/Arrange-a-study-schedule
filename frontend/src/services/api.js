@@ -66,6 +66,7 @@ export const teachersAPI = {
   update: (teacher_id, { user_id, name, degree, expertise }) => {
     api.patch(`/teachers/${teacher_id}`, { user_id, name, degree, expertise });
   },
+  getSchedule: (teacher_id) => api.get(`/teachers/teacher/${teacher_id}/courses-details`),
 };
 
 export const subjectsAPI = {
@@ -187,6 +188,8 @@ export const enrollmentsAPI = {
   delete: ({ student_id, course_id }) => {
     return api.delete(`/enrollments/del`, { data: { student_id, course_id } });
   },
+  // THÊM DÒNG NÀY VÀO ĐÂY:
+  getStudentCoursesWithDetails: (student_id) => api.get(`/enrollments/student/${student_id}/courses-details`),
 };
 
 export default api;
