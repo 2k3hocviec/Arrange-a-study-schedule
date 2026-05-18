@@ -73,6 +73,13 @@ export class SchedulesService {
       throw new BadRequestException(`Course not exist`);
     }
 
+    // Kiểm tra sức chứa của lớp có đủ cho số sinh viên tối đa của khóa học không
+    if (course.capacity && classroom.capacity < course.capacity) {
+      throw new BadRequestException(
+        `Classroom capacity (${classroom.capacity}) is less than course maximum students (${course.capacity}). Please choose a larger classroom.`,
+      );
+    }
+
     // Kiểm tra classroom không trùng lịch
     const classroomConflict =
       await this.checkClassroomConflict(createScheduleDto);
@@ -143,6 +150,13 @@ export class SchedulesService {
 
     if (!course) {
       throw new BadRequestException(`Course not exist`);
+    }
+
+    // Kiểm tra sức chứa của lớp có đủ cho số sinh viên tối đa của khóa học không
+    if (course.capacity && classroom.capacity < course.capacity) {
+      throw new BadRequestException(
+        `Classroom capacity (${classroom.capacity}) is less than course maximum students (${course.capacity}). Please choose a larger classroom.`,
+      );
     }
 
     // Kiểm tra classroom không trùng lịch

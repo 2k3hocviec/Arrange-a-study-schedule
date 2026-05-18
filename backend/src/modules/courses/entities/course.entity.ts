@@ -31,4 +31,10 @@ export class Course {
 
   @Column()
   teacher_id!: string;
+
+  @Column({ nullable: true })
+  capacity?: number;
+
+  @Column({ nullable: true })
+  remaining_capacity?: number;
 }
