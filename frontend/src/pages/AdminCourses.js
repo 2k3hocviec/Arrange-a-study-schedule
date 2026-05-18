@@ -50,7 +50,7 @@ const AdminCourses = () => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: name === "credits" ? Number(value) : value,
+      [name]: name === "capacity" ? (value ? Number(value) : "") : value,
     });
   };
 
@@ -59,6 +59,7 @@ const AdminCourses = () => {
     setFormData({
       subject_id: "",
       teacher_id: "",
+      capacity: "",
     });
     setRepair(false);
     setShowForm(!showForm);
@@ -134,7 +135,7 @@ const AdminCourses = () => {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "1fr 1fr 1fr",
+              gridTemplateColumns: "1fr 1fr",
               gap: "15px",
               marginBottom: "15px",
             }}
@@ -161,6 +162,37 @@ const AdminCourses = () => {
                 placeholder="Nhập ID giáo viên(GV001)"
               />
             </div>
+            <div>
+              <label style={labelStyle}>Số chỗ tối đa</label>
+              <input
+                type="number"
+                name="capacity"
+                value={formData.capacity}
+                onChange={handleInputChange}
+                style={inputStyle}
+                placeholder="Nhập số lượng sinh viên tối đa"
+                min="1"
+              />
+            </div>
+            <div>
+              <label style={labelStyle}>Chỗ còn lại</label>
+              <input
+                type="text"
+                value={
+                  repair
+                    ? formData.remaining_capacity !== undefined
+                      ? formData.remaining_capacity
+                      : formData.capacity || 0
+                    : formData.capacity || 0
+                }
+                style={{
+                  ...inputStyle,
+                  backgroundColor: "#ecf0f1",
+                  cursor: "not-allowed",
+                }}
+                disabled
+              />
+            </div>
           </div>
           <button
             type="submit"
@@ -180,46 +212,59 @@ const AdminCourses = () => {
         <thead style={{ background: "#34495e", color: "white" }}>
           <tr>
             <th style={{ padding: "12px" }}>Mã khóa học</th>
-            <th>Mã môn học</th>
             <th>Tên môn học</th>
-            <th>Mã Giáo viên</th>
-            <th>Tên giáo viên</th>
+            <th>Giáo viên</th>
+            <th>Tối đa</th>
+            <th>Còn lại</th>
             <th>Thao tác</th>
           </tr>
         </thead>
         <tbody>
-          {courses.map((course) => (
-            <tr
-              key={course.course_id}
-              style={{ borderBottom: "1px solid #eee", textAlign: "center" }}
-            >
-              <td style={{ padding: "12px", fontWeight: "bold" }}>
-                {course.course_id}
-              </td>
-              <td>{course.subject_id}</td>
-              <td>
-                {subjects.find((s) => s.subject_id === course.subject_id)?.name}
-              </td>
-              <td>{course.teacher_id}</td>
-              <td>
-                {teachers.find((t) => t.teacher_id === course.teacher_id)?.name}
-              </td>
-              <td>
-                <button
-                  onClick={() => handleOpenFormUpdate(course)}
-                  style={btnActionStyle}
+          {courses.map((course) => {
+            const capacity = course.capacity || 0;
+            const remainingCapacity =
+              course.remaining_capacity !== undefined
+                ? course.remaining_capacity
+                : capacity;
+            const usedCapacity = capacity - remainingCapacity;
+
+            return (
+              <tr
+                key={course.course_id}
+                style={{ borderBottom: "1px solid #eee", textAlign: "center" }}
+              >
+                <td style={{ padding: "12px", fontWeight: "bold" }}>
+                  {course.course_id}
+                </td>
+                <td>{course.subject?.name || course.subject_id}</td>
+                <td>{course.teacher?.name || course.teacher_id}</td>
+                <td>
+                  <strong>{capacity}</strong>
+                </td>
+                <td
+                  style={{
+                    color: remainingCapacity === 0 ? "#e74c3c" : "#27ae60",
+                  }}
                 >
-                  Sửa
-                </button>
-                <button
-                  onClick={() => handleDeleteCourse(course.course_id)}
-                  style={{ ...btnActionStyle, background: "#e74c3c" }}
-                >
-                  Xóa
-                </button>
-              </td>
-            </tr>
-          ))}
+                  <strong>{course.remaining_capacity}</strong>
+                </td>
+                <td>
+                  <button
+                    onClick={() => handleOpenFormUpdate(course)}
+                    style={btnActionStyle}
+                  >
+                    Sửa
+                  </button>
+                  <button
+                    onClick={() => handleDeleteCourse(course.course_id)}
+                    style={{ ...btnActionStyle, background: "#e74c3c" }}
+                  >
+                    Xóa
+                  </button>
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>

@@ -19,7 +19,6 @@ const AdminRooms = () => {
     try {
       const response = await roomsAPI.getAll();
       setRooms(response.data);
-      console.log(response.data);
     } catch (e) {
       toast.error("Không thể tải dữ liệu phòng học");
     }
@@ -228,41 +227,45 @@ const AdminRooms = () => {
           </tr>
         </thead>
         <tbody>
-          {rooms.map((room) => (
-            <tr
-              key={room.classroom_id}
-              style={{ borderBottom: "1px solid #eee", textAlign: "center" }}
-            >
-              <td style={{ padding: "12px", fontWeight: "bold" }}>
-                {room.classroom_id}
-              </td>
-              <td>{room.capacity} chỗ</td>
-              <td>{room.type}</td>
-              <td>{room.description}</td>
-              <td
-                style={{
-                  color: room.status === "Sẵn sàng" ? "#27ae60" : "#e67e22",
-                  fontWeight: "bold",
-                }}
+          {rooms.map((room) => {
+            return (
+              <tr
+                key={room.classroom_id}
+                style={{ borderBottom: "1px solid #eee", textAlign: "center" }}
               >
-                {room.status}
-              </td>
-              <td>
-                <button
-                  onClick={() => handleOpenFormUpdate(room)}
-                  style={btnActionStyle}
+                <td style={{ padding: "12px", fontWeight: "bold" }}>
+                  {room.classroom_id}
+                </td>
+                <td>
+                  <strong>{room.capacity}</strong>
+                </td>
+                <td>{room.type}</td>
+                <td>{room.description}</td>
+                <td
+                  style={{
+                    color: room.status === "Sẵn sàng" ? "#27ae60" : "#e67e22",
+                    fontWeight: "bold",
+                  }}
                 >
-                  Sửa
-                </button>
-                <button
-                  onClick={() => handleDeleteRoom(room.classroom_id)}
-                  style={{ ...btnActionStyle, background: "#e74c3c" }}
-                >
-                  Xóa
-                </button>
-              </td>
-            </tr>
-          ))}
+                  {room.status}
+                </td>
+                <td>
+                  <button
+                    onClick={() => handleOpenFormUpdate(room)}
+                    style={btnActionStyle}
+                  >
+                    Sửa
+                  </button>
+                  <button
+                    onClick={() => handleDeleteRoom(room.classroom_id)}
+                    style={{ ...btnActionStyle, background: "#e74c3c" }}
+                  >
+                    Xóa
+                  </button>
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
