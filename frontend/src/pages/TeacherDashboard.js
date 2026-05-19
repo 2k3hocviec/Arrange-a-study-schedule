@@ -100,7 +100,7 @@ const TeacherDashboard = () => {
             fontSize: "13px",
           }}
         >
-          {teacherInfo ? teacherInfo.id : "Đang tải..."}
+          {teacherInfo ? teacherInfo.teacher_id : "Đang tải..."}
         </p>
         {teacherInfo && (
           <p

@@ -100,11 +100,11 @@ const ForgotPassword = () => {
     setIsLoading(true);
     try {
       await authAPI.forgotPassword(email);
-      toast.success("Check your email to reset your password");
+      toast.success("New password sent to your email");
       // Navigate back to login after 2 seconds
       setTimeout(() => {
         navigate("/login");
-      }, 2000);
+      }, 3000);
     } catch (err) {
       const errorMessage = err.response?.data?.message || "Request failed";
       toast.error(errorMessage);
@@ -131,7 +131,7 @@ const ForgotPassword = () => {
         </h2>
 
         <p style={{ margin: "0 0 35px 0", color: "#666", fontSize: "14px" }}>
-          Enter your email or account to receive a password reset link
+          Enter your email and we will send you a new password
         </p>
 
         <form onSubmit={handleForgotPassword}>
@@ -139,11 +139,11 @@ const ForgotPassword = () => {
             <label
               style={{ fontWeight: "600", color: "#444", fontSize: "14px" }}
             >
-              Email / Account
+              Email
             </label>
             <input
               type="email"
-              placeholder="Email or account ID"
+              placeholder="Enter your email"
               style={inputStyle}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -164,7 +164,7 @@ const ForgotPassword = () => {
               e.target.style.opacity = "1";
             }}
           >
-            {isLoading ? "PROCESSING..." : "SEND RESET LINK"}
+            {isLoading ? "PROCESSING..." : "SEND NEW PASSWORD"}
           </button>
         </form>
 
