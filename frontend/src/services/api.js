@@ -36,6 +36,9 @@ export const authAPI = {
   register: (email, password, name) =>
     api.post("/auth/register", { email, password, name }),
   getProfile: () => api.get("/users/profile"),
+  forgotPassword: (email) => api.post("/auth/forgot-password", { email }),
+  resetPassword: (token, newPassword) =>
+    api.post("/auth/reset-password", { token, newPassword }),
 };
 
 export const usersAPI = {
@@ -52,6 +55,7 @@ export const usersAPI = {
 
 export const teachersAPI = {
   getAll: () => api.get("/teachers"),
+  getMyInfo: () => api.get("/teachers/me"),
   create: ({ user_id, teacher_id, name, degree, expertise }) => {
     return api.post("/teachers", {
       user_id,
@@ -72,7 +76,8 @@ export const teachersAPI = {
       expertise,
     });
   },
-  getSchedule: (teacher_id) => api.get(`/teachers/teacher/${teacher_id}/courses-details`),
+  getSchedule: (teacher_id) =>
+    api.get(`/teachers/teacher/${teacher_id}/courses-details`),
 };
 
 export const subjectsAPI = {
@@ -206,7 +211,8 @@ export const enrollmentsAPI = {
     return api.delete(`/enrollments/del`, { data: { student_id, course_id } });
   },
   // THÊM DÒNG NÀY VÀO ĐÂY:
-  getStudentCoursesWithDetails: (student_id) => api.get(`/enrollments/student/${student_id}/courses-details`),
+  getStudentCoursesWithDetails: (student_id) =>
+    api.get(`/enrollments/student/${student_id}/courses-details`),
 };
 
 export default api;

@@ -154,9 +154,19 @@ const Login = () => {
         </form>
 
         <div style={{ marginTop: "25px", fontSize: "13px", color: "#888" }}>
-          <a href="#" style={{ color: "#c0392b", textDecoration: "none" }}>
+          <button
+            onClick={() => navigate("/forgot-password")}
+            style={{
+              background: "none",
+              border: "none",
+              color: "#c0392b",
+              cursor: "pointer",
+              textDecoration: "none",
+              fontWeight: "500",
+            }}
+          >
             Quên mật khẩu?
-          </a>
+          </button>
           <p style={{ marginTop: "10px" }}>Hỗ trợ kỹ thuật: 024.xxx.xxxx</p>
         </div>
       </div>

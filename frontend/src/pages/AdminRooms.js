@@ -196,7 +196,6 @@ const AdminRooms = () => {
                   -- Chọn trạng thái --
                 </option>
                 <option value="Ready">Sẵn sàng</option>
-                <option value="Used">Đang sử dụng</option>
                 <option value="Maintaince">Bảo trì</option>
               </select>
             </div>

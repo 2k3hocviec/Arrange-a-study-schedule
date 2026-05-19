@@ -7,6 +7,18 @@ const SysAdminUsers = () => {
   const [users, setUsers] = useState([]);
   const [repair, setRepair] = useState(false);
   const [idUpdate, setIdUpdate] = useState(0);
+
+  // Function to mask password
+  const maskPassword = (password) => {
+    if (!password) return "****";
+    if (password.length <= 10) return "*".repeat(password.length);
+    return (
+      password.substring(0, 4) +
+      "*".repeat(6) +
+      password.substring(password.length - 4)
+    );
+  };
+
   const fetchUsers = async () => {
     try {
       const response = await usersAPI.getAll(`?_t=${Date.now()}`);
@@ -79,6 +91,20 @@ const SysAdminUsers = () => {
   };
 
   const handleOpenFormUpdateUser = async (id) => {
+    // Find user data from users array
+    const userToEdit = users.find((user) => user.id === id);
+
+    if (userToEdit) {
+      // Populate form with existing user data
+      setFormData({
+        email: userToEdit.email,
+        password: userToEdit.password, // Keep original password, user can clear if they want to change
+        role: userToEdit.role,
+        phone: userToEdit.phone || "",
+        address: userToEdit.address || "",
+      });
+    }
+
     setRepair(!repair);
     setShowForm(!showForm);
     setIdUpdate(id);
@@ -86,13 +112,16 @@ const SysAdminUsers = () => {
 
   const handleSubmitUpdate = async (e) => {
     e.preventDefault();
-    if (!formData.email || !formData.password) {
-      toast.error("The data cannot be blank.");
+    if (!formData.email) {
+      toast.error("Email cannot be blank.");
       return;
     }
 
+    // Only require password if it was changed (not empty)
+    let updateData = { ...formData };
+
     try {
-      await usersAPI.update(idUpdate, formData);
+      await usersAPI.update(idUpdate, updateData);
       setFormData({
         email: "",
         password: "",
@@ -158,10 +187,10 @@ const SysAdminUsers = () => {
             <input
               type="password"
               name="password"
-              placeholder="Password"
+              placeholder={"Password"}
               value={formData.password}
               onChange={handleInputChange}
-              required
+              required={!repair}
               style={{ width: "100%", padding: "8px" }}
             />
           </div>
@@ -234,7 +263,7 @@ const SysAdminUsers = () => {
             <tr key={user.id} style={{ border: "1px solid #eee" }}>
               <td style={{ padding: "12px 0px 12px 12px" }}>{user.id}</td>
               <td>{user.email}</td>
-              <td>{user.password}</td>
+              <td>{maskPassword(user.password)}</td>
               <td>{user.role}</td>
               <td>{user.phone}</td>
               <td>{user.address}</td>
