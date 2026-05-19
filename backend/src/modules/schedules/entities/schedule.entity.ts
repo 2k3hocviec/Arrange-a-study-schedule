@@ -47,4 +47,10 @@ export class Schedule {
 
   @Column()
   end_slot!: number;
+
+  @Column({ type: 'date', nullable: true })
+  start_date!: Date | null;
+
+  @Column({ type: 'date', nullable: true })
+  end_date!: Date | null;
 }

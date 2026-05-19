@@ -37,11 +37,39 @@ export class EnrollmentsService {
     }
 
     for (const existingSchedule of existingSchedules) {
-      if (
+      // Kiểm tra xung đột slot
+      const slotConflict =
         newSchedule.dayOfWeek === existingSchedule.dayOfWeek &&
         newSchedule.start_slot <= existingSchedule.start_slot &&
-        newSchedule.end_slot >= existingSchedule.start_slot
-      ) {
+        newSchedule.end_slot >= existingSchedule.start_slot;
+
+      if (!slotConflict) continue;
+
+      // Nếu có xung đột slot, kiểm tra khoảng ngày
+      // Chỉ xung đột ngày nếu:
+      // - Schedule cũ không có ngày (NULL) hoặc
+      // - Khoảng ngày overlap
+      if (newSchedule.start_date && newSchedule.end_date) {
+        const newStartDate = new Date(newSchedule.start_date);
+        const newEndDate = new Date(newSchedule.end_date);
+
+        const existingStartDate = existingSchedule.start_date
+          ? new Date(existingSchedule.start_date)
+          : null;
+        const existingEndDate = existingSchedule.end_date
+          ? new Date(existingSchedule.end_date)
+          : null;
+
+        // Nếu schedule cũ không có ngày hoặc khoảng ngày overlap → conflict
+        if (
+          !existingStartDate ||
+          !existingEndDate ||
+          (existingStartDate <= newEndDate && existingEndDate >= newStartDate)
+        ) {
+          return `Conflict with ${existingSchedule.course_id}`;
+        }
+      } else {
+        // Schedule mới không có ngày → luôn conflict nếu slot trùng
         return `Conflict with ${existingSchedule.course_id}`;
       }
     }
@@ -71,7 +99,10 @@ export class EnrollmentsService {
     }
 
     // Kiểm tra còn chỗ trong khóa học không
-    if (course.remaining_capacity !== undefined && course.remaining_capacity <= 0) {
+    if (
+      course.remaining_capacity !== undefined &&
+      course.remaining_capacity <= 0
+    ) {
       throw new BadRequestException('This course is fully booked');
     }
 
@@ -118,7 +149,7 @@ export class EnrollmentsService {
   async remove({ studentId, courseId }) {
     // Lấy thông tin course để tăng lại remaining_capacity
     const course = await this.coursesService.findOneByCourseID(courseId);
-    
+
     const result = await this.enrollmentRepository.delete({
       student_id: studentId,
       course_id: courseId,
@@ -163,6 +194,8 @@ export class EnrollmentsService {
             dayOfWeek: true,
             start_slot: true,
             end_slot: true,
+            start_date: true,
+            end_date: true,
           },
         },
       },

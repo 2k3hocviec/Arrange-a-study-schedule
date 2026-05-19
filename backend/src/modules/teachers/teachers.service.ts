@@ -97,6 +97,8 @@ export class TeachersService {
             dayOfWeek: true,
             start_slot: true,
             end_slot: true,
+            start_date: true,
+            end_date: true,
           },
         },
       },

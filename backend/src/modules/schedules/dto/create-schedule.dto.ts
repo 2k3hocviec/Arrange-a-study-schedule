@@ -1,6 +1,7 @@
 import { Type } from 'class-transformer';
-import { IsValidSlotRange } from 'src/validation/validater';
+import { IsValidSlotRange, IsValidDateRange } from 'src/validation/validater';
 import { DayOfWeek } from '../entities/schedule.entity';
+import { IsDateString, IsOptional } from 'class-validator';
 
 export class CreateScheduleDto {
   course_id!: string;
@@ -11,4 +12,13 @@ export class CreateScheduleDto {
   @Type(() => Number)
   @IsValidSlotRange()
   end_slot!: number;
+
+  @IsOptional()
+  @IsDateString()
+  start_date?: string;
+
+  @IsOptional()
+  @IsDateString()
+  @IsValidDateRange()
+  end_date?: string;
 }

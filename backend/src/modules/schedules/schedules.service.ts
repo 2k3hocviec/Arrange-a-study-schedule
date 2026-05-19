@@ -16,14 +16,34 @@ export class SchedulesService {
     private readonly classroomService: ClassroomsService,
   ) {}
 
-  private async checkClassroomConflict(dto: CreateScheduleDto) {
-    return await this.scheduleRepository
+  private async checkClassroomConflict(
+    dto: CreateScheduleDto | UpdateScheduleDto,
+  ) {
+    const query = this.scheduleRepository
       .createQueryBuilder('schedule')
       .where('schedule.classroom_id = :roomId', { roomId: dto.classroom_id })
       .andWhere('schedule.dayOfWeek = :day', { day: String(dto.dayOfWeek) })
       .andWhere('schedule.start_slot <= :endNew', { endNew: dto.end_slot })
-      .andWhere('schedule.end_slot >= :startNew', { startNew: dto.start_slot })
-      .getOne();
+      .andWhere('schedule.end_slot >= :startNew', { startNew: dto.start_slot });
+
+    // Kiểm tra khoảng ngày: chỉ conflict nếu:
+    // - Schedule cũ không có ngày (NULL) hoặc
+    // - Khoảng ngày của schedule mới overlap với schedule cũ
+    if (dto.start_date && dto.end_date) {
+      const startDate = new Date(dto.start_date);
+      const endDate = new Date(dto.end_date);
+
+      query.andWhere(
+        `(schedule.start_date IS NULL OR schedule.end_date IS NULL OR 
+          (schedule.start_date <= :endDate AND schedule.end_date >= :startDate))`,
+        {
+          startDate,
+          endDate,
+        },
+      );
+    }
+
+    return await query.getOne();
   }
 
   private async checkTeacherConflict(
@@ -38,7 +58,8 @@ export class SchedulesService {
 
     // 2. Tìm bất kỳ lịch dạy nào của giáo viên này bị trùng giờ
     // Sử dụng QueryBuilder để join sang bảng Course và check teacher_id
-    const conflict = await this.scheduleRepository
+    // Thêm kiểm tra khoảng ngày: chỉ xung đột nếu ngày overlap hoặc schedule cũ không có giới hạn ngày
+    const query = this.scheduleRepository
       .createQueryBuilder('schedule')
       .leftJoinAndSelect('schedule.course', 'course')
       .where('schedule.dayOfWeek = :dayOfWeek', {
@@ -50,9 +71,26 @@ export class SchedulesService {
       })
       .andWhere('course.teacher_id = :teacherId', {
         teacherId: currentCourse.teacher_id,
-      })
-      .getOne();
+      });
 
+    // Kiểm tra khoảng ngày: chỉ conflict nếu:
+    // - Schedule cũ không có ngày (NULL) hoặc
+    // - Khoảng ngày của schedule mới overlap với schedule cũ
+    if (dto.start_date && dto.end_date) {
+      const startDate = new Date(dto.start_date);
+      const endDate = new Date(dto.end_date);
+
+      query.andWhere(
+        `(schedule.start_date IS NULL OR schedule.end_date IS NULL OR 
+          (schedule.start_date <= :endDate AND schedule.end_date >= :startDate))`,
+        {
+          startDate,
+          endDate,
+        },
+      );
+    }
+
+    const conflict = await query.getOne();
     return conflict;
   }
 
@@ -98,13 +136,18 @@ export class SchedulesService {
       );
     }
 
-    const schedule = this.scheduleRepository.create({
-      course_id: createScheduleDto.course_id,
-      classroom_id: createScheduleDto.classroom_id,
-      dayOfWeek: createScheduleDto.dayOfWeek,
-      start_slot: createScheduleDto.start_slot,
-      end_slot: createScheduleDto.end_slot,
-    });
+    const schedule = new Schedule();
+    schedule.course_id = createScheduleDto.course_id;
+    schedule.classroom_id = createScheduleDto.classroom_id;
+    schedule.dayOfWeek = createScheduleDto.dayOfWeek;
+    schedule.start_slot = createScheduleDto.start_slot;
+    schedule.end_slot = createScheduleDto.end_slot;
+    schedule.start_date = createScheduleDto.start_date
+      ? new Date(createScheduleDto.start_date)
+      : null;
+    schedule.end_date = createScheduleDto.end_date
+      ? new Date(createScheduleDto.end_date)
+      : null;
     return await this.scheduleRepository.save(schedule);
   }
 
@@ -177,7 +220,18 @@ export class SchedulesService {
       );
     }
 
-    return await this.scheduleRepository.update(id, updateScheduleDto);
+    // Chuyển đổi ngày nếu có
+    const dataToUpdate = {
+      ...updateScheduleDto,
+      start_date: updateScheduleDto.start_date
+        ? new Date(updateScheduleDto.start_date)
+        : undefined,
+      end_date: updateScheduleDto.end_date
+        ? new Date(updateScheduleDto.end_date)
+        : undefined,
+    };
+
+    return await this.scheduleRepository.update(id, dataToUpdate);
   }
 
   remove(id: string) {
