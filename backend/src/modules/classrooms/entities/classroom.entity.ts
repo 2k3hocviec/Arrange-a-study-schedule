@@ -21,7 +21,7 @@ export class Classroom {
   @Column()
   description!: string;
 
-  @Column({ type: 'enum', enum: ['Ready', 'Maintaince', 'Used'] })
+  @Column({ type: 'enum', enum: ['Ready', 'Maintaince'] })
   status!: string;
 
   @OneToMany(() => Schedule, (schedule) => schedule.room)

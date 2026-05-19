@@ -102,4 +102,14 @@ export class TeachersService {
       },
     });
   }
+
+  async findByUserId(userId: number) {
+    const teacher = await this.teachersRepository.findOneBy({
+      user_id: userId,
+    });
+    if (!teacher) {
+      throw new NotFoundException('Teacher not found for this user');
+    }
+    return teacher;
+  }
 }

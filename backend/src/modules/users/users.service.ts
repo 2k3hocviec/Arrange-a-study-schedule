@@ -4,6 +4,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
@@ -14,6 +15,11 @@ export class UsersService {
   async create(createUserDto: CreateUserDto) {
     const user = await this.usersRepository.create(createUserDto);
     user.createdAt = new Date();
+    // Hash mật khẩu trước khi lưu
+    if (user.password) {
+      const saltRounds = 10;
+      user.password = await bcrypt.hash(user.password, saltRounds);
+    }
     return await this.usersRepository.save(user);
   }
 
@@ -30,6 +36,14 @@ export class UsersService {
     if (!user) {
       throw new NotFoundException('User not found');
     }
+    // Nếu cập nhật mật khẩu, hash nó trước
+    if (updateUserDto.password) {
+      const saltRounds = 10;
+      updateUserDto.password = await bcrypt.hash(
+        updateUserDto.password,
+        saltRounds,
+      );
+    }
     return this.usersRepository.update(id, updateUserDto);
   }
 
@@ -44,5 +58,20 @@ export class UsersService {
 
   async findByEmail(email: string) {
     return await this.usersRepository.findOneBy({ email });
+  }
+
+  async findById(id: number) {
+    return await this.usersRepository.findOneBy({ id });
+  }
+
+  async updatePassword(id: number, newPassword: string) {
+    const user = await this.usersRepository.findOneBy({ id });
+    if (!user) {
+      throw new NotFoundException('The user does not exist.');
+    }
+    // Hash mật khẩu mới trước khi lưu
+    const saltRounds = 10;
+    user.password = await bcrypt.hash(newPassword, saltRounds);
+    return await this.usersRepository.save(user);
   }
 }
