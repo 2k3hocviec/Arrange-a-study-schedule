@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from 'src/modules/users/users.service';
+import { MailService } from 'src/mail/mail.service';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -12,6 +13,7 @@ export class AuthService {
   constructor(
     private readonly usersServive: UsersService,
     private readonly jwtService: JwtService,
+    private readonly mailService: MailService,
   ) {}
 
   async login(email: string, password: string) {
@@ -39,43 +41,26 @@ export class AuthService {
       throw new BadRequestException('Email does not exist in the system');
     }
 
-    // Tạo token reset password (có hiệu lực trong 1 giờ)
-    const resetToken = this.jwtService.sign(
-      { sub: user.id, email: user.email },
-      { expiresIn: '1h' },
-    );
+    // Tạo mật khẩu mặc định
+    const newPassword = '123456';
 
-    // Lưu token vào database hoặc cache (tuỳ chọn)
-    // Có thể sử dụng Redis để lưu token với expiry time
+    // Hash mật khẩu mới
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    // TODO: Gửi email với liên kết reset password
-    // const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
-    // await sendEmail(user.email, resetLink);
+    // Cập nhật mật khẩu trong database
+    await this.usersServive.updatePassword(user.id, newPassword);
+
+    // Gửi email với mật khẩu mới
+    try {
+      const userName = user.email.split('@')[0]; // Lấy tên từ email
+      await this.mailService.sendNewPasswordEmail(email, newPassword, userName);
+    } catch (error) {
+      console.error('Failed to send email:', error);
+      // Email lỗi không block request, vẫn return thành công
+    }
 
     return {
-      message: 'Password reset email has been sent',
-      // Trong development, có thể return token để test
-      resetToken: resetToken, // Xoá dòng này trong production
+      message: 'New password has been sent to your email',
     };
-  }
-
-  async resetPassword(token: string, newPassword: string) {
-    try {
-      const decoded = this.jwtService.verify(token);
-      const user = await this.usersServive.findById(decoded.sub);
-
-      if (!user) {
-        throw new BadRequestException('The user does not exist');
-      }
-
-      // Cập nhật mật khẩu
-      await this.usersServive.updatePassword(user.id, newPassword);
-
-      return {
-        message: 'Password has been successfully updated',
-      };
-    } catch (error) {
-      throw new BadRequestException('Invalid or expired token');
-    }
   }
 }

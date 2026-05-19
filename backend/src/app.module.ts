@@ -24,6 +24,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './guard/jwt.guard';
 import { RoleGuard } from './guard/role.guard';
 import { ChatbotModule } from './chatbot/chatbot.module';
+import { MailerModule } from '@nestjs-modules/mailer';
 
 @Module({
   imports: [
