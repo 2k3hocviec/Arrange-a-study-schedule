@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { roomsAPI } from "../services/api"; // Giả định bạn đã định nghĩa roomsAPI trong file api.js
 import toast from "react-hot-toast";
+import { MdMeetingRoom } from "react-icons/md";
 
 const AdminRooms = () => {
   const [rooms, setRooms] = useState([]);
@@ -89,7 +90,7 @@ const AdminRooms = () => {
   return (
     <div>
       <h2 style={{ color: "#2c3e50", marginBottom: "20px" }}>
-        🏢 QUẢN LÝ PHÒNG HỌC
+        <MdMeetingRoom /> QUẢN LÝ PHÒNG HỌC
       </h2>
 
       {/* Thống kê nhanh */}
@@ -102,7 +103,7 @@ const AdminRooms = () => {
           {rooms.filter((r) => r.status === "Ready").length}
         </div>
         <div style={{ ...cardStyle, borderLeftColor: "#e74c3c" }}>
-          <strong>Đang sử dụng:</strong>{" "}
+          <strong>Đang bảo trì:</strong>{" "}
           {rooms.filter((r) => r.status !== "Ready").length}
         </div>
       </div>
@@ -115,7 +116,7 @@ const AdminRooms = () => {
       {showForm && (
         <form onSubmit={handleSubmit} style={formContainerStyle}>
           <h3 style={{ marginTop: 0 }}>
-            {repair ? "🛠 Cập nhật phòng" : "🆕 Thêm phòng mới"}
+            {repair ? "Cập nhật phòng" : "Thêm phòng mới"}
           </h3>
           <div
             style={{

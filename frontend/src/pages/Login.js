@@ -10,17 +10,16 @@ const pageWrapper = {
   justifyContent: "center",
   alignItems: "center",
   minHeight: "100vh",
+  padding: "clamp(12px, 3vw, 24px)",
   overflow: "hidden",
   fontFamily: "'Segoe UI', Roboto, sans-serif",
-  // Background tối với hiệu ứng chiều sâu
   backgroundColor: "#0a0b10",
   backgroundImage: `
-            radial-gradient(circle at 20% 30%, rgba(192, 57, 43, 0.15) 0%, transparent 40%),
-            radial-gradient(circle at 80% 70%, rgba(41, 128, 185, 0.15) 0%, transparent 40%)
-        `,
+    radial-gradient(circle at 20% 30%, rgba(192, 57, 43, 0.15) 0%, transparent 40%),
+    radial-gradient(circle at 80% 70%, rgba(41, 128, 185, 0.15) 0%, transparent 40%)
+  `,
 };
 
-// Tạo hiệu ứng lưới mờ phía sau
 const gridOverlay = {
   position: "absolute",
   top: 0,
@@ -28,9 +27,9 @@ const gridOverlay = {
   right: 0,
   bottom: 0,
   backgroundImage: `
-            linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)
-        `,
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)
+  `,
   backgroundSize: "40px 40px",
   zIndex: 1,
 };
@@ -39,8 +38,8 @@ const loginCard = {
   position: "relative",
   zIndex: 10,
   background: "rgba(255, 255, 255, 0.95)",
-  backdropFilter: "blur(10px)", // Hiệu ứng kính mờ
-  padding: "50px 40px",
+  backdropFilter: "blur(10px)",
+  padding: "clamp(20px, 5vw, 50px) clamp(16px, 4vw, 40px)",
   borderRadius: "24px",
   boxShadow: "0 20px 40px rgba(0,0,0,0.4)",
   width: "100%",
@@ -51,10 +50,10 @@ const loginCard = {
 
 const inputStyle = {
   width: "100%",
-  padding: "12px 15px",
+  padding: "clamp(10px, 2vw, 12px) clamp(12px, 2vw, 15px)",
   borderRadius: "10px",
   border: "1px solid #ddd",
-  fontSize: "16px",
+  fontSize: "clamp(14px, 2vw, 16px)",
   marginTop: "8px",
   boxSizing: "border-box",
   outline: "none",
@@ -63,15 +62,15 @@ const inputStyle = {
 
 const buttonStyle = {
   width: "100%",
-  padding: "14px",
+  padding: "clamp(12px, 2vw, 14px)",
   background: "linear-gradient(135deg, #c0392b 0%, #e74c3c 100%)",
   color: "white",
   border: "none",
   borderRadius: "10px",
   cursor: "pointer",
   fontWeight: "bold",
-  fontSize: "16px",
-  marginTop: "25px",
+  fontSize: "clamp(14px, 2vw, 16px)",
+  marginTop: "clamp(15px, 3vw, 25px)",
   boxShadow: "0 4px 15px rgba(192, 57, 43, 0.3)",
 };
 

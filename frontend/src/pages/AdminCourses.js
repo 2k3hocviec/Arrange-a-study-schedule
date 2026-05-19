@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { coursesAPI, subjectsAPI, teachersAPI } from "../services/api";
 import toast from "react-hot-toast";
+import { MdSubject } from "react-icons/md";
 
 const AdminCourses = () => {
   const [teachers, setTeachers] = useState([]);
@@ -103,8 +104,8 @@ const AdminCourses = () => {
 
   return (
     <div>
-      <h2 style={{ color: "#2c3e50", marginBottom: "20px" }}>
-        📚 QUẢN LÝ KHÓA HỌC
+      <h2 style={{ color: "#2c3e50", marginBottom: "20px", marginTop: "40px" }}>
+        <MdSubject /> QUẢN LÝ KHÓA HỌC
       </h2>
 
       {/* Thống kê nhanh */}
@@ -123,14 +124,14 @@ const AdminCourses = () => {
       </div>
 
       <button onClick={handleClickCreateCourse} style={btnPrimaryStyle}>
-        {showForm ? "✖ Đóng Form" : "+ Thêm khóa học mới"}
+        {showForm ? "Đóng Form" : "+ Thêm khóa học mới"}
       </button>
 
       {/* Form Nhập liệu */}
       {showForm && (
         <form onSubmit={handleSubmit} style={formContainerStyle}>
           <h3 style={{ marginTop: 0 }}>
-            {repair ? "🛠 Cập nhật khóa học" : "🆕 Thêm khóa học mới"}
+            {repair ? "Cập nhật khóa học" : "Thêm khóa học mới"}
           </h3>
           <div
             style={{
@@ -226,7 +227,6 @@ const AdminCourses = () => {
               course.remaining_capacity !== undefined
                 ? course.remaining_capacity
                 : capacity;
-            const usedCapacity = capacity - remainingCapacity;
 
             return (
               <tr

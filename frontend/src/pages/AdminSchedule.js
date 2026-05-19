@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { schedulesAPI, coursesAPI, roomsAPI } from "../services/api";
 import toast from "react-hot-toast";
+import { IoCalendar } from "react-icons/io5";
 
 const AdminSchedule = () => {
   const [schedules, setSchedules] = useState([]);
@@ -15,6 +16,8 @@ const AdminSchedule = () => {
     dayOfWeek: "",
     start_slot: "",
     end_slot: "",
+    start_date: "",
+    end_date: "",
   });
 
   // 1. Fetch tất cả dữ liệu cần thiết
@@ -49,6 +52,8 @@ const AdminSchedule = () => {
       dayOfWeek: "",
       start_slot: "",
       end_slot: "",
+      start_date: "",
+      end_date: "",
     });
     setRepair(false);
     setShowForm(!showForm);
@@ -91,7 +96,7 @@ const AdminSchedule = () => {
     <>
       <div>
         <h2 style={{ color: "#2c3e50", marginBottom: "20px" }}>
-          📅 ĐIỀU PHỐI LỊCH HỌC
+          <IoCalendar /> ĐIỀU PHỐI LỊCH HỌC
         </h2>
 
         {/* Thống kê nhanh */}
@@ -103,21 +108,17 @@ const AdminSchedule = () => {
             <strong>Khóa học:</strong>{" "}
             {new Set(schedules.map((s) => s.course_id)).size}
           </div>
-          <div style={{ ...cardStyle, borderLeftColor: "#f39c12" }}>
-            <strong>Phòng đang sử dụng:</strong>{" "}
-            {new Set(schedules.map((s) => s.classroom_id)).size}
-          </div>
         </div>
 
         <button onClick={handleClickCreate} style={btnPrimaryStyle}>
-          {showForm ? "✖ Đóng Form" : "+ Thêm lịch học mới"}
+          {showForm ? "Đóng Form" : "+ Thêm lịch học mới"}
         </button>
 
         {/* Form Cập nhật/Thêm mới */}
         {showForm && (
           <form onSubmit={handleSubmit} style={formContainerStyle}>
             <h3 style={{ marginTop: 0 }}>
-              {repair ? "🛠 Cập nhật lịch học" : "🆕 Sắp xếp lịch mới"}
+              {repair ? "Cập nhật lịch học" : "Sắp xếp lịch mới"}
             </h3>
             <div
               style={{
@@ -224,6 +225,35 @@ const AdminSchedule = () => {
                 </select>
               </div>
             </div>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: "15px",
+                marginTop: "15px",
+              }}
+            >
+              <div>
+                <label style={labelStyle}>Ngày bắt đầu (tuỳ chọn)</label>
+                <input
+                  type="date"
+                  name="start_date"
+                  value={formData.start_date}
+                  onChange={handleInputChange}
+                  style={inputStyle}
+                />
+              </div>
+              <div>
+                <label style={labelStyle}>Ngày kết thúc (tuỳ chọn)</label>
+                <input
+                  type="date"
+                  name="end_date"
+                  value={formData.end_date}
+                  onChange={handleInputChange}
+                  style={inputStyle}
+                />
+              </div>
+            </div>
             <button
               type="submit"
               style={{
@@ -247,6 +277,8 @@ const AdminSchedule = () => {
               <th>Thứ học</th>
               <th>Tiết bắt đầu</th>
               <th>Tiết kết thúc</th>
+              <th>Ngày bắt đầu</th>
+              <th>Ngày kết thúc</th>
               <th>Thao tác</th>
             </tr>
           </thead>
@@ -264,6 +296,16 @@ const AdminSchedule = () => {
                 <td>{s.dayOfWeek}</td>
                 <td>{s.start_slot}</td>
                 <td>{s.end_slot}</td>
+                <td>
+                  {s.start_date
+                    ? new Date(s.start_date).toLocaleDateString("vi-VN")
+                    : "-"}
+                </td>
+                <td>
+                  {s.end_date
+                    ? new Date(s.end_date).toLocaleDateString("vi-VN")
+                    : "-"}
+                </td>
                 <td>
                   <button
                     onClick={() => handleOpenUpdate(s)}

@@ -149,13 +149,33 @@ export const coursesAPI = {
 
 export const schedulesAPI = {
   getAll: () => api.get("/schedules"),
-  create: ({ course_id, classroom_id, dayOfWeek, start_slot, end_slot }) => {
+  create: ({
+    course_id,
+    classroom_id,
+    dayOfWeek,
+    start_slot,
+    end_slot,
+    start_date,
+    end_date,
+  }) => {
+    console.log({
+      course_id,
+      classroom_id,
+      dayOfWeek,
+      start_slot,
+      end_slot,
+      start_date,
+      end_date,
+    });
+
     return api.post("/schedules", {
       course_id,
       classroom_id,
       dayOfWeek,
       start_slot,
       end_slot,
+      start_date,
+      end_date,
     });
   },
   delete: (schedule_id) => {
@@ -163,7 +183,15 @@ export const schedulesAPI = {
   },
   update: (
     schedule_id,
-    { course_id, classroom_id, dayOfWeek, start_slot, end_slot },
+    {
+      course_id,
+      classroom_id,
+      dayOfWeek,
+      start_slot,
+      end_slot,
+      start_date,
+      end_date,
+    },
   ) => {
     return api.patch(`/schedules/${schedule_id}`, {
       course_id,
@@ -171,6 +199,8 @@ export const schedulesAPI = {
       dayOfWeek,
       start_slot,
       end_slot,
+      start_date,
+      end_date,
     });
   },
 };

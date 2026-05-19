@@ -66,8 +66,9 @@ const SysAdminUsers = () => {
         address: "",
       });
       setShowForm(false);
+      setRepair(false);
+      setIdUpdate(0);
       await fetchUsers();
-      window.location.reload();
       toast.success("Create user success!");
     } catch (err) {
       console.log(err);
@@ -76,7 +77,17 @@ const SysAdminUsers = () => {
   };
 
   function handleClickCreateUser() {
-    setShowForm(!showForm);
+    // Reset form khi tạo mới
+    setFormData({
+      email: "",
+      password: "",
+      role: "student",
+      phone: "",
+      address: "",
+    });
+    setRepair(false);
+    setShowForm(true);
+    setIdUpdate(0);
   }
 
   const handleDeleteUser = async (id) => {
@@ -105,8 +116,8 @@ const SysAdminUsers = () => {
       });
     }
 
-    setRepair(!repair);
-    setShowForm(!showForm);
+    setRepair(true);
+    setShowForm(true);
     setIdUpdate(id);
   };
 
@@ -129,15 +140,28 @@ const SysAdminUsers = () => {
         phone: "",
         address: "",
       });
-      setShowForm(!showForm);
-      setRepair(!repair);
+      setShowForm(false);
+      setRepair(false);
+      setIdUpdate(0);
       await fetchUsers();
-      window.location.reload();
       toast.success("Update user success!");
     } catch (err) {
       console.log(err);
       toast.error("Update user false!");
     }
+  };
+
+  const handleCancelForm = () => {
+    setShowForm(false);
+    setRepair(false);
+    setIdUpdate(0);
+    setFormData({
+      email: "",
+      password: "",
+      role: "student",
+      phone: "",
+      address: "",
+    });
   };
 
   return (
@@ -236,9 +260,26 @@ const SysAdminUsers = () => {
 
           <button
             type="submit"
-            style={{ padding: "10px 20px", cursor: "pointer" }}
+            style={{
+              padding: "10px 20px",
+              cursor: "pointer",
+              marginRight: "10px",
+            }}
           >
             {repair ? "Cập nhật User" : "Tạo User"}
+          </button>
+          <button
+            type="button"
+            onClick={handleCancelForm}
+            style={{
+              padding: "10px 20px",
+              cursor: "pointer",
+              background: "#e74c3c",
+              color: "white",
+              border: "none",
+            }}
+          >
+            Hủy
           </button>
         </form>
       )}

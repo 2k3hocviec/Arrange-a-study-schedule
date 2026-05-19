@@ -1,3 +1,5 @@
+@import "./styles/responsive.css";
+
 * {
   box-sizing: border-box;
 }
@@ -15,17 +17,4 @@ body {
 code {
   font-family:
     source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  body {
-    font-size: 14px;
-  }
-}
-
-@media (max-width: 480px) {
-  body {
-    font-size: 12px;
-  }
 }

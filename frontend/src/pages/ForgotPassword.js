@@ -10,6 +10,7 @@ const pageWrapper = {
   justifyContent: "center",
   alignItems: "center",
   minHeight: "100vh",
+  padding: "clamp(12px, 3vw, 24px)",
   overflow: "hidden",
   fontFamily: "'Segoe UI', Roboto, sans-serif",
   backgroundColor: "#0a0b10",
@@ -38,7 +39,7 @@ const card = {
   zIndex: 10,
   background: "rgba(255, 255, 255, 0.95)",
   backdropFilter: "blur(10px)",
-  padding: "50px 40px",
+  padding: "clamp(20px, 5vw, 50px) clamp(16px, 4vw, 40px)",
   borderRadius: "24px",
   boxShadow: "0 20px 40px rgba(0,0,0,0.4)",
   width: "100%",
@@ -49,10 +50,10 @@ const card = {
 
 const inputStyle = {
   width: "100%",
-  padding: "12px 15px",
+  padding: "clamp(10px, 2vw, 12px) clamp(12px, 2vw, 15px)",
   borderRadius: "10px",
   border: "1px solid #ddd",
-  fontSize: "16px",
+  fontSize: "clamp(14px, 2vw, 16px)",
   marginTop: "8px",
   boxSizing: "border-box",
   outline: "none",
@@ -61,15 +62,15 @@ const inputStyle = {
 
 const buttonStyle = {
   width: "100%",
-  padding: "14px",
+  padding: "clamp(12px, 2vw, 14px)",
   background: "linear-gradient(135deg, #c0392b 0%, #e74c3c 100%)",
   color: "white",
   border: "none",
   borderRadius: "10px",
   cursor: "pointer",
   fontWeight: "bold",
-  fontSize: "16px",
-  marginTop: "25px",
+  fontSize: "clamp(14px, 2vw, 16px)",
+  marginTop: "clamp(15px, 3vw, 25px)",
   boxShadow: "0 4px 15px rgba(192, 57, 43, 0.3)",
 };
 
@@ -78,7 +79,7 @@ const backButtonStyle = {
   border: "none",
   color: "#c0392b",
   cursor: "pointer",
-  fontSize: "14px",
+  fontSize: "clamp(12px, 2vw, 14px)",
   fontWeight: "600",
   marginTop: "20px",
   textDecoration: "underline",
