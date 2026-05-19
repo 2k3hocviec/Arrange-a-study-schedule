@@ -12,7 +12,7 @@ const formatSchedules = (schedules) => {
       (s) =>
         `${
           s.dayOfWeek === 8 ? "Chủ nhật" : `Thứ ${s.dayOfWeek}`
-        } (${s.start_slot}-${s.end_slot})`,
+        } (${s.start_slot}-${s.end_slot}) [${s.start_date}=>${s.end_date}]`,
     )
     .join(", ");
 };
@@ -152,9 +152,7 @@ const StudentRegister = ({
 
   return (
     <div>
-      <h2 style={{ color: "#2c3e50", marginBottom: "8px" }}>
-        SV_BM 2 - ĐĂNG KÝ MÔN HỌC
-      </h2>
+      <h2 style={{ color: "#2c3e50", marginBottom: "8px" }}>ĐĂNG KÝ MÔN HỌC</h2>
       <p style={{ color: "#7f8c8d", marginBottom: "20px" }}>
         · Trạng thái đăng ký:{" "}
         <strong style={{ color: REGISTRATION_OPEN ? "#27ae60" : "#e74c3c" }}>
@@ -245,7 +243,6 @@ const StudentRegister = ({
                   }}
                 >
                   <th style={{ padding: "12px" }}>STT</th>
-                  <th>Mã khóa học</th>
                   <th>Mã môn học</th>
                   <th>Tên môn học</th>
                   <th>Số tín chỉ</th>
@@ -269,7 +266,7 @@ const StudentRegister = ({
                       style={{ borderBottom: "1px solid #eee" }}
                     >
                       <td style={{ padding: "12px" }}>{index + 1}</td>
-                      <td>{course.course_id}</td>
+
                       <td>{course.subject?.subject_id}</td>
                       <td>{course.subject?.name}</td>
                       <td>{course.subject?.credits}</td>

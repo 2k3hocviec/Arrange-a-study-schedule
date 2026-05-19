@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { subjectsAPI } from "../services/api";
 import toast from "react-hot-toast";
+import { MdSubject } from "react-icons/md";
 
 const AdminSubjects = () => {
   const [subjects, setSubjects] = useState([]);
@@ -100,7 +101,7 @@ const AdminSubjects = () => {
     <>
       <div>
         <h2 style={{ color: "#2c3e50", marginBottom: "20px" }}>
-          📚 QUẢN LÝ DANH MỤC MÔN HỌC
+          <MdSubject /> QUẢN LÝ DANH MỤC MÔN HỌC
         </h2>
         <button
           onClick={handleClickCreateSubject}

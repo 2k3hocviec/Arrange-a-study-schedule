@@ -8,9 +8,7 @@ const StudentNotifications = ({ registeredIds = [] }) => {
 
   return (
     <div>
-      <h2 style={{ color: "#2c3e50", marginBottom: "8px" }}>
-        SV_BM 4 - THÔNG BÁO
-      </h2>
+      <h2 style={{ color: "#2c3e50", marginBottom: "8px" }}>THÔNG BÁO</h2>
       <p style={{ color: "#7f8c8d", marginBottom: "20px" }}>
         Sinh viên chỉ nhận thông báo toàn trường hoặc liên quan đến môn đã đăng
         ký.

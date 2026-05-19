@@ -1,7 +1,7 @@
-import React, { useContext, useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../contexts/AuthContext";
 import toast from "react-hot-toast";
+import { authAPI } from "../services/api";
 
 // --- STYLES ---
 const pageWrapper = {
@@ -34,7 +34,7 @@ const gridOverlay = {
   zIndex: 1,
 };
 
-const loginCard = {
+const card = {
   position: "relative",
   zIndex: 10,
   background: "rgba(255, 255, 255, 0.95)",
@@ -74,20 +74,43 @@ const buttonStyle = {
   boxShadow: "0 4px 15px rgba(192, 57, 43, 0.3)",
 };
 
-const Login = () => {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const { login } = useContext(AuthContext);
+const backButtonStyle = {
+  background: "none",
+  border: "none",
+  color: "#c0392b",
+  cursor: "pointer",
+  fontSize: "clamp(12px, 2vw, 14px)",
+  fontWeight: "600",
+  marginTop: "20px",
+  textDecoration: "underline",
+};
+
+const ForgotPassword = () => {
+  const [email, setEmail] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
+  const handleForgotPassword = async (e) => {
     e.preventDefault();
+
+    if (!email.trim()) {
+      toast.error("Please enter your email or account");
+      return;
+    }
+
+    setIsLoading(true);
     try {
-      const data = await login(username, password);
-      // Redirect theo role
-      navigate(`/${data.user.role}/dashboard`);
+      await authAPI.forgotPassword(email);
+      toast.success("New password sent to your email");
+      // Navigate back to login after 2 seconds
+      setTimeout(() => {
+        navigate("/login");
+      }, 3000);
     } catch (err) {
-      toast.success("Login failed!");
+      const errorMessage = err.response?.data?.message || "Request failed";
+      toast.error(errorMessage);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -96,8 +119,8 @@ const Login = () => {
       {/* Lớp lưới trang trí */}
       <div style={gridOverlay}></div>
 
-      <div style={loginCard}>
-        <div style={{ fontSize: "50px", marginBottom: "15px" }}>🏛️</div>
+      <div style={card}>
+        <div style={{ fontSize: "50px", marginBottom: "15px" }}>🔐</div>
         <h2
           style={{
             margin: "0 0 5px 0",
@@ -105,72 +128,56 @@ const Login = () => {
             letterSpacing: "1px",
           }}
         >
-          HỆ THỐNG QUẢN LÝ
+          RESET PASSWORD
         </h2>
 
-        <p style={{ margin: "0 0 35px 0", color: "#666" }}>
-          Học viện Công nghệ Bưu chính Viễn thông
+        <p style={{ margin: "0 0 35px 0", color: "#666", fontSize: "14px" }}>
+          Enter your email and we will send you a new password
         </p>
 
-        <form onSubmit={handleLogin}>
+        <form onSubmit={handleForgotPassword}>
           <div style={{ textAlign: "left", marginBottom: "20px" }}>
             <label
               style={{ fontWeight: "600", color: "#444", fontSize: "14px" }}
             >
-              Tên đăng nhập
+              Email
             </label>
             <input
-              type="text"
-              placeholder="Mã số sinh viên / Giảng viên"
+              type="email"
+              placeholder="Enter your email"
               style={inputStyle}
-              onChange={(e) => setUsername(e.target.value)}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               onFocus={(e) => (e.target.style.borderColor = "#c0392b")}
               onBlur={(e) => (e.target.style.borderColor = "#ddd")}
               required
             />
           </div>
 
-          <div style={{ textAlign: "left", marginBottom: "10px" }}>
-            <label
-              style={{ fontWeight: "600", color: "#444", fontSize: "14px" }}
-            >
-              Mật khẩu
-            </label>
-            <input
-              type="password"
-              placeholder="••••••••"
-              style={inputStyle}
-              onChange={(e) => setPassword(e.target.value)}
-              onFocus={(e) => (e.target.style.borderColor = "#c0392b")}
-              onBlur={(e) => (e.target.style.borderColor = "#ddd")}
-              required
-            />
-          </div>
-
-          <button type="submit" style={buttonStyle}>
-            ĐĂNG NHẬP NGAY
+          <button
+            type="submit"
+            style={buttonStyle}
+            disabled={isLoading}
+            onMouseOver={(e) => {
+              if (!isLoading) e.target.style.opacity = "0.9";
+            }}
+            onMouseOut={(e) => {
+              e.target.style.opacity = "1";
+            }}
+          >
+            {isLoading ? "PROCESSING..." : "SEND NEW PASSWORD"}
           </button>
         </form>
 
         <div style={{ marginTop: "25px", fontSize: "13px", color: "#888" }}>
-          <button
-            onClick={() => navigate("/forgot-password")}
-            style={{
-              background: "none",
-              border: "none",
-              color: "#c0392b",
-              cursor: "pointer",
-              textDecoration: "none",
-              fontWeight: "500",
-            }}
-          >
-            Quên mật khẩu?
+          <button onClick={() => navigate("/login")} style={backButtonStyle}>
+            ← Back to login
           </button>
-          <p style={{ marginTop: "10px" }}>Hỗ trợ kỹ thuật: 024.xxx.xxxx</p>
+          <p style={{ marginTop: "15px" }}>Technical Support: 024.xxx.xxxx</p>
         </div>
       </div>
     </div>
   );
 };
 
-export default Login;
+export default ForgotPassword;

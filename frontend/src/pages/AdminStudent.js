@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { studentsAPI } from "../services/api";
 import toast from "react-hot-toast";
+import { PiStudentDuotone } from "react-icons/pi";
 
 const AdminStudents = () => {
   const [students, setStudents] = useState([]);
@@ -103,7 +104,7 @@ const AdminStudents = () => {
   return (
     <div>
       <h2 style={{ color: "#2c3e50", marginBottom: "20px" }}>
-        👥 QUẢN LÝ SINH VIÊN
+        <PiStudentDuotone /> QUẢN LÝ SINH VIÊN
       </h2>
 
       <button

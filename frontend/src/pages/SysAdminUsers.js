@@ -7,6 +7,18 @@ const SysAdminUsers = () => {
   const [users, setUsers] = useState([]);
   const [repair, setRepair] = useState(false);
   const [idUpdate, setIdUpdate] = useState(0);
+
+  // Function to mask password
+  const maskPassword = (password) => {
+    if (!password) return "****";
+    if (password.length <= 10) return "*".repeat(password.length);
+    return (
+      password.substring(0, 4) +
+      "*".repeat(6) +
+      password.substring(password.length - 4)
+    );
+  };
+
   const fetchUsers = async () => {
     try {
       const response = await usersAPI.getAll(`?_t=${Date.now()}`);
@@ -54,8 +66,9 @@ const SysAdminUsers = () => {
         address: "",
       });
       setShowForm(false);
+      setRepair(false);
+      setIdUpdate(0);
       await fetchUsers();
-      window.location.reload();
       toast.success("Create user success!");
     } catch (err) {
       console.log(err);
@@ -64,7 +77,17 @@ const SysAdminUsers = () => {
   };
 
   function handleClickCreateUser() {
-    setShowForm(!showForm);
+    // Reset form khi tạo mới
+    setFormData({
+      email: "",
+      password: "",
+      role: "student",
+      phone: "",
+      address: "",
+    });
+    setRepair(false);
+    setShowForm(true);
+    setIdUpdate(0);
   }
 
   const handleDeleteUser = async (id) => {
@@ -79,20 +102,37 @@ const SysAdminUsers = () => {
   };
 
   const handleOpenFormUpdateUser = async (id) => {
-    setRepair(!repair);
-    setShowForm(!showForm);
+    // Find user data from users array
+    const userToEdit = users.find((user) => user.id === id);
+
+    if (userToEdit) {
+      // Populate form with existing user data
+      setFormData({
+        email: userToEdit.email,
+        password: userToEdit.password, // Keep original password, user can clear if they want to change
+        role: userToEdit.role,
+        phone: userToEdit.phone || "",
+        address: userToEdit.address || "",
+      });
+    }
+
+    setRepair(true);
+    setShowForm(true);
     setIdUpdate(id);
   };
 
   const handleSubmitUpdate = async (e) => {
     e.preventDefault();
-    if (!formData.email || !formData.password) {
-      toast.error("The data cannot be blank.");
+    if (!formData.email) {
+      toast.error("Email cannot be blank.");
       return;
     }
 
+    // Only require password if it was changed (not empty)
+    let updateData = { ...formData };
+
     try {
-      await usersAPI.update(idUpdate, formData);
+      await usersAPI.update(idUpdate, updateData);
       setFormData({
         email: "",
         password: "",
@@ -100,15 +140,28 @@ const SysAdminUsers = () => {
         phone: "",
         address: "",
       });
-      setShowForm(!showForm);
-      setRepair(!repair);
+      setShowForm(false);
+      setRepair(false);
+      setIdUpdate(0);
       await fetchUsers();
-      window.location.reload();
       toast.success("Update user success!");
     } catch (err) {
       console.log(err);
       toast.error("Update user false!");
     }
+  };
+
+  const handleCancelForm = () => {
+    setShowForm(false);
+    setRepair(false);
+    setIdUpdate(0);
+    setFormData({
+      email: "",
+      password: "",
+      role: "student",
+      phone: "",
+      address: "",
+    });
   };
 
   return (
@@ -158,10 +211,10 @@ const SysAdminUsers = () => {
             <input
               type="password"
               name="password"
-              placeholder="Password"
+              placeholder={"Password"}
               value={formData.password}
               onChange={handleInputChange}
-              required
+              required={!repair}
               style={{ width: "100%", padding: "8px" }}
             />
           </div>
@@ -207,9 +260,26 @@ const SysAdminUsers = () => {
 
           <button
             type="submit"
-            style={{ padding: "10px 20px", cursor: "pointer" }}
+            style={{
+              padding: "10px 20px",
+              cursor: "pointer",
+              marginRight: "10px",
+            }}
           >
             {repair ? "Cập nhật User" : "Tạo User"}
+          </button>
+          <button
+            type="button"
+            onClick={handleCancelForm}
+            style={{
+              padding: "10px 20px",
+              cursor: "pointer",
+              background: "#e74c3c",
+              color: "white",
+              border: "none",
+            }}
+          >
+            Hủy
           </button>
         </form>
       )}
@@ -234,7 +304,7 @@ const SysAdminUsers = () => {
             <tr key={user.id} style={{ border: "1px solid #eee" }}>
               <td style={{ padding: "12px 0px 12px 12px" }}>{user.id}</td>
               <td>{user.email}</td>
-              <td>{user.password}</td>
+              <td>{maskPassword(user.password)}</td>
               <td>{user.role}</td>
               <td>{user.phone}</td>
               <td>{user.address}</td>

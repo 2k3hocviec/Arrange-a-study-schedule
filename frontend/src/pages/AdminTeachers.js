@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { teachersAPI } from "../services/api";
 import toast from "react-hot-toast";
+import { GiTeacher } from "react-icons/gi";
 
 const AdminTeachers = () => {
   const [teachers, setTeachers] = useState([]);
@@ -121,7 +122,7 @@ const AdminTeachers = () => {
   return (
     <div>
       <h2 style={{ color: "#2c3e50", marginBottom: "20px" }}>
-        👥 QUẢN LÝ GIẢNG VIÊN
+        <GiTeacher /> QUẢN LÝ GIẢNG VIÊN
       </h2>
 
       <button

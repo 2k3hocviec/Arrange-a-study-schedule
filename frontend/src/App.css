@@ -39,4 +39,224 @@
 
 button {
   cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+/* ============================================
+   RESPONSIVE TABLE STYLES
+   ============================================ */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  margin: clamp(12px, 3vw, 24px) 0;
+}
+
+thead {
+  background-color: #f8f9fa;
+}
+
+th {
+  padding: clamp(12px, 2vw, 16px);
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 2px solid #e1e8ed;
+  font-size: clamp(12px, 2vw, 14px);
+  color: #2c3e50;
+}
+
+td {
+  padding: clamp(12px, 2vw, 16px);
+  border-bottom: 1px solid #e1e8ed;
+  font-size: clamp(12px, 2vw, 14px);
+}
+
+tbody tr:hover {
+  background-color: #f8f9fa;
+  transition: background-color 0.3s ease;
+}
+
+/* ============================================
+   RESPONSIVE FORM STYLES
+   ============================================ */
+
+.form-group {
+  margin-bottom: clamp(12px, 3vw, 20px);
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: var(--spacing-sm);
+  font-weight: 600;
+  color: #444;
+  font-size: clamp(12px, 2vw, 14px);
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+  width: 100%;
+  padding: clamp(8px, 1.5vw, 12px) clamp(12px, 2vw, 15px);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: clamp(14px, 2vw, 16px);
+  transition: all 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(192, 57, 43, 0.1);
+}
+
+/* ============================================
+   MOBILE RESPONSIVE ADJUSTMENTS
+   ============================================ */
+
+@media (max-width: 767px) {
+  table {
+    font-size: 12px;
+  }
+
+  th,
+  td {
+    padding: clamp(8px, 1vw, 12px);
+    font-size: 12px;
+  }
+
+  /* Stack table on mobile - alternative view */
+  @supports (display: grid) {
+    table {
+      display: block;
+      width: 100%;
+      border: none;
+    }
+
+    thead {
+      display: none;
+    }
+
+    tbody,
+    tr,
+    td {
+      display: block;
+      width: 100%;
+    }
+
+    tr {
+      margin-bottom: 1rem;
+      border: 1px solid #e1e8ed;
+      border-radius: 8px;
+      padding: clamp(12px, 3vw, 16px);
+    }
+
+    td {
+      text-align: right;
+      padding-left: 50%;
+      position: relative;
+      border: none;
+      padding-bottom: clamp(8px, 1vw, 12px);
+      font-size: 12px;
+    }
+
+    td:before {
+      content: attr(data-label);
+      position: absolute;
+      left: clamp(12px, 3vw, 16px);
+      font-weight: bold;
+      text-transform: uppercase;
+      font-size: 10px;
+      color: #7f8c8d;
+    }
+  }
+}
+
+/* ============================================
+   RESPONSIVE LAYOUT HELPERS
+   ============================================ */
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(12px, 3vw, 24px);
+  margin: clamp(12px, 3vw, 24px) 0;
+}
+
+.col {
+  flex: 1;
+  min-width: 250px;
+}
+
+.col-full {
+  flex: 0 0 100%;
+}
+
+.col-half {
+  flex: 0 0 calc(50% - clamp(6px, 1.5vw, 12px));
+}
+
+.col-third {
+  flex: 0 0 calc(33.333% - clamp(8px, 2vw, 16px));
+}
+
+@media (max-width: 768px) {
+  .col-half,
+  .col-third {
+    flex: 0 0 100%;
+  }
+
+  .row {
+    gap: clamp(8px, 2vw, 16px);
+  }
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.mt {
+  margin-top: clamp(12px, 3vw, 24px);
+}
+
+.mb {
+  margin-bottom: clamp(12px, 3vw, 24px);
+}
+
+.p {
+  padding: clamp(12px, 3vw, 24px);
+}
+
+.shadow {
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.shadow-lg {
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.rounded {
+  border-radius: 12px;
+}
+
+.border {
+  border: 1px solid var(--border);
 }
