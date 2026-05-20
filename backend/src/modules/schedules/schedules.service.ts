@@ -32,15 +32,13 @@ export class SchedulesService {
     if (dto.start_date && dto.end_date) {
       const startDate = new Date(dto.start_date);
       const endDate = new Date(dto.end_date);
-
-      query.andWhere(
-        `(schedule.start_date IS NULL OR schedule.end_date IS NULL OR 
-          (schedule.start_date <= :endDate AND schedule.end_date >= :startDate))`,
-        {
-          startDate,
+      query
+        .andWhere(`schedule.start_date <= :endDate`, {
           endDate,
-        },
-      );
+        })
+        .andWhere(`schedule.end_date >= :startDate`, {
+          startDate,
+        });
     }
 
     return await query.getOne();
@@ -80,14 +78,13 @@ export class SchedulesService {
       const startDate = new Date(dto.start_date);
       const endDate = new Date(dto.end_date);
 
-      query.andWhere(
-        `(schedule.start_date IS NULL OR schedule.end_date IS NULL OR 
-          (schedule.start_date <= :endDate AND schedule.end_date >= :startDate))`,
-        {
-          startDate,
+      query
+        .andWhere(`schedule.start_date <= :endDate`, {
           endDate,
-        },
-      );
+        })
+        .andWhere(`schedule.end_date >= :startDate`, {
+          startDate,
+        });
     }
 
     const conflict = await query.getOne();

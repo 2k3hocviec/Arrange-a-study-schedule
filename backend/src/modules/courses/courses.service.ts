@@ -102,6 +102,13 @@ export class CoursesService {
     });
   }
 
+  async findOneByCourseIDWithSubject(courseId: string) {
+    return await this.courseRepository.findOne({
+      where: { course_id: courseId },
+      relations: ['subject'],
+    });
+  }
+
   async updateRemaining(courseId: string, remainingCapacity: number) {
     return await this.courseRepository.update(
       { course_id: courseId },

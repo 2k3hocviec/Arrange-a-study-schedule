@@ -89,7 +89,7 @@ export class EnrollmentsService {
     }
 
     // Kiểm tra course có tồn tại không
-    const course = await this.coursesService.findOneByCourseID(
+    const course = await this.coursesService.findOneByCourseIDWithSubject(
       createEnrollmentDto.course_id,
     );
     if (!course) {
@@ -104,6 +104,37 @@ export class EnrollmentsService {
       course.remaining_capacity <= 0
     ) {
       throw new BadRequestException('This course is fully booked');
+    }
+
+    // Kiểm tra sinh viên đã từng đăng ký môn học này (theo subject_id) chưa
+    const existingEnrollments = await this.enrollmentRepository.find({
+      where: { student_id: createEnrollmentDto.student_id },
+      relations: ['course', 'course.subject'],
+    });
+
+    const hasEnrolledSameSubject = existingEnrollments.some(
+      (enrollment) => enrollment.course.subject_id === course.subject_id,
+    );
+
+    if (hasEnrolledSameSubject) {
+      throw new BadRequestException(`This subject has been registed`);
+    }
+
+    // Kiểm tra tổng số tín chỉ không vượt quá 18
+    const totalCurrentCredits = existingEnrollments.reduce(
+      (sum, enrollment) => {
+        return sum + (enrollment.course.subject?.credits || 0);
+      },
+      0,
+    );
+
+    console.log(course);
+
+    const newCourseCredits = course.subject?.credits || 0;
+    const totalCreditsAfterEnroll = totalCurrentCredits + newCourseCredits;
+
+    if (totalCreditsAfterEnroll > 18) {
+      throw new BadRequestException(`Over max 18 credit`);
     }
 
     const conflict = await this.checkScheduleConflict(
