@@ -158,16 +158,6 @@ export const schedulesAPI = {
     start_date,
     end_date,
   }) => {
-    console.log({
-      course_id,
-      classroom_id,
-      dayOfWeek,
-      start_slot,
-      end_slot,
-      start_date,
-      end_date,
-    });
-
     return api.post("/schedules", {
       course_id,
       classroom_id,
@@ -234,7 +224,6 @@ export const enrollmentsAPI = {
     return api.get(`/enrollments/student/${student_id}`);
   },
   getCoursesWithDetails: (student_id) => {
-    console.log(student_id);
     return api.get(`/enrollments/student/${student_id}/courses-details`);
   },
   delete: ({ student_id, course_id }) => {

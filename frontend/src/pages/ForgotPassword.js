@@ -94,21 +94,21 @@ const ForgotPassword = () => {
     e.preventDefault();
 
     if (!email.trim()) {
-      toast.error("Please enter your email or account");
+      toast.error("Vui lòng nhập email");
       return;
     }
 
     setIsLoading(true);
     try {
       await authAPI.forgotPassword(email);
-      toast.success("New password sent to your email");
+      toast.success("Mật khẩu mới đã gửi tới email của bạn");
       // Navigate back to login after 2 seconds
       setTimeout(() => {
         navigate("/login");
       }, 3000);
     } catch (err) {
       const errorMessage = err.response?.data?.message || "Request failed";
-      toast.error(errorMessage);
+      toast.error("Lỗi gửi email");
     } finally {
       setIsLoading(false);
     }

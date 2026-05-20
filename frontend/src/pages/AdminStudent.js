@@ -18,7 +18,7 @@ const AdminStudents = () => {
       const response = await studentsAPI.getAll();
       setStudents(response.data);
     } catch (e) {
-      toast.error("Don't load sucess data");
+      toast.error("Tải dữ liệu không thành công");
     }
   };
 

@@ -20,7 +20,7 @@ const AdminTeachers = () => {
       const response = await teachersAPI.getAll();
       setTeachers(response.data);
     } catch (e) {
-      toast.error("Don't load sucess data");
+      toast.error("Tải dữ liệu không thành công");
     }
   };
 

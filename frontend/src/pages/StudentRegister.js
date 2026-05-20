@@ -121,9 +121,7 @@ const StudentRegister = ({
       // Cập nhật lại danh sách courses để hiển thị remaining_capacity mới
       await refreshCourses();
     } catch (err) {
-      toast.error(
-        err.response?.data?.message || "Đăng ký thất bại. Vui lòng thử lại.",
-      );
+      toast.error("Đăng ký thất bại. Vui lòng thử lại.");
     } finally {
       setEnrollingCourseId(null);
     }
@@ -143,10 +141,7 @@ const StudentRegister = ({
       await refreshCourses();
     } catch (err) {
       console.error("Error canceling course:", err);
-      toast.error(
-        err.response?.data?.message ||
-          "Hủy đăng ký thất bại. Vui lòng thử lại.",
-      );
+      toast.error("Hủy đăng ký thất bại. Vui lòng thử lại.");
     }
   };
 

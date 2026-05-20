@@ -24,7 +24,7 @@ const SysAdminUsers = () => {
       const response = await usersAPI.getAll(`?_t=${Date.now()}`);
       setUsers(response.data);
     } catch (error) {
-      toast.error("Don't load sucess data");
+      toast.error("Tải dữ liệu không thành công");
     }
   };
   useEffect(() => {
@@ -52,7 +52,7 @@ const SysAdminUsers = () => {
     e.preventDefault();
 
     if (!formData.email || !formData.password) {
-      toast.error("The data cannot be blank.");
+      toast.error("Dữ liệu trống");
       return;
     }
 
@@ -69,10 +69,10 @@ const SysAdminUsers = () => {
       setRepair(false);
       setIdUpdate(0);
       await fetchUsers();
-      toast.success("Create user success!");
+      toast.success("Tạo user thành công");
     } catch (err) {
       console.log(err);
-      toast.error("Create user false!");
+      toast.error("Tạo user thất bại");
     }
   };
 
@@ -124,7 +124,7 @@ const SysAdminUsers = () => {
   const handleSubmitUpdate = async (e) => {
     e.preventDefault();
     if (!formData.email) {
-      toast.error("Email cannot be blank.");
+      toast.error("Không được để trống email");
       return;
     }
 
@@ -144,10 +144,10 @@ const SysAdminUsers = () => {
       setRepair(false);
       setIdUpdate(0);
       await fetchUsers();
-      toast.success("Update user success!");
+      toast.success("Cập nhật thành công");
     } catch (err) {
       console.log(err);
-      toast.error("Update user false!");
+      toast.error("Cập nhật thất bại");
     }
   };
 

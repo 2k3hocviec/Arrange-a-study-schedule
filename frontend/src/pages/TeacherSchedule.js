@@ -40,8 +40,6 @@ const TeacherSchedule = ({ teacherInfo }) => {
 
   // Kiểm tra schedule có nằm trong tuần được chọn không
   const isScheduleInWeek = (schedule) => {
-    console.log(schedule);
-
     if (!weekStart || !schedule.start_date || !schedule.end_date) {
       return true; // Nếu không chọn tuần hoặc schedule không có ngày, hiển thị tất cả
     }

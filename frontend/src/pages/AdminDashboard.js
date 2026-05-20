@@ -49,7 +49,7 @@ const AdminDashboard = () => {
 
   const activeStyle = (path) => ({
     ...navItemStyle,
-    background: location.pathname.includes(path) ? "#6c5ce7" : "transparent",
+    background: location.pathname.includes(path) ? "#c2c0d5" : "transparent",
   });
 
   const HomeContent = (
@@ -143,7 +143,7 @@ const AdminDashboard = () => {
           <h2
             style={{
               textAlign: "center",
-              color: "#a29bfe",
+              color: "#dadae4",
               marginBottom: "30px",
               fontSize: "clamp(16px, 3vw, 18px)",
             }}
@@ -223,16 +223,7 @@ const AdminDashboard = () => {
         </div>
 
         {/* Main Content */}
-        <div
-          style={{
-            flex: 1,
-            padding: "clamp(16px, 3vw, 40px)",
-            background: "#f8f9fa",
-            overflowY: "auto",
-            display: "flex",
-            flexDirection: "column",
-          }}
-        >
+        <div style={mainContentStyle}>
           <MobileMenuButton
             onClick={toggleMobileMenu}
             isOpen={isMobileMenuOpen}
@@ -250,6 +241,15 @@ const AdminDashboard = () => {
       </div>
     </div>
   );
+};
+
+const mainContentStyle = {
+  flex: 1,
+  padding: "clamp(16px, 3vw, 40px)",
+  background: "#f8f9fa",
+  overflowY: "auto",
+  display: "flex",
+  flexDirection: "column",
 };
 
 const navItemStyle = {

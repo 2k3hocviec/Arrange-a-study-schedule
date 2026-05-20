@@ -87,7 +87,7 @@ const Login = () => {
       // Redirect theo role
       navigate(`/${data.user.role}/dashboard`);
     } catch (err) {
-      toast.success("Login failed!");
+      toast.success("Đăng nhập không thành công");
     }
   };
 

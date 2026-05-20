@@ -241,6 +241,7 @@ const AdminSchedule = () => {
                   value={formData.start_date}
                   onChange={handleInputChange}
                   style={inputStyle}
+                  required
                 />
               </div>
               <div>
@@ -251,6 +252,7 @@ const AdminSchedule = () => {
                   value={formData.end_date}
                   onChange={handleInputChange}
                   style={inputStyle}
+                  required
                 />
               </div>
             </div>
