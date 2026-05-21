@@ -9,14 +9,18 @@ async function bootstrap() {
   });
   app.useGlobalPipes(new ValidationPipe());
   app.useGlobalFilters(new AllHttpExceptionFilter());
+
+  // Support environment variables for production
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+
   app.enableCors({
-    origin: 'http://localhost:3000', // Cho phép frontend này
-    // origi: true // cho toàn bộ front end đăng nhập
-    credentials: true, // Cho phép cookies
+    origin: frontendUrl,
+    credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   });
-  await app.listen(8000);
-  // await app.listen(8000, '0.0.0.0');
+
+  const port = process.env.PORT || 8000;
+  await app.listen(port, '0.0.0.0');
 }
 bootstrap();

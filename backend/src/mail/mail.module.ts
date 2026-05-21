@@ -9,8 +9,6 @@ import { MailService } from './mail.service';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => {
-        console.log('MAIL_USER:', configService.get('MAIL_USER'));
-        console.log('MAIL_PASSWORD:', configService.get('MAIL_PASSWORD'));
         return {
           transport: {
             host: configService.get('MAIL_HOST'),

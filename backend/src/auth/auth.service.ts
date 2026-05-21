@@ -22,7 +22,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid email or password');
     }
 
-    // So sánh mật khẩu nhập vào với hash mật khẩu trong database
+    //So sánh mật khẩu nhập vào với hash mật khẩu trong database
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid email or password');

@@ -217,8 +217,6 @@ LƯU Ý QUAN TRỌNG:
       // Tìm function calls trong response
       const functionCalls = parts.filter((p) => p.functionCall);
 
-      console.log(functionCalls);
-
       if (functionCalls.length === 0) {
         // Không còn function call → trả về text cuối
         return response.text();

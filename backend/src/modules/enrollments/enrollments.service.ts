@@ -128,8 +128,6 @@ export class EnrollmentsService {
       0,
     );
 
-    console.log(course);
-
     const newCourseCredits = course.subject?.credits || 0;
     const totalCreditsAfterEnroll = totalCurrentCredits + newCourseCredits;
 
