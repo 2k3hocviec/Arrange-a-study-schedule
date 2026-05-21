@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import toast from "react-hot-toast";
-import { RiRobot2Line, RiRobot3Fill } from "react-icons/ri";
+import { RiRobot2Line } from "react-icons/ri";
 import ReactMarkdown from "react-markdown";
 
 const ChatBox = ({ studentInfo }) => {
@@ -52,7 +52,6 @@ const ChatBox = ({ studentInfo }) => {
         }),
       });
 
-      // ← Thêm phần này, có thể bạn đang thiếu
       const data = await response.json();
       console.log("Response status:", response.status);
       console.log("Response data:", data);
