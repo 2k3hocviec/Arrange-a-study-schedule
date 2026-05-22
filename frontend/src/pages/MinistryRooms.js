@@ -149,79 +149,120 @@ const MinistryRooms = () => {
       </div>
 
       {/* FORM */}
+      {/* FORM */}
       {showForm && (
-        <form onSubmit={handleSubmit} style={S.form}>
-          <div style={S.formTitle}>
-            {repair ? "Cập nhật phòng học" : "Thêm phòng học mới"}
-          </div>
-          <div style={S.formGrid}>
-            <div>
-              <label style={S.label}>Mã phòng</label>
-              <input
-                name="classroom_id"
-                value={formData.classroom_id}
-                onChange={handleInputChange}
-                disabled={repair}
-                style={{ ...S.input, ...(repair ? S.inputDisabled : {}) }}
-                placeholder="VD: A2-301"
-                required
-              />
-            </div>
-            <div>
-              <label style={S.label}>Sức chứa</label>
-              <input
-                type="number"
-                name="capacity"
-                value={formData.capacity}
-                onChange={handleInputChange}
-                style={S.input}
-                required
-              />
-            </div>
-            <div>
-              <label style={S.label}>Loại phòng</label>
-              <select
-                name="type"
-                value={formData.type}
-                onChange={handleInputChange}
-                style={S.input}
-                required
+        <div style={S.modalOverlay}>
+          <div style={S.modalBox}>
+            {/* HEADER */}
+            <div style={S.modalHeader}>
+              <div style={S.formTitle}>
+                {repair ? "Cập nhật phòng học" : "Thêm phòng học mới"}
+              </div>
+
+              <button
+                onClick={() => setShowForm(false)}
+                style={S.closeBtn}
+                type="button"
               >
-                <option value="">-- Chọn loại --</option>
-                <option value="Theory">Theory</option>
-                <option value="Practice">Practice</option>
-              </select>
+                ✕
+              </button>
             </div>
-            <div>
-              <label style={S.label}>Thiết bị</label>
-              <input
-                name="description"
-                value={formData.description}
-                onChange={handleInputChange}
-                style={S.input}
-                placeholder="Máy chiếu, loa..."
-                required
-              />
-            </div>
-            <div>
-              <label style={S.label}>Trạng thái</label>
-              <select
-                name="status"
-                value={formData.status}
-                onChange={handleInputChange}
-                style={S.input}
-                required
-              >
-                <option value="">-- Chọn trạng thái --</option>
-                <option value="Ready">Ready</option>
-                <option value="Maintaince">Maintaince</option>
-              </select>
-            </div>
+
+            <form onSubmit={handleSubmit}>
+              <div style={S.formGrid}>
+                <div>
+                  <label style={S.label}>Mã phòng</label>
+
+                  <input
+                    name="classroom_id"
+                    value={formData.classroom_id}
+                    onChange={handleInputChange}
+                    disabled={repair}
+                    style={{
+                      ...S.input,
+                      ...(repair ? S.inputDisabled : {}),
+                    }}
+                    placeholder="VD: A2-301"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label style={S.label}>Sức chứa</label>
+
+                  <input
+                    type="number"
+                    name="capacity"
+                    value={formData.capacity}
+                    onChange={handleInputChange}
+                    style={S.input}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label style={S.label}>Loại phòng</label>
+
+                  <select
+                    name="type"
+                    value={formData.type}
+                    onChange={handleInputChange}
+                    style={S.input}
+                    required
+                  >
+                    <option value="">-- Chọn loại --</option>
+                    <option value="Theory">Theory</option>
+                    <option value="Practice">Practice</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style={S.label}>Thiết bị</label>
+
+                  <input
+                    name="description"
+                    value={formData.description}
+                    onChange={handleInputChange}
+                    style={S.input}
+                    placeholder="Máy chiếu, loa..."
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label style={S.label}>Trạng thái</label>
+
+                  <select
+                    name="status"
+                    value={formData.status}
+                    onChange={handleInputChange}
+                    style={S.input}
+                    required
+                  >
+                    <option value="">-- Chọn trạng thái --</option>
+                    <option value="Ready">Ready</option>
+                    <option value="Maintaince">Maintaince</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* FOOTER */}
+              <div style={S.modalFooter}>
+                <button
+                  type="button"
+                  onClick={() => setShowForm(false)}
+                  style={S.cancelBtn}
+                >
+                  Hủy
+                </button>
+
+                <button type="submit" style={S.submitBtn}>
+                  {repair ? "Cập nhật dữ liệu" : "Lưu phòng học"}
+                </button>
+              </div>
+            </form>
           </div>
-          <button type="submit" style={S.submitBtn}>
-            {repair ? "Cập nhật dữ liệu" : "Lưu phòng học"}
-          </button>
-        </form>
+        </div>
       )}
 
       {/* TABLE */}
@@ -533,6 +574,65 @@ const S = {
     color: "#64748b",
     fontSize: "13px",
     borderTop: "1px solid #f1f5f9",
+  },
+
+  modalOverlay: {
+    position: "fixed",
+    inset: 0,
+    background: "rgba(15,23,42,0.45)",
+    backdropFilter: "blur(4px)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 9999,
+    padding: "20px",
+  },
+
+  modalBox: {
+    width: "100%",
+    maxWidth: "850px",
+    background: "#fff",
+    borderRadius: "16px",
+    padding: "24px",
+    boxShadow: "0 20px 60px rgba(0,0,0,0.2)",
+    animation: "fadeIn 0.2s ease",
+  },
+
+  modalHeader: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: "20px",
+  },
+
+  closeBtn: {
+    width: "36px",
+    height: "36px",
+    borderRadius: "8px",
+    border: "none",
+    background: "#f1f5f9",
+    cursor: "pointer",
+    fontSize: "16px",
+    fontWeight: "700",
+    color: "#64748b",
+  },
+
+  modalFooter: {
+    display: "flex",
+    justifyContent: "flex-end",
+    gap: "12px",
+    marginTop: "24px",
+  },
+
+  cancelBtn: {
+    padding: "12px 20px",
+    borderRadius: "8px",
+    border: "1px solid #cbd5e1",
+    background: "#fff",
+    color: "#475569",
+    cursor: "pointer",
+    fontWeight: "600",
+    fontSize: "14px",
   },
 };
 

@@ -139,96 +139,123 @@ const MinistryCourses = () => {
         </div>
       </div>
 
-      {/* FORM */}
+      {/* FORM MODAL */}
       {showForm && (
-        <div style={formCard}>
-          <h3 style={formTitle}>
-            {repair ? "Cập nhật khóa học" : "Thêm khóa học mới"}
-          </h3>
-          <form onSubmit={handleSubmit}>
-            <div style={formGrid}>
-              <div style={fieldGroup}>
-                <label style={fieldLabel}>Mã môn học</label>
-                <select
-                  name="subject_id"
-                  value={formData.subject_id}
-                  onChange={handleInputChange}
-                  style={fieldInput}
-                  required
-                >
-                  <option value="">-- Chọn môn học --</option>
-                  {subjects.map((s) => (
-                    <option key={s.subject_id} value={s.subject_id}>
-                      {s.subject_id}
-                    </option>
-                  ))}
-                </select>
-              </div>
+        <div style={modalOverlay}>
+          <div style={formCard}>
+            {/* HEADER */}
+            <div style={modalHeader}>
+              <h3 style={formTitle}>
+                {repair ? "Cập nhật khóa học" : "Thêm khóa học mới"}
+              </h3>
 
-              <div style={fieldGroup}>
-                <label style={fieldLabel}>Mã giáo viên</label>
-                <select
-                  name="teacher_id"
-                  value={formData.teacher_id}
-                  onChange={handleInputChange}
-                  style={fieldInput}
-                  required
-                >
-                  <option value="">-- Chọn giáo viên --</option>
-                  {teachers.map((t) => (
-                    <option key={t.teacher_id} value={t.teacher_id}>
-                      {t.teacher_id}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div style={fieldGroup}>
-                <label style={fieldLabel}>Số chỗ tối đa</label>
-                <input
-                  type="number"
-                  name="capacity"
-                  value={formData.capacity}
-                  onChange={handleInputChange}
-                  style={fieldInput}
-                  placeholder="Nhập số lượng sinh viên tối đa"
-                  min="1"
-                  required
-                />
-              </div>
-
-              <div style={fieldGroup}>
-                <label style={fieldLabel}>Chỗ còn lại</label>
-                <input
-                  type="text"
-                  value={
-                    repair
-                      ? formData.remaining_capacity !== undefined
-                        ? formData.remaining_capacity
-                        : formData.capacity || 0
-                      : formData.capacity || 0
-                  }
-                  disabled
-                  style={{
-                    ...fieldInput,
-                    background: "#f1f5f9",
-                    cursor: "not-allowed",
-                    color: "#94a3b8",
-                  }}
-                />
-              </div>
+              <button onClick={() => setShowForm(false)} style={closeBtn}>
+                ✕
+              </button>
             </div>
 
-            <button
-              type="submit"
-              style={{
-                ...submitBtn,
-                background: repair ? "#4f46e5" : "#16a34a",
-              }}
-            >
-              {repair ? "Cập nhật dữ liệu" : "Lưu khóa học"}
-            </button>
-          </form>
+            <form onSubmit={handleSubmit}>
+              <div style={formGrid}>
+                <div style={fieldGroup}>
+                  <label style={fieldLabel}>Mã môn học</label>
+
+                  <select
+                    name="subject_id"
+                    value={formData.subject_id}
+                    onChange={handleInputChange}
+                    style={fieldInput}
+                    required
+                  >
+                    <option value="">-- Chọn môn học --</option>
+
+                    {subjects.map((s) => (
+                      <option key={s.subject_id} value={s.subject_id}>
+                        {s.subject_id}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div style={fieldGroup}>
+                  <label style={fieldLabel}>Mã giáo viên</label>
+
+                  <select
+                    name="teacher_id"
+                    value={formData.teacher_id}
+                    onChange={handleInputChange}
+                    style={fieldInput}
+                    required
+                  >
+                    <option value="">-- Chọn giáo viên --</option>
+
+                    {teachers.map((t) => (
+                      <option key={t.teacher_id} value={t.teacher_id}>
+                        {t.teacher_id}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div style={fieldGroup}>
+                  <label style={fieldLabel}>Số chỗ tối đa</label>
+
+                  <input
+                    type="number"
+                    name="capacity"
+                    value={formData.capacity}
+                    onChange={handleInputChange}
+                    style={fieldInput}
+                    placeholder="Nhập số lượng sinh viên tối đa"
+                    min="1"
+                    required
+                  />
+                </div>
+
+                <div style={fieldGroup}>
+                  <label style={fieldLabel}>Chỗ còn lại</label>
+
+                  <input
+                    type="text"
+                    value={
+                      repair
+                        ? formData.remaining_capacity !== undefined
+                          ? formData.remaining_capacity
+                          : formData.capacity || 0
+                        : formData.capacity || 0
+                    }
+                    disabled
+                    style={{
+                      ...fieldInput,
+                      background: "#f1f5f9",
+                      cursor: "not-allowed",
+                      color: "#94a3b8",
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* FOOTER */}
+              <div style={modalFooter}>
+                <button
+                  type="button"
+                  onClick={() => setShowForm(false)}
+                  style={cancelBtn}
+                >
+                  Hủy
+                </button>
+
+                <button
+                  type="submit"
+                  style={{
+                    ...submitBtn,
+                    background: repair ? "#4f46e5" : "#16a34a",
+                  }}
+                >
+                  {repair ? "Cập nhật dữ liệu" : "Lưu khóa học"}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
 
@@ -434,14 +461,6 @@ const miniStatDot = (color) => ({
 const miniStatText = { fontSize: "13px", opacity: 0.9 };
 
 // Form
-const formCard = {
-  background: "white",
-  borderRadius: "12px",
-  padding: "24px",
-  marginBottom: "24px",
-  boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-  border: "1px solid #e2e8f0",
-};
 const formTitle = {
   margin: "0 0 20px",
   fontSize: "16px",
@@ -564,6 +583,64 @@ const deleteBtn = {
 const tableFooter = {
   padding: "14px 24px",
   borderTop: "1px solid #f1f5f9",
+};
+
+const modalOverlay = {
+  position: "fixed",
+  inset: 0,
+  background: "rgba(15,23,42,0.45)",
+  backdropFilter: "blur(4px)",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  zIndex: 9999,
+  padding: "20px",
+};
+
+const modalHeader = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  marginBottom: "20px",
+};
+
+const modalFooter = {
+  display: "flex",
+  justifyContent: "flex-end",
+  gap: "12px",
+  marginTop: "24px",
+};
+
+const closeBtn = {
+  width: "34px",
+  height: "34px",
+  borderRadius: "8px",
+  border: "none",
+  background: "#f1f5f9",
+  cursor: "pointer",
+  fontSize: "16px",
+  fontWeight: "700",
+  color: "#64748b",
+};
+
+const cancelBtn = {
+  padding: "10px 18px",
+  borderRadius: "8px",
+  border: "1px solid #cbd5e1",
+  background: "#fff",
+  color: "#475569",
+  cursor: "pointer",
+  fontWeight: "600",
+};
+
+const formCard = {
+  background: "white",
+  borderRadius: "16px",
+  padding: "24px",
+  width: "100%",
+  maxWidth: "850px",
+  boxShadow: "0 20px 60px rgba(0,0,0,0.18)",
+  border: "1px solid #e2e8f0",
 };
 
 export default MinistryCourses;

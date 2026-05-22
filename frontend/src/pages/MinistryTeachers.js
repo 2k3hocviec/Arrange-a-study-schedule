@@ -61,13 +61,18 @@ const AdminTeachers = () => {
       expertise: "",
     });
     setRepair(false);
-    setShowForm(!showForm);
+    setShowForm(true);
   };
 
   const handleOpenFormUpdateTeacher = (teacher) => {
     setFormData(teacher);
     setRepair(true);
     setShowForm(true);
+  };
+
+  const closeModal = () => {
+    setShowForm(false);
+    setRepair(false);
   };
 
   const handleSubmit = async (e) => {
@@ -84,16 +89,10 @@ const AdminTeachers = () => {
     }
     try {
       await teachersAPI.create(formData);
-      setFormData({
-        teacher_id: "",
-        user_id: 0,
-        name: "",
-        degree: "",
-        expertise: "",
-      });
-      setShowForm(false);
-      await fetchTeachers();
       toast.success("Tạo giáo viên thành công!");
+      closeModal();
+      await fetchTeachers();
+      await fetchAvailableUsers();
     } catch (err) {
       toast.error("Tạo giáo viên thất bại!");
     }
@@ -113,18 +112,10 @@ const AdminTeachers = () => {
     }
     try {
       await teachersAPI.update(formData.teacher_id, formData);
-      setFormData({
-        teacher_id: "",
-        user_id: 0,
-        name: "",
-        degree: "",
-        expertise: "",
-      });
-      setShowForm(false);
-      setRepair(false);
+      toast.success("Cập nhật giáo viên thành công!");
+      closeModal();
       await fetchTeachers();
       await fetchAvailableUsers();
-      toast.success("Cập nhật giáo viên thành công!");
     } catch (err) {
       toast.error("Cập nhật giáo viên thất bại!");
     }
@@ -178,104 +169,112 @@ const AdminTeachers = () => {
         </div>
       </div>
 
-      {/* Form */}
+      {/* ==================== MODAL FORM ==================== */}
       {showForm && (
-        <form
-          onSubmit={repair ? handleSubmitUpdate : handleSubmit}
-          style={styles.form}
-        >
-          <h3 style={styles.formTitle}>
-            {repair ? "Cập nhật thông tin giảng viên" : "Tạo giảng viên mới"}
-          </h3>
+        <div style={styles.modalOverlay}>
+          <div style={styles.modalContent}>
+            <button style={styles.closeBtn} onClick={closeModal}>
+              ×
+            </button>
 
-          <div style={styles.fieldGroup}>
-            <label style={styles.label}>Mã Giáo Viên</label>
-            <input
-              type="text"
-              name="teacher_id"
-              placeholder="Nhập mã giáo viên"
-              value={formData.teacher_id}
-              onChange={handleInputChange}
-              required
-              disabled={repair}
-              style={{
-                ...styles.input,
-                background: repair ? "#f0f0f0" : "white",
-              }}
-            />
-          </div>
+            <h3 style={styles.formTitle}>
+              {repair ? "Cập nhật thông tin giảng viên" : "Tạo giảng viên mới"}
+            </h3>
 
-          {!repair && (
-            <div style={styles.fieldGroup}>
-              <label style={styles.label}>
-                Chọn User (Role: Teacher - Chưa đăng ký)
-              </label>
-              <select
-                name="user_id"
-                value={formData.user_id}
-                onChange={handleInputChange}
-                style={styles.input}
-                required
+            <form
+              onSubmit={repair ? handleSubmitUpdate : handleSubmit}
+              style={styles.form}
+            >
+              <div style={styles.fieldGroup}>
+                <label style={styles.label}>Mã Giáo Viên</label>
+                <input
+                  type="text"
+                  name="teacher_id"
+                  placeholder="Nhập mã giáo viên"
+                  value={formData.teacher_id}
+                  onChange={handleInputChange}
+                  required
+                  disabled={repair}
+                  style={{
+                    ...styles.input,
+                    background: repair ? "#f0f0f0" : "white",
+                  }}
+                />
+              </div>
+
+              {!repair && (
+                <div style={styles.fieldGroup}>
+                  <label style={styles.label}>
+                    Chọn User (Role: Teacher - Chưa đăng ký)
+                  </label>
+                  <select
+                    name="user_id"
+                    value={formData.user_id}
+                    onChange={handleInputChange}
+                    style={styles.input}
+                    required
+                  >
+                    <option value="">-- Chọn User --</option>
+                    {availableUsers.map((user) => (
+                      <option key={user.id} value={user.id}>
+                        {user.username || user.email} (ID: {user.id})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              <div style={styles.fieldGroup}>
+                <label style={styles.label}>Họ và Tên</label>
+                <input
+                  type="text"
+                  name="name"
+                  placeholder="Nhập họ tên giảng viên"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  required
+                  style={styles.input}
+                />
+              </div>
+
+              <div style={styles.fieldGroup}>
+                <label style={styles.label}>Học vị</label>
+                <input
+                  type="text"
+                  name="degree"
+                  placeholder="Ví dụ: Thạc sĩ, Tiến sĩ"
+                  value={formData.degree}
+                  onChange={handleInputChange}
+                  required
+                  style={styles.input}
+                />
+              </div>
+
+              <div style={styles.fieldGroup}>
+                <label style={styles.label}>Chuyên môn</label>
+                <input
+                  type="text"
+                  name="expertise"
+                  placeholder="Ví dụ: Toán học, Tiếng Anh"
+                  value={formData.expertise}
+                  onChange={handleInputChange}
+                  required
+                  style={styles.input}
+                />
+              </div>
+
+              <button
+                type="submit"
+                style={{
+                  ...styles.submitBtn,
+                  background: repair ? "#3498db" : "#27ae60",
+                }}
               >
-                <option value="">-- Chọn User --</option>
-                {availableUsers.map((user) => (
-                  <option key={user.id} value={user.id}>
-                    {user.username || user.email} (ID: {user.id})
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-
-          <div style={styles.fieldGroup}>
-            <label style={styles.label}>Họ và Tên</label>
-            <input
-              type="text"
-              name="name"
-              placeholder="Nhập họ tên giảng viên"
-              value={formData.name}
-              onChange={handleInputChange}
-              required
-              style={styles.input}
-            />
+                {repair ? "Cập nhật giảng viên" : "Tạo giảng viên"}
+              </button>
+            </form>
           </div>
-
-          <div style={styles.fieldGroup}>
-            <label style={styles.label}>Học vị</label>
-            <input
-              type="text"
-              name="degree"
-              placeholder="Ví dụ: Thạc sĩ, Tiến sĩ"
-              value={formData.degree}
-              onChange={handleInputChange}
-              required
-              style={styles.input}
-            />
-          </div>
-
-          <div style={styles.fieldGroup}>
-            <label style={styles.label}>Chuyên môn</label>
-            <input
-              type="text"
-              name="expertise"
-              placeholder="Ví dụ: Toán học, Tiếng Anh"
-              value={formData.expertise}
-              onChange={handleInputChange}
-              required
-              style={styles.input}
-            />
-          </div>
-
-          <button
-            type="submit"
-            style={{
-              ...styles.submitBtn,
-              background: repair ? "#3498db" : "#27ae60",
-            }}
-          >
-            {repair ? "Cập nhật giảng viên" : "Tạo giảng viên"}
-          </button>
-        </form>
+        </div>
       )}
 
       {/* Table */}
@@ -356,8 +355,6 @@ const AdminTeachers = () => {
                 ...styles.pageBtn,
                 background: currentPage === totalPages ? "#4f63d2" : "#e9ecf5",
                 color: currentPage === totalPages ? "white" : "#333",
-                opacity: currentPage === totalPages ? 0.6 : 1,
-                cursor: currentPage === totalPages ? "not-allowed" : "pointer",
               }}
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
@@ -372,10 +369,7 @@ const AdminTeachers = () => {
 };
 
 const styles = {
-  wrapper: {
-    padding: "0 4px",
-    fontFamily: "'Segoe UI', sans-serif",
-  },
+  wrapper: { padding: "0 4px", fontFamily: "'Segoe UI', sans-serif" },
   headerRow: {
     display: "flex",
     alignItems: "center",
@@ -400,17 +394,84 @@ const styles = {
     fontWeight: 600,
     fontSize: 14,
   },
-  statRow: {
+
+  /* ==================== MODAL STYLES ==================== */
+  modalOverlay: {
+    position: "fixed",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0, 0, 0, 0.6)",
     display: "flex",
-    gap: 16,
-    marginBottom: 24,
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 1000,
   },
+  modalContent: {
+    background: "white",
+    borderRadius: 12,
+    width: "90%",
+    maxWidth: 520,
+    padding: "24px 28px",
+    position: "relative",
+    boxShadow: "0 10px 30px rgba(0,0,0,0.25)",
+  },
+  closeBtn: {
+    position: "absolute",
+    top: 12,
+    right: 16,
+    fontSize: 28,
+    background: "none",
+    border: "none",
+    cursor: "pointer",
+    color: "#888",
+    lineHeight: 1,
+  },
+
+  form: { marginTop: 10 },
+  formTitle: {
+    margin: "0 0 20px 0",
+    fontSize: 18,
+    color: "#2c3e50",
+    fontWeight: 600,
+    textAlign: "center",
+  },
+  fieldGroup: { marginBottom: 16 },
+  label: {
+    display: "block",
+    marginBottom: 6,
+    fontWeight: 600,
+    fontSize: 13.5,
+    color: "#444",
+  },
+  input: {
+    width: "100%",
+    padding: "10px 12px",
+    borderRadius: 6,
+    border: "1px solid #cdd3e0",
+    fontSize: 14,
+    boxSizing: "border-box",
+  },
+  submitBtn: {
+    width: "100%",
+    padding: "12px",
+    color: "white",
+    border: "none",
+    borderRadius: 8,
+    cursor: "pointer",
+    fontWeight: 600,
+    fontSize: 15,
+    marginTop: 10,
+  },
+
+  /* Các style cũ giữ nguyên */
+  statRow: { display: "flex", gap: 16, marginBottom: 24 },
   statCard: {
     display: "flex",
     alignItems: "center",
     gap: 14,
     background: "rgb(99, 102, 241)",
-    border: "1px solid #e8ecf4",
     borderRadius: 10,
     padding: "14px 24px",
     boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
@@ -420,9 +481,6 @@ const styles = {
     background: "#eef0fb",
     borderRadius: 8,
     padding: 10,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
   },
   statLabel: {
     fontSize: 11,
@@ -431,52 +489,8 @@ const styles = {
     letterSpacing: 1,
     marginBottom: 2,
   },
-  statValue: {
-    fontSize: 22,
-    fontWeight: 700,
-    color: "#ffffff",
-  },
-  form: {
-    marginBottom: 28,
-    border: "1px solid #dde3f0",
-    padding: "20px 24px",
-    borderRadius: 10,
-    backgroundColor: "#f9fafc",
-  },
-  formTitle: {
-    margin: "0 0 16px",
-    fontSize: 16,
-    color: "#2c3e50",
-    fontWeight: 600,
-  },
-  fieldGroup: {
-    marginBottom: 14,
-  },
-  label: {
-    display: "block",
-    marginBottom: 5,
-    fontWeight: 600,
-    fontSize: 13,
-    color: "#444",
-  },
-  input: {
-    width: "100%",
-    padding: "9px 12px",
-    borderRadius: 6,
-    border: "1px solid #cdd3e0",
-    fontSize: 14,
-    boxSizing: "border-box",
-  },
-  submitBtn: {
-    padding: "10px 22px",
-    color: "white",
-    border: "none",
-    borderRadius: 6,
-    cursor: "pointer",
-    fontWeight: 600,
-    fontSize: 14,
-    marginTop: 4,
-  },
+  statValue: { fontSize: 22, fontWeight: 700, color: "#ffffff" },
+
   tableWrapper: {
     background: "white",
     borderRadius: 10,
@@ -484,29 +498,17 @@ const styles = {
     overflow: "hidden",
     boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
   },
-  table: {
-    width: "100%",
-    borderCollapse: "collapse",
-  },
-  theadRow: {
-    background: "#ffffff",
-  },
+  table: { width: "100%", borderCollapse: "collapse" },
+  theadRow: { background: "#ffffff" },
   th: {
     padding: "13px 16px",
     color: "#767982",
     fontSize: 12,
     fontWeight: 700,
-    letterSpacing: "0.5px",
     textAlign: "left",
   },
-  tbodyRow: {
-    borderBottom: "1px solid #eef0f7",
-  },
-  td: {
-    padding: "12px 16px",
-    fontSize: 14,
-    color: "#333",
-  },
+  tbodyRow: { borderBottom: "1px solid #eef0f7" },
+  td: { padding: "12px 16px", fontSize: 14, color: "#333" },
   emptyCell: {
     textAlign: "center",
     padding: "32px",
@@ -522,7 +524,6 @@ const styles = {
     borderRadius: 5,
     cursor: "pointer",
     fontSize: 13,
-    fontWeight: 500,
   },
   deleteBtn: {
     padding: "5px 14px",
@@ -532,7 +533,6 @@ const styles = {
     borderRadius: 5,
     cursor: "pointer",
     fontSize: 13,
-    fontWeight: 500,
   },
   pagination: {
     display: "flex",
@@ -542,13 +542,8 @@ const styles = {
     borderTop: "1px solid #eef0f7",
     fontSize: 13,
   },
-  pageInfo: {
-    color: "#666",
-  },
-  pageButtons: {
-    display: "flex",
-    gap: 8,
-  },
+  pageInfo: { color: "#666" },
+  pageButtons: { display: "flex", gap: 8 },
   pageBtn: {
     padding: "6px 16px",
     border: "none",
@@ -557,7 +552,6 @@ const styles = {
     color: "#333",
     cursor: "pointer",
     fontWeight: 500,
-    fontSize: 13,
   },
 };
 
