@@ -18,30 +18,36 @@ import { Roles } from 'src/role/roles.decorator';
 @Controller('subjects')
 export class SubjectsController {
   constructor(private readonly subjectsService: SubjectsService) {}
-  @Roles('admin')
+  @Roles('ministry')
   @Post()
   create(@Body() createSubjectDto: CreateSubjectDto) {
     return this.subjectsService.create(createSubjectDto);
   }
-  @Roles('admin')
+  @Roles('ministry')
   @Get()
   findAll() {
     return this.subjectsService.findAll();
   }
 
-  @Roles('admin')
+  @Get('allid')
+  @Roles('ministry')
+  getAllId() {
+    return this.subjectsService.findAllId();
+  }
+
+  @Roles('ministry')
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.subjectsService.findOne(id);
   }
 
-  @Roles('admin')
+  @Roles('ministry')
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateSubjectDto: UpdateSubjectDto) {
     return this.subjectsService.update(id, updateSubjectDto);
   }
 
-  @Roles('admin')
+  @Roles('ministry')
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.subjectsService.remove(id);

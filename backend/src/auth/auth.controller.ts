@@ -1,6 +1,7 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Patch, Post, Req } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Public } from 'src/role/public.decorator';
+import { ChangePasswordDto } from './dto/change.password.dto';
 
 @Controller('/auth')
 export class AuthController {
@@ -16,5 +17,14 @@ export class AuthController {
   @Public()
   async forgotPassword(@Body() body: { email: string }) {
     return this.authService.forgotPassword(body.email);
+  }
+
+  @Patch('change-password')
+  changePassword(@Req() req, @Body() body: ChangePasswordDto) {
+    return this.authService.changePassword(
+      req.user.sub,
+      body.currentPassword,
+      body.newPassword,
+    );
   }
 }

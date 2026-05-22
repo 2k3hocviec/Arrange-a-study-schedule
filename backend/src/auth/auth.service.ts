@@ -2,6 +2,7 @@ import {
   Injectable,
   BadRequestException,
   UnauthorizedException,
+  NotFoundException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from 'src/modules/users/users.service';
@@ -61,6 +62,32 @@ export class AuthService {
 
     return {
       message: 'New password has been sent to your email',
+    };
+  }
+
+  async changePassword(
+    userId: number,
+    currentPassword: string,
+    newPassword: string,
+  ) {
+    const user = await this.usersServive.findOneById(userId);
+
+    if (!user) {
+      throw new NotFoundException('User không tồn tại');
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+
+    if (!isMatch) {
+      throw new BadRequestException('Mật khẩu hiện tại không đúng');
+    }
+
+    user.password = await bcrypt.hash(newPassword, 10);
+
+    await this.usersServive.save(user);
+
+    return {
+      message: 'Đổi mật khẩu thành công',
     };
   }
 }

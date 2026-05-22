@@ -34,6 +34,6 @@ export class User {
   @OneToOne(() => Teacher, (teacher) => teacher.user)
   teacher!: Teacher;
 
-  @Column({ type: 'enum', enum: ['student', 'teacher', 'admin', 'sysadmin'] })
+  @Column({ type: 'enum', enum: ['student', 'teacher', 'ministry', 'sysadmin'] })
   role!: string;
 }

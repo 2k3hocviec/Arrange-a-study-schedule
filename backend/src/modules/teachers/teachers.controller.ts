@@ -17,12 +17,12 @@ import { Roles } from 'src/role/roles.decorator';
 export class TeachersController {
   constructor(private readonly teachersService: TeachersService) {}
 
-  @Roles('admin')
+  @Roles('ministry')
   @Post()
   create(@Body() createTeacherDto: CreateTeacherDto) {
     return this.teachersService.create(createTeacherDto);
   }
-  @Roles('admin')
+  @Roles('ministry')
   @Get()
   findAll() {
     return this.teachersService.findAll();
@@ -34,24 +34,30 @@ export class TeachersController {
     return this.teachersService.findByUserId(req.user.sub);
   }
 
+  @Get('allid')
+  @Roles('ministry')
+  getAllId() {
+    return this.teachersService.findAllId();
+  }
+
   @Get('teacher/:id/courses-details')
   findStudentCoursesWithDetails(@Param('id') teacherId: string) {
     return this.teachersService.findTeacherCoursesWithDetails(teacherId);
   }
 
-  @Roles('admin')
+  @Roles('ministry')
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.teachersService.findOne(id);
   }
 
-  @Roles('admin')
+  @Roles('ministry')
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateTeacherDto: UpdateTeacherDto) {
     return this.teachersService.update(id, updateTeacherDto);
   }
 
-  @Roles('admin')
+  @Roles('ministry')
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.teachersService.remove(id);

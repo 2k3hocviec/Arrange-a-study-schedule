@@ -20,13 +20,13 @@ import { Roles } from 'src/role/roles.decorator';
 export class StudentsController {
   constructor(private readonly studentsService: StudentsService) {}
 
-  @Roles('admin')
+  @Roles('ministry')
   @Post()
   create(@Body() createStudentDto: CreateStudentDto) {
     return this.studentsService.create(createStudentDto);
   }
 
-  @Roles('admin')
+  @Roles('ministry')
   @Get()
   findAll() {
     return this.studentsService.findAll();
@@ -38,19 +38,19 @@ export class StudentsController {
     return this.studentsService.findByUserId(req.user.sub);
   }
 
-  @Roles('admin')
+  @Roles('ministry')
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.studentsService.findOneByStudentID(id);
   }
 
-  @Roles('admin')
+  @Roles('ministry')
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateStudentDto: UpdateStudentDto) {
     return this.studentsService.update(id, updateStudentDto);
   }
 
-  @Roles('admin')
+  @Roles('ministry')
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.studentsService.remove(id);

@@ -114,4 +114,10 @@ export class TeachersService {
     }
     return teacher;
   }
+
+  async findAllId() {
+    return await this.teachersRepository.find({
+      select: ['teacher_id'],
+    });
+  }
 }

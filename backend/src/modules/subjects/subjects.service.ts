@@ -52,4 +52,10 @@ export class SubjectsService {
   async remove(id: string) {
     return this.subjectRepository.delete(id);
   }
+
+  async findAllId() {
+    return await this.subjectRepository.find({
+      select: ['subject_id'],
+    });
+  }
 }

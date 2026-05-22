@@ -163,10 +163,6 @@ export class EnrollmentsService {
     return savedEnrollment;
   }
 
-  findAll() {
-    return `This action returns all enrollments`;
-  }
-
   findOne(id: number) {
     return `This action returns a #${id} enrollment`;
   }
@@ -226,6 +222,23 @@ export class EnrollmentsService {
             start_date: true,
             end_date: true,
           },
+        },
+      },
+    });
+  }
+
+  async findAllEnrollCourse() {
+    return await this.enrollmentRepository.find({
+      relations: ['course', 'course.subject'],
+      select: {
+        student_id: true,
+        enrollment_id: true,
+        course_id: true,
+        createdAt: true,
+        course: {
+          course_id: true,
+          subject_id: true,
+          teacher_id: true,
         },
       },
     });

@@ -5,6 +5,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
+import { Student } from '../students/entities/student.entity';
+import { Teacher } from '../teachers/entities/teacher.entity';
 
 @Injectable()
 export class UsersService {
@@ -73,5 +75,39 @@ export class UsersService {
     const saltRounds = 10;
     user.password = await bcrypt.hash(newPassword, saltRounds);
     return await this.usersRepository.save(user);
+  }
+
+  async getUserId() {
+    return await this.usersRepository.find({ select: ['id'] });
+  }
+
+  async getAvailableStudents() {
+    return await this.usersRepository
+      .createQueryBuilder('user')
+      .leftJoin(Student, 'student', 'student.user_id = user.id')
+      .where('user.role = :role', { role: 'student' })
+      .andWhere('student.user_id IS NULL')
+      .select(['user.id'])
+      .getMany();
+  }
+
+  async getAvailableTeachers() {
+    return await this.usersRepository
+      .createQueryBuilder('user')
+      .leftJoin(Teacher, 'teacher', 'teacher.user_id = user.id')
+      .where('user.role = :role', { role: 'teacher' })
+      .andWhere('teacher.user_id IS NULL')
+      .select(['user.id'])
+      .getMany();
+  }
+
+  async findOneById(id: number) {
+    return await this.usersRepository.findOne({
+      where: { id },
+    });
+  }
+
+  async save(user) {
+    return this.usersRepository.save(user);
   }
 }
