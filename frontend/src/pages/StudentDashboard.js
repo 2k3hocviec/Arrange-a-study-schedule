@@ -8,7 +8,6 @@ import {
 } from "react-router-dom";
 import StudentTimetable from "./StudentTimetable";
 import StudentRegister from "./StudentRegister";
-import StudentNotifications from "./StudentNotifications";
 import { studentsAPI, enrollmentsAPI } from "../services/api";
 import { AuthContext } from "../contexts/AuthContext";
 import {
@@ -16,364 +15,295 @@ import {
   MobileMenuButton,
   MobileMenuOverlay,
 } from "../utils/responsiveHelpers";
-import { FaCalendarAlt } from "react-icons/fa";
-import { PiBellSimpleRingingFill } from "react-icons/pi";
-import { GiArchiveRegister } from "react-icons/gi";
-import { TiPin } from "react-icons/ti";
+import {
+  FaCalendarAlt,
+  FaHome,
+  FaUserCircle,
+  FaSignOutAlt,
+  FaBell,
+  FaClipboardList,
+  FaBookOpen,
+  FaLock,
+} from "react-icons/fa";
+import ChangePassword from "./ChangePassword";
+
+const NAV = [
+  {
+    path: "/student/dashboard",
+    key: "dashboard",
+    icon: <FaHome />,
+    label: "Dashboard",
+  },
+  {
+    path: "/student/timetable",
+    key: "timetable",
+    icon: <FaCalendarAlt />,
+    label: "Thời khóa biểu",
+  },
+  {
+    path: "/student/register",
+    key: "register",
+    icon: <FaClipboardList />,
+    label: "Đăng ký môn học",
+  },
+  {
+    path: "/student/notifications",
+    key: "notifications",
+    icon: <FaLock />,
+    label: "Đổi mật khẩu",
+  },
+];
 
 const StudentDashboard = () => {
   const { user, logout } = useContext(AuthContext);
   const [studentInfo, setStudentInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [registeredIds, setRegisteredIds] = useState([]);
   const navigate = useNavigate();
   const location = useLocation();
-  const [registeredIds, setRegisteredIds] = useState([]);
   const { isMobileMenuOpen, toggleMobileMenu, closeMobileMenu } =
     useMobileMenu();
 
   useEffect(() => {
-    const fetchStudentInfo = async () => {
-      try {
-        setLoading(true);
-        const res = await studentsAPI.getMe();
+    if (!user) return;
+    setLoading(true);
+    studentsAPI
+      .getMe()
+      .then((res) => {
         setStudentInfo(res.data);
         setError(null);
-      } catch (err) {
-        console.error("Failed to fetch student info:", err);
-        setError("Không thể tải thông tin sinh viên");
-      } finally {
-        setLoading(false);
-      }
-    };
-    if (user) {
-      fetchStudentInfo();
-    }
+      })
+      .catch(() => setError("Không thể tải thông tin sinh viên"))
+      .finally(() => setLoading(false));
   }, [user]);
 
   useEffect(() => {
-    if (!studentInfo || !studentInfo.student_id) return;
-    const fetchEnrollments = async () => {
-      try {
-        const res = await enrollmentsAPI.getByStudentId(studentInfo.student_id);
-        if (res.data && Array.isArray(res.data)) {
-          const enrolledCourseIds = res.data.map((e) => e.course_id);
-          setRegisteredIds(enrolledCourseIds);
-        }
-      } catch (err) {
-        console.error("Error fetching enrollments:", err);
-      }
-    };
-    fetchEnrollments();
+    if (!studentInfo?.student_id) return;
+    enrollmentsAPI
+      .getByStudentId(studentInfo.student_id)
+      .then((res) => {
+        if (res.data && Array.isArray(res.data))
+          setRegisteredIds(res.data.map((e) => e.course_id));
+      })
+      .catch(console.error);
   }, [studentInfo]);
 
-  const navItemStyle = {
-    padding: "clamp(10px, 2vw, 14px) clamp(10px, 2vw, 15px)",
-    borderBottom: "1px solid #2d3436",
-    borderRadius: "8px",
-    transition: "all 0.3s ease",
-  };
+  const isActive = (key) =>
+    location.pathname.includes(key) ||
+    (key === "dashboard" &&
+      (location.pathname === "/student" || location.pathname === "/student/"));
 
-  const linkStyle = {
-    color: "white",
-    textDecoration: "none",
-    display: "flex",
-    alignItems: "center",
-    gap: "10px",
-    width: "100%",
-    fontSize: "clamp(13px, 2vw, 16px)",
-  };
-
-  const statCard = {
-    flex: 1,
-    background: "white",
-    padding: "clamp(16px, 3vw, 25px)",
-    borderRadius: "12px",
-    textAlign: "center",
-    boxShadow: "0 4px 15px rgba(0,0,0,0.05)",
-    borderTop: "6px solid #00d2ff",
-    minWidth: "150px",
-    transition: "all 0.3s ease",
-  };
-
-  const activeStyle = (path) => ({
-    ...navItemStyle,
-    background: location.pathname.includes(path) ? "#00a8cc" : "transparent",
-  });
-
-  const HomeContent = (
-    <div>
-      <h1
-        style={{
-          color: "#2c3e50",
-          fontSize: "clamp(24px, 5vw, 28px)",
-          marginBottom: "10px",
-        }}
-      >
-        BẢNG ĐIỀU KHIỂN SINH VIÊN
-      </h1>
-      {loading ? (
-        <p style={{ color: "#7f8c8d", fontSize: "clamp(14px, 2vw, 16px)" }}>
-          Đang tải thông tin...
-        </p>
-      ) : error ? (
-        <p style={{ color: "#e74c3c", fontSize: "clamp(14px, 2vw, 16px)" }}>
-          {" "}
-          ❌ {error}
-        </p>
-      ) : studentInfo ? (
-        <div style={{ marginBottom: "30px" }}>
-          <p
-            style={{
-              color: "#7f8c8d",
-              marginBottom: "5px",
-              fontSize: "clamp(13px, 2vw, 14px)",
-            }}
-          >
+  // ── Home page ─────────────────────────────────────────────────
+  const HomePage = (
+    <div style={S.homePage}>
+      {/* Welcome banner */}
+      <div style={S.banner}>
+        <div>
+          <h1 style={S.bannerTitle}>
+            Xin chào, {loading ? "..." : studentInfo?.name || "Sinh viên"} 👋
+          </h1>
+          <p style={S.bannerSub}>
             Mã sinh viên:{" "}
-            <strong style={{ color: "#2c3e50" }}>
-              {studentInfo.student_id}
+            <strong style={{ color: "#818cf8" }}>
+              {studentInfo?.student_id || "N/A"}
             </strong>
           </p>
-          <p
-            style={{
-              color: "#7f8c8d",
-              margin: 0,
-              fontSize: "clamp(13px, 2vw, 14px)",
-            }}
-          >
-            Họ tên:{" "}
-            <strong style={{ color: "#2c3e50" }}>{studentInfo.name}</strong>
-          </p>
         </div>
-      ) : null}
-      <div
-        style={{
-          display: "flex",
-          gap: "clamp(12px, 3vw, 25px)",
-          marginBottom: "35px",
-          flexWrap: "wrap",
-        }}
-      >
-        <div style={statCard}>
-          <h2
-            style={{
-              margin: 0,
-              fontSize: "clamp(24px, 4vw, 32px)",
-              color: "#00d2ff",
-            }}
-          >
-            {registeredIds.length}
-          </h2>
-          <p
-            style={{
-              color: "#7f8c8d",
-              fontWeight: "bold",
-              fontSize: "clamp(12px, 2vw, 14px)",
-              margin: 0,
-            }}
-          >
-            Môn đã đăng ký
-          </p>
-        </div>
-        <div style={statCard}>
-          <h2
-            style={{
-              margin: 0,
-              fontSize: "clamp(24px, 4vw, 32px)",
-              color: "#00d2ff",
-            }}
-          >
-            18
-          </h2>
-          <p
-            style={{
-              color: "#7f8c8d",
-              fontWeight: "bold",
-              fontSize: "clamp(12px, 2vw, 14px)",
-              margin: 0,
-            }}
-          >
-            Tín chỉ tối đa cho phép
-          </p>
-        </div>
+        <FaBookOpen size={48} style={{ opacity: 0.15, color: "#fff" }} />
       </div>
-      <div
+
+      {/* Stat cards */}
+      <div style={S.statsRow}>
+        {[
+          {
+            icon: <FaClipboardList />,
+            val: registeredIds.length,
+            label: "Môn đã đăng ký",
+            color: "#6366f1",
+          },
+          {
+            icon: <FaCalendarAlt />,
+            val: 18,
+            label: "Tín chỉ tối đa",
+            color: "#22c55e",
+          },
+          {
+            icon: <FaBell />,
+            val: 0,
+            label: "Thông báo mới",
+            color: "#f97316",
+          },
+        ].map((c, i) => (
+          <div
+            key={i}
+            style={{ ...S.statCard, borderTop: `4px solid ${c.color}` }}
+          >
+            <span style={{ fontSize: 24, color: c.color }}>{c.icon}</span>
+            <div>
+              <div
+                style={{
+                  fontSize: 28,
+                  fontWeight: 800,
+                  color: c.color,
+                  lineHeight: 1,
+                }}
+              >
+                {c.val}
+              </div>
+              <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 3 }}>
+                {c.label}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Quick nav tiles */}
+      <h3
         style={{
-          background: "#fff",
-          padding: "clamp(16px, 3vw, 25px)",
-          borderRadius: "12px",
-          borderLeft: "8px solid #00d2ff",
-          boxShadow: "0 4px 15px rgba(0,0,0,0.05)",
+          fontSize: 14,
+          fontWeight: 700,
+          color: "#94a3b8",
+          letterSpacing: "0.06em",
+          marginBottom: 12,
         }}
       >
-        <h4
-          style={{ margin: "0 0 10px 0", fontSize: "clamp(14px, 2vw, 16px)" }}
-        >
-          {" "}
-          <TiPin /> Quy định sinh viên
-        </h4>
+        TRUY CẬP NHANH
+      </h3>
+      <div style={S.tilesRow}>
+        {NAV.filter((n) => n.key !== "dashboard").map((n) => (
+          <Link
+            key={n.key}
+            to={n.path}
+            style={S.tile}
+            onClick={closeMobileMenu}
+          >
+            <span style={{ fontSize: 24, color: "#6366f1" }}>{n.icon}</span>
+            <span
+              style={{
+                fontSize: 13,
+                fontWeight: 600,
+                color: "#1e293b",
+                marginTop: 8,
+              }}
+            >
+              {n.label}
+            </span>
+          </Link>
+        ))}
+      </div>
+
+      {/* Notice */}
+      <div style={S.notice}>
+        <strong>📌 Quy định sinh viên:</strong>
         <p
           style={{
-            margin: 0,
-            color: "#34495e",
+            margin: "6px 0 0",
+            color: "#475569",
             lineHeight: 1.7,
-            fontSize: "clamp(13px, 2vw, 14px)",
+            fontSize: 14,
           }}
         >
           Sinh viên chỉ được xem thời khóa biểu cá nhân, đăng ký môn trong thời
           gian mở đăng ký, không đăng ký trùng giờ và không vượt quá số tín chỉ
-          tối đa.
+          tối đa cho phép.
         </p>
       </div>
     </div>
   );
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        minHeight: "100vh",
-        fontFamily: "Arial",
-      }}
-    >
+    <div style={S.root}>
       <MobileMenuOverlay isOpen={isMobileMenuOpen} onClick={closeMobileMenu} />
-      <div style={{ display: "flex", flex: 1 }}>
-        {/* Sidebar */}
-        <div
-          className={`sidebar ${isMobileMenuOpen ? "active" : ""}`}
-          style={{
-            width: "100%",
-            maxWidth: "270px",
-            background: "#1a1c23",
-            color: "white",
-            padding: "clamp(12px, 3vw, 20px)",
-            transition: "all 0.3s ease",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: "15px",
-            }}
-          >
-            <h2
-              style={{
-                textAlign: "center",
-                color: "#00d2ff",
-                marginBottom: "0",
-                fontSize: "clamp(16px, 3vw, 18px)",
-                flex: 1,
-              }}
-            >
-              SINH VIÊN
-            </h2>
+
+      {/* ── SIDEBAR ── */}
+      <aside
+        className={`sidebar ${isMobileMenuOpen ? "active" : ""}`}
+        style={S.sidebar}
+      >
+        {/* Brand */}
+        <div style={S.brand}>
+          <div style={S.brandIcon}>
+            <FaUserCircle size={22} />
           </div>
-          <p
-            style={{
-              textAlign: "center",
-              color: "#bdc3c7",
-              marginTop: 0,
-              fontSize: "clamp(11px, 2vw, 13px)",
-            }}
-          >
-            {loading ? "Đang tải..." : studentInfo?.student_id || "N/A"}
-          </p>
-          {studentInfo && (
-            <p
-              style={{
-                textAlign: "center",
-                color: "#95a5a6",
-                fontSize: "clamp(11px, 2vw, 12px)",
-                marginTop: "-10px",
-                marginBottom: "10px",
-              }}
-            >
-              {studentInfo.name}
-            </p>
-          )}
-          <hr style={{ borderColor: "#2d3436", marginBottom: "20px" }} />
-          <nav>
-            <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-              <li style={activeStyle("timetable")}>
-                <Link
-                  to="/student/timetable"
-                  style={linkStyle}
-                  onClick={closeMobileMenu}
-                >
-                  {" "}
-                  <FaCalendarAlt style={{ color: "#00d2ff" }} /> Thời khóa biểu
-                </Link>
-              </li>
-              <li style={activeStyle("register")}>
-                <Link
-                  to="/student/register"
-                  style={linkStyle}
-                  onClick={closeMobileMenu}
-                >
-                  {" "}
-                  <GiArchiveRegister style={{ color: "#00d2ff" }} /> Đăng ký môn
-                  học
-                </Link>
-              </li>
-              <li style={activeStyle("notifications")}>
-                <Link
-                  to="/student/notifications"
-                  style={linkStyle}
-                  onClick={closeMobileMenu}
-                >
-                  <PiBellSimpleRingingFill style={{ color: "#00d2ff" }} /> Thông
-                  báo
-                </Link>
-              </li>
-            </ul>
-          </nav>
-          <button
-            onClick={() => {
-              logout();
-              navigate("/login");
-            }}
-            style={{
-              marginTop: "40px",
-              width: "100%",
-              padding: "clamp(10px, 2vw, 12px)",
-              background: "#e74c3c",
-              color: "white",
-              border: "none",
-              borderRadius: "8px",
-              cursor: "pointer",
-              fontWeight: "bold",
-              fontSize: "clamp(13px, 2vw, 14px)",
-              transition: "all 0.3s ease",
-            }}
-            onMouseOver={(e) => (e.target.style.background = "#c0392b")}
-            onMouseOut={(e) => (e.target.style.background = "#e74c3c")}
-          >
-            Đăng xuất
-          </button>
+          <div>
+            <div style={S.brandTitle}>Cổng Sinh Viên</div>
+            <div style={S.brandSub}>
+              {loading ? "Đang tải..." : studentInfo?.student_id || "N/A"}
+            </div>
+          </div>
         </div>
 
-        {/* Main Content */}
-        <div
-          style={{
-            flex: 1,
-            padding: "clamp(16px, 3vw, 40px)",
-            background: "#f8f9fa",
-            overflowY: "auto",
-            display: "flex",
-            flexDirection: "column",
+        {/* Avatar area */}
+        {studentInfo && (
+          <div style={S.userArea}>
+            <div style={S.avatarCircle}>
+              {studentInfo.name?.charAt(0) || "S"}
+            </div>
+            <div style={S.userName}>{studentInfo.name}</div>
+            <div style={S.userRole}>Sinh viên</div>
+          </div>
+        )}
+
+        <hr style={S.divider} />
+
+        {/* Nav */}
+        <nav style={{ flex: 1 }}>
+          {NAV.map((n) => (
+            <Link
+              key={n.key}
+              to={n.path}
+              style={{ textDecoration: "none" }}
+              onClick={closeMobileMenu}
+            >
+              <div style={S.navItem(isActive(n.key))}>
+                <span
+                  style={{ fontSize: 15, opacity: isActive(n.key) ? 1 : 0.7 }}
+                >
+                  {n.icon}
+                </span>
+                {n.label}
+              </div>
+            </Link>
+          ))}
+        </nav>
+
+        {/* Logout */}
+        <button
+          style={S.logoutBtn}
+          onClick={() => {
+            logout();
+            navigate("/login");
           }}
         >
-          <MobileMenuButton
-            onClick={toggleMobileMenu}
-            isOpen={isMobileMenuOpen}
-          />
+          <FaSignOutAlt /> Đăng xuất
+        </button>
+      </aside>
+
+      {/* ── MAIN ── */}
+      <main style={S.main}>
+        <MobileMenuButton
+          onClick={toggleMobileMenu}
+          isOpen={isMobileMenuOpen}
+        />
+
+        {/* Topbar */}
+        <header style={S.topbar}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <span style={{ fontSize: 18, color: "#6366f1" }}>
+              {NAV.find((n) => isActive(n.key))?.icon || <FaHome />}
+            </span>
+            <h2 style={S.pageTitle}>
+              {NAV.find((n) => isActive(n.key))?.label || "Dashboard"}
+            </h2>
+          </div>
+        </header>
+
+        <div style={S.content}>
           <Routes>
-            <Route path="/" element={HomeContent} />
-            <Route path="dashboard" element={HomeContent} />
+            <Route path="/" element={HomePage} />
+            <Route path="dashboard" element={HomePage} />
             <Route
               path="timetable"
               element={<StudentTimetable studentInfo={studentInfo} />}
@@ -390,13 +320,159 @@ const StudentDashboard = () => {
             />
             <Route
               path="notifications"
-              element={<StudentNotifications registeredIds={registeredIds} />}
+              element={<ChangePassword registeredIds={registeredIds} />}
             />
           </Routes>
         </div>
-      </div>
+      </main>
     </div>
   );
+};
+
+// ── Styles ────────────────────────────────────────────────────
+const S = {
+  root: {
+    display: "flex",
+    minHeight: "100vh",
+    fontFamily: "'Be Vietnam Pro','Segoe UI',sans-serif",
+    background: "#f0f2f7",
+  },
+  sidebar: {
+    width: 250,
+    background: "#18181b",
+    color: "#fff",
+    display: "flex",
+    flexDirection: "column",
+    padding: "20px 12px",
+    flexShrink: 0,
+    transition: "all 0.3s",
+  },
+  brand: {
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
+    padding: "0 8px 16px",
+    borderBottom: "1px solid #27272a",
+  },
+  brandIcon: { color: "#818cf8", fontSize: 22 },
+  brandTitle: { fontSize: 14, fontWeight: 800, color: "#e2e8f0" },
+  brandSub: { fontSize: 11, color: "#71717a", marginTop: 1 },
+  userArea: { textAlign: "center", padding: "16px 8px" },
+  avatarCircle: {
+    width: 48,
+    height: 48,
+    borderRadius: "50%",
+    background: "linear-gradient(135deg,#6366f1,#8b5cf6)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: 20,
+    fontWeight: 800,
+    color: "#fff",
+    margin: "0 auto 8px",
+  },
+  userName: { fontSize: 13, fontWeight: 700, color: "#e2e8f0" },
+  userRole: { fontSize: 11, color: "#71717a", marginTop: 2 },
+  divider: {
+    border: "none",
+    borderTop: "1px solid #27272a",
+    margin: "8px 0 12px",
+  },
+  navItem: (a) => ({
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
+    padding: "10px 14px",
+    borderRadius: 10,
+    fontSize: 13,
+    fontWeight: a ? 700 : 400,
+    color: a ? "#a5b4fc" : "#a1a1aa",
+    background: a ? "rgba(99,102,241,0.15)" : "transparent",
+    marginBottom: 2,
+    cursor: "pointer",
+    transition: "all 0.15s",
+    textDecoration: "none",
+  }),
+  logoutBtn: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    margin: "12px 0 0",
+    width: "100%",
+    padding: "11px",
+    background: "#3f1212",
+    color: "#fca5a5",
+    border: "none",
+    borderRadius: 10,
+    fontWeight: 700,
+    fontSize: 13,
+    cursor: "pointer",
+  },
+  main: { flex: 1, display: "flex", flexDirection: "column", minWidth: 0 },
+  topbar: {
+    background: "#fff",
+    borderBottom: "1px solid #e8eaef",
+    padding: "14px 28px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    flexShrink: 0,
+  },
+  pageTitle: { fontSize: 16, fontWeight: 800, color: "#1e293b", margin: 0 },
+  content: { flex: 1, padding: "24px 28px", overflowY: "auto" },
+  homePage: { maxWidth: "100%" },
+  banner: {
+    background: "linear-gradient(135deg,#4f46e5 0%,#7c3aed 100%)",
+    borderRadius: 20,
+    padding: "28px 32px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 24,
+    boxShadow: "0 4px 20px rgba(79,70,229,0.3)",
+  },
+  bannerTitle: {
+    fontSize: 22,
+    fontWeight: 800,
+    color: "#fff",
+    margin: "0 0 6px",
+  },
+  bannerSub: { fontSize: 13, color: "rgba(255,255,255,0.75)", margin: 0 },
+  statsRow: { display: "flex", gap: 16, marginBottom: 24, flexWrap: "wrap" },
+  statCard: {
+    flex: "1 1 140px",
+    background: "#fff",
+    borderRadius: 14,
+    padding: "20px",
+    display: "flex",
+    alignItems: "center",
+    gap: 14,
+    boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+  },
+  tilesRow: { display: "flex", gap: 14, marginBottom: 24, flexWrap: "wrap" },
+  tile: {
+    flex: "1 1 120px",
+    background: "#fff",
+    borderRadius: 14,
+    padding: "24px 16px",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    textDecoration: "none",
+    boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+    transition: "box-shadow 0.15s",
+    cursor: "pointer",
+  },
+  notice: {
+    background: "#fff",
+    borderRadius: 14,
+    padding: "20px 24px",
+    borderLeft: "5px solid #6366f1",
+    boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+    fontSize: 14,
+    color: "#1e293b",
+  },
 };
 
 export default StudentDashboard;

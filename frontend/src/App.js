@@ -4,7 +4,7 @@ import Login from "./pages/Login";
 import ForgotPassword from "./pages/ForgotPassword";
 import StudentDashboard from "./pages/StudentDashboard";
 import TeacherDashboard from "./pages/TeacherDashboard";
-import AdminDashboard from "./pages/AdminDashboard";
+import MinistryDashboard from "./pages/MinistryDashboard";
 import SysAdminDashboard from "./pages/SysAdminDashboard";
 import { Toaster } from "react-hot-toast";
 
@@ -21,7 +21,7 @@ function App() {
           {/* 2. Các tuyến đường cho từng vai trò (Bắt buộc có /*) */}
           <Route path="/student/*" element={<StudentDashboard />} />
           <Route path="/teacher/*" element={<TeacherDashboard />} />
-          <Route path="/admin/*" element={<AdminDashboard />} />
+          <Route path="/ministry/*" element={<MinistryDashboard />} />
           <Route path="/sysadmin/*" element={<SysAdminDashboard />} />
 
           {/* 3. Điều hướng gốc: Nếu vào localhost:3000 thì nhảy thẳng vào /login */}

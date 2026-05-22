@@ -1,6 +1,6 @@
 import React from "react";
 
-const AdminAdjust = () => {
+const MinistryAdjust = () => {
   return (
     <div>
       <h2>🛠️ ĐIỀU CHỈNH LỊCH HỌC (MẪU BMCL)</h2>
@@ -44,4 +44,4 @@ const inputStyle = {
   border: "1px solid #ddd",
   borderRadius: "4px",
 };
-export default AdminAdjust;
+export default MinistryAdjust;

@@ -32,6 +32,12 @@ api.interceptors.request.use((config) => {
 });
 
 export const authAPI = {
+  changePassword: (currentPassword, newPassword) =>
+    api.patch("/auth/change-password", {
+      currentPassword,
+      newPassword,
+    }),
+
   login: (email, password) => api.post("/auth/login", { email, password }),
   register: (email, password, name) =>
     api.post("/auth/register", { email, password, name }),
@@ -42,6 +48,14 @@ export const authAPI = {
 };
 
 export const usersAPI = {
+  getAvailableStudents: () => {
+    return api.get("/users/available-students");
+  },
+
+  getAvailableTeachers: () => {
+    return api.get("/users/available-teachers");
+  },
+
   getAll: () => api.get("/users"),
   create: ({ email, password, role, phone, address }) => {
     return api.post("/users", { email, password, role, phone, address });
@@ -54,6 +68,9 @@ export const usersAPI = {
 };
 
 export const teachersAPI = {
+  getAllIds: () => {
+    return api.get("/teachers/allid");
+  },
   getAll: () => api.get("/teachers"),
   getMyInfo: () => api.get("/teachers/me"),
   create: ({ user_id, teacher_id, name, degree, expertise }) => {
@@ -81,6 +98,7 @@ export const teachersAPI = {
 };
 
 export const subjectsAPI = {
+  getAllIds: () => api.get("/subjects/allid"),
   getAll: () => api.get("/subjects"),
   create: ({ subject_id, name, credits }) => {
     return api.post("/subjects", {
@@ -217,6 +235,9 @@ export const studentsAPI = {
 };
 
 export const enrollmentsAPI = {
+  getAll: () => {
+    return api.get("/enrollments"); // Phù hợp với @Get() của bạn
+  },
   create: ({ student_id, course_id }) => {
     return api.post("/enrollments", { student_id, course_id });
   },
