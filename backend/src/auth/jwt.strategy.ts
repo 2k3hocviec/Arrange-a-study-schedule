@@ -8,7 +8,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: '123', // Phải giống với secret trong AuthModule
+      secretOrKey: process.env.JWT_SECRET || 'jwt_access_secret_key',
     });
   }
 
@@ -20,7 +20,3 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     };
   }
 }
-
-//@UseGuards(AuthGuard('jwt')) khi mà được gọi hàm này sẽ được chạy
-//nói đúng hơn nếu dùng postman nó sẽ chạy Authorization: Bearer <token> đoạn này
-//lấy và xác thực gọi validate()
