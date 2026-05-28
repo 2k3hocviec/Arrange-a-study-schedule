@@ -3,14 +3,16 @@ import { AppModule } from './app.module';
 import { AllHttpExceptionFilter } from './exceptions/http-exception.filter';
 import { ValidationPipe } from '@nestjs/common';
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const cookieParser = require('cookie-parser');
+
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
-    // logger: ['error', 'warn'],
-  });
+  const app = await NestFactory.create(AppModule);
   app.useGlobalPipes(new ValidationPipe());
   app.useGlobalFilters(new AllHttpExceptionFilter());
 
-  // Support environment variables for production
+  app.use(cookieParser());
+
   const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
 
   app.enableCors({

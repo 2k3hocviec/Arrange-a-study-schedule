@@ -32,13 +32,22 @@ import { MailerModule } from '@nestjs-modules/mailer';
       isGlobal: true,
       envFilePath: '.env',
     }),
+    // TypeOrmModule.forRoot({
+    //   type: 'postgres',
+    //   host: process.env.DB_HOST || 'localhost',
+    //   port: parseInt(process.env.DB_PORT || '5432'),
+    //   username: process.env.DB_USER || 'postgres',
+    //   password: process.env.DB_PASSWORD || '',
+    //   database: process.env.DB_NAME || 'school1',
+    // CHỈNH SỬA ĐOẠN NÀY ĐỂ CHẠY MYSQL LOCAL
     TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: process.env.DB_HOST || 'localhost',
-      port: parseInt(process.env.DB_PORT || '5432'),
-      username: process.env.DB_USER || 'postgres',
-      password: process.env.DB_PASSWORD || '',
-      database: process.env.DB_NAME || 'school1',
+      type: 'mysql',
+      host: 'localhost',
+      port: 3306,
+      username: 'root',
+      password: '123456',
+      database: 'school',
+
       entities: [
         User,
         Student,
@@ -49,9 +58,14 @@ import { MailerModule } from '@nestjs-modules/mailer';
         Classroom,
         Schedule,
       ],
-      synchronize: true,
+      synchronize: false, // ← TẮT để không ALTER TABLE ghi đè data/enum
       logging: ['error'],
       // logging: true,
+      // --- THÊM ĐOẠN NÀY VÀO ĐỂ BỎ QUA LỖI INDEX/KHÓA NGOẠI ---
+      connectorPackage: 'mysql2',
+      extra: {
+        connectionLimit: 10,
+      },
     }),
     TypeOrmModule.forFeature([
       User,
@@ -73,6 +87,7 @@ import { MailerModule } from '@nestjs-modules/mailer';
     EnrollmentsModule,
     AuthModule,
     ChatbotModule,
+    MailerModule,
   ],
   controllers: [AppController],
   providers: [

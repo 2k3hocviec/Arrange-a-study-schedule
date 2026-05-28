@@ -10,13 +10,13 @@ import { MailModule } from 'src/mail/mail.module';
   imports: [
     forwardRef(() => UsersModule),
     JwtModule.register({
-      secret: '123',
-      signOptions: { expiresIn: '1h' },
+      secret: process.env.JWT_SECRET || 'jwt_access_secret_key',
+      signOptions: { expiresIn: '15m' }, // ← Access token: 15 phút
     }),
     MailModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy],
-  exports: [AuthService],
+  exports: [AuthService, JwtModule],
 })
 export class AuthModule {}

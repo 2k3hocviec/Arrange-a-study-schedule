@@ -34,6 +34,10 @@ export class User {
   @OneToOne(() => Teacher, (teacher) => teacher.user)
   teacher!: Teacher;
 
-  @Column({ type: 'enum', enum: ['student', 'teacher', 'admin', 'sysadmin'] })
+  // ← Thêm 'ministry' cho khớp với DB thực tế
+  @Column({
+    type: 'enum',
+    enum: ['student', 'teacher', 'ministry', 'sysadmin'],
+  })
   role!: string;
 }
