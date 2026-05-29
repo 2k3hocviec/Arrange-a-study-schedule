@@ -87,89 +87,89 @@ const Login = () => {
       // Redirect theo role
       navigate(`/${data.user.role}/dashboard`);
     } catch (err) {
-      toast.success("Đăng nhập không thành công");
+      toast.error("Email hoặc mật khẩu không đúng");
     }
   };
 
   return (
-    <div style={pageWrapper}>
-      {/* Lớp lưới trang trí */}
-      <div style={gridOverlay}></div>
+      <div style={pageWrapper}>
+        {/* Lớp lưới trang trí */}
+        <div style={gridOverlay}></div>
 
-      <div style={loginCard}>
-        <div style={{ fontSize: "50px", marginBottom: "15px" }}>🏛️</div>
-        <h2
-          style={{
-            margin: "0 0 5px 0",
-            color: "#1a1a1a",
-            letterSpacing: "1px",
-          }}
-        >
-          HỆ THỐNG QUẢN LÝ
-        </h2>
-
-        <p style={{ margin: "0 0 35px 0", color: "#666" }}>
-          Học viện Công nghệ Bưu chính Viễn thông
-        </p>
-
-        <form onSubmit={handleLogin}>
-          <div style={{ textAlign: "left", marginBottom: "20px" }}>
-            <label
-              style={{ fontWeight: "600", color: "#444", fontSize: "14px" }}
-            >
-              Tên đăng nhập
-            </label>
-            <input
-              type="text"
-              placeholder="Mã số sinh viên / Giảng viên"
-              style={inputStyle}
-              onChange={(e) => setUsername(e.target.value)}
-              onFocus={(e) => (e.target.style.borderColor = "#c0392b")}
-              onBlur={(e) => (e.target.style.borderColor = "#ddd")}
-              required
-            />
-          </div>
-
-          <div style={{ textAlign: "left", marginBottom: "10px" }}>
-            <label
-              style={{ fontWeight: "600", color: "#444", fontSize: "14px" }}
-            >
-              Mật khẩu
-            </label>
-            <input
-              type="password"
-              placeholder="••••••••"
-              style={inputStyle}
-              onChange={(e) => setPassword(e.target.value)}
-              onFocus={(e) => (e.target.style.borderColor = "#c0392b")}
-              onBlur={(e) => (e.target.style.borderColor = "#ddd")}
-              required
-            />
-          </div>
-
-          <button type="submit" style={buttonStyle}>
-            ĐĂNG NHẬP NGAY
-          </button>
-        </form>
-
-        <div style={{ marginTop: "25px", fontSize: "13px", color: "#888" }}>
-          <button
-            onClick={() => navigate("/forgot-password")}
-            style={{
-              background: "none",
-              border: "none",
-              color: "#c0392b",
-              cursor: "pointer",
-              textDecoration: "none",
-              fontWeight: "500",
-            }}
+        <div style={loginCard}>
+          <div style={{ fontSize: "50px", marginBottom: "15px" }}>🏛️</div>
+          <h2
+              style={{
+                margin: "0 0 5px 0",
+                color: "#1a1a1a",
+                letterSpacing: "1px",
+              }}
           >
-            Quên mật khẩu?
-          </button>
-          <p style={{ marginTop: "10px" }}>Hỗ trợ kỹ thuật: 024.xxx.xxxx</p>
+            HỆ THỐNG QUẢN LÝ
+          </h2>
+
+          <p style={{ margin: "0 0 35px 0", color: "#666" }}>
+            Học viện Công nghệ Bưu chính Viễn thông
+          </p>
+
+          <form onSubmit={handleLogin}>
+            <div style={{ textAlign: "left", marginBottom: "20px" }}>
+              <label
+                  style={{ fontWeight: "600", color: "#444", fontSize: "14px" }}
+              >
+                Tên đăng nhập
+              </label>
+              <input
+                  type="text"
+                  placeholder="Nhập email của bạn"
+                  style={inputStyle}
+                  onChange={(e) => setUsername(e.target.value)}
+                  onFocus={(e) => (e.target.style.borderColor = "#c0392b")}
+                  onBlur={(e) => (e.target.style.borderColor = "#ddd")}
+                  required
+              />
+            </div>
+
+            <div style={{ textAlign: "left", marginBottom: "10px" }}>
+              <label
+                  style={{ fontWeight: "600", color: "#444", fontSize: "14px" }}
+              >
+                Mật khẩu
+              </label>
+              <input
+                  type="password"
+                  placeholder="••••••••"
+                  style={inputStyle}
+                  onChange={(e) => setPassword(e.target.value)}
+                  onFocus={(e) => (e.target.style.borderColor = "#c0392b")}
+                  onBlur={(e) => (e.target.style.borderColor = "#ddd")}
+                  required
+              />
+            </div>
+
+            <button type="submit" style={buttonStyle}>
+              ĐĂNG NHẬP NGAY
+            </button>
+          </form>
+
+          <div style={{ marginTop: "25px", fontSize: "13px", color: "#888" }}>
+            <button
+                onClick={() => navigate("/forgot-password")}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "#c0392b",
+                  cursor: "pointer",
+                  textDecoration: "none",
+                  fontWeight: "500",
+                }}
+            >
+              Quên mật khẩu?
+            </button>
+            <p style={{ marginTop: "10px" }}>Hỗ trợ kỹ thuật: 024.xxx.xxxx</p>
+          </div>
         </div>
       </div>
-    </div>
   );
 };
 
