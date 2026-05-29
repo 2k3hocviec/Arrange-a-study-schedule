@@ -32,21 +32,14 @@ import { MailerModule } from '@nestjs-modules/mailer';
       isGlobal: true,
       envFilePath: '.env',
     }),
-    // TypeOrmModule.forRoot({
-    //   type: 'postgres',
-    //   host: process.env.DB_HOST || 'localhost',
-    //   port: parseInt(process.env.DB_PORT || '5432'),
-    //   username: process.env.DB_USER || 'postgres',
-    //   password: process.env.DB_PASSWORD || '',
-    //   database: process.env.DB_NAME || 'school1',
     // CHỈNH SỬA ĐOẠN NÀY ĐỂ CHẠY MYSQL LOCAL
     TypeOrmModule.forRoot({
-      type: 'mysql',
-      host: 'localhost',
-      port: 3306,
-      username: 'root',
-      password: '123456',
-      database: 'school',
+      type: 'postgres',
+      host: process.env.DB_HOST || 'localhost',
+      port: parseInt(process.env.DB_PORT || '5432'),
+      username: process.env.DB_USER || 'postgres',
+      password: process.env.DB_PASSWORD || '',
+      database: process.env.DB_NAME || 'school1',
 
       entities: [
         User,
