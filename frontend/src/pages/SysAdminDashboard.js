@@ -74,6 +74,7 @@ export default function SysAdminUsers() {
   const [repair, setRepair] = useState(false);
   const [idUpdate, setIdUpdate] = useState(0);
   const [showForm, setShowForm] = useState(false);
+  const [editingSysAdmin, setEditingSysAdmin] = useState(false);
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [formData, setFormData] = useState({
@@ -112,6 +113,7 @@ export default function SysAdminUsers() {
     });
     setShowForm(false);
     setRepair(false);
+    setEditingSysAdmin(false);
     setIdUpdate(0);
   };
 
@@ -138,7 +140,16 @@ export default function SysAdminUsers() {
       return;
     }
     try {
-      await usersAPI.update(idUpdate, formData);
+      const dataUpdate = {
+        email: formData.email,
+        role: formData.role,
+        phone: formData.phone,
+        address: formData.address,
+      };
+      if (!editingSysAdmin && formData.password) {
+        dataUpdate.password = formData.password;
+      }
+      await usersAPI.update(idUpdate, dataUpdate);
       resetForm();
       await fetchUsers();
       toast.success("Cập nhật thành công");
@@ -147,10 +158,14 @@ export default function SysAdminUsers() {
     }
   };
 
-  const handleDeleteUser = async (id) => {
+  const handleDeleteUser = async (user) => {
+    if (user.role === "sysadmin") {
+      toast.error("Không thể xóa quản trị viên");
+      return;
+    }
     if (!window.confirm("Xác nhận xóa người dùng này?")) return;
     try {
-      await usersAPI.delete(id);
+      await usersAPI.delete(user.id);
       await fetchUsers();
       toast.success("Xóa thành công");
     } catch {
@@ -163,11 +178,12 @@ export default function SysAdminUsers() {
     if (u)
       setFormData({
         email: u.email,
-        password: u.password,
+        password: "",
         role: u.role,
         phone: u.phone || "",
         address: u.address || "",
       });
+    setEditingSysAdmin(u?.role === "sysadmin");
     setRepair(true);
     setShowForm(true);
     setIdUpdate(id);
@@ -440,6 +456,11 @@ export default function SysAdminUsers() {
       boxSizing: "border-box",
       transition: "border 0.15s",
     },
+    fieldInputDisabled: {
+      background: "#f8fafc",
+      color: "#64748b",
+      cursor: "not-allowed",
+    },
     modalActions: { display: "flex", gap: 10, marginTop: 24 },
     submitBtn: {
       flex: 1,
@@ -608,13 +629,15 @@ export default function SysAdminUsers() {
                       >
                         <FaPencilAlt />
                       </button>
-                      <button
-                        style={styles.actionBtn("#ef4444")}
-                        title="Xóa"
-                        onClick={() => handleDeleteUser(user.id)}
-                      >
-                        <FaTrash />
-                      </button>
+                      {user.role !== "sysadmin" && (
+                        <button
+                          style={styles.actionBtn("#ef4444")}
+                          title="Xóa"
+                          onClick={() => handleDeleteUser(user)}
+                        >
+                          <FaTrash />
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -658,12 +681,16 @@ export default function SysAdminUsers() {
               <div style={styles.fieldWrap}>
                 <label style={styles.fieldLabel}>Email</label>
                 <input
-                  style={styles.fieldInput}
+                  style={{
+                    ...styles.fieldInput,
+                    ...(editingSysAdmin ? styles.fieldInputDisabled : {}),
+                  }}
                   type="email"
                   name="email"
                   placeholder="example@gmail.com"
                   value={formData.email}
                   onChange={handleInputChange}
+                  readOnly={editingSysAdmin}
                   required
                 />
               </div>
@@ -677,27 +704,37 @@ export default function SysAdminUsers() {
                   )}
                 </label>
                 <input
-                  style={styles.fieldInput}
+                  style={{
+                    ...styles.fieldInput,
+                    ...(editingSysAdmin ? styles.fieldInputDisabled : {}),
+                  }}
                   type="password"
                   name="password"
                   placeholder="Mật khẩu"
                   value={formData.password}
                   onChange={handleInputChange}
+                  disabled={editingSysAdmin}
                   required={!repair}
                 />
               </div>
               <div style={styles.fieldWrap}>
                 <label style={styles.fieldLabel}>Vai trò</label>
                 <select
-                  style={styles.fieldInput}
+                  style={{
+                    ...styles.fieldInput,
+                    ...(editingSysAdmin ? styles.fieldInputDisabled : {}),
+                  }}
                   name="role"
                   value={formData.role}
                   onChange={handleInputChange}
+                  disabled={editingSysAdmin}
                 >
                   <option value="student">Sinh viên</option>
                   <option value="teacher">Giáo viên</option>
                   <option value="ministry">Giáo vụ</option>
-                  <option value="sysadmin">Quản trị viên</option>{" "}
+                  {editingSysAdmin && (
+                    <option value="sysadmin">Quản trị viên</option>
+                  )}
                   {/* Đã đồng bộ thành sysadmin */}
                 </select>
               </div>
