@@ -9,30 +9,28 @@ import SysAdminDashboard from "./pages/SysAdminDashboard";
 import { Toaster } from "react-hot-toast";
 
 function App() {
-  return (
-    <>
-      <Toaster position="top-right"></Toaster>
-      <BrowserRouter>
-        <Routes>
-          {/* 1. Trang đăng nhập mặc định */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
+    return (
+        <>
+            <Toaster position="top-right" />
+            <BrowserRouter>
+                <Routes>
+                    {/* Auth */}
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/forgot-password" element={<ForgotPassword />} />
 
-          {/* 2. Các tuyến đường cho từng vai trò (Bắt buộc có /*) */}
-          <Route path="/student/*" element={<StudentDashboard />} />
-          <Route path="/teacher/*" element={<TeacherDashboard />} />
-          <Route path="/ministry/*" element={<MinistryDashboard />} />
-          <Route path="/sysadmin/*" element={<SysAdminDashboard />} />
+                    {/* Dashboards theo role */}
+                    <Route path="/student/*" element={<StudentDashboard />} />
+                    <Route path="/teacher/*" element={<TeacherDashboard />} />
+                    <Route path="/ministry/*" element={<MinistryDashboard />} />
+                    <Route path="/sysadmin/*" element={<SysAdminDashboard />} />
 
-          {/* 3. Điều hướng gốc: Nếu vào localhost:3000 thì nhảy thẳng vào /login */}
-          <Route path="/" element={<Navigate to="/login" replace />} />
-
-          {/* 4. Catch-all Route: Nếu gõ sai URL (VD: /abcxyz) thì cũng về /login */}
-          <Route path="*" element={<Navigate to="/login" replace />} />
-        </Routes>
-      </BrowserRouter>
-    </>
-  );
+                    {/* Fallback */}
+                    <Route path="/" element={<Navigate to="/login" replace />} />
+                    <Route path="*" element={<Navigate to="/login" replace />} />
+                </Routes>
+            </BrowserRouter>
+        </>
+    );
 }
 
 export default App;
