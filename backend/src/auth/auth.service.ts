@@ -29,7 +29,7 @@ export class AuthService {
     return (
       this.configService.get<string>('JWT_ACCESS_SECRET') ||
       this.configService.get<string>('JWT_SECRET') ||
-      'jwt_access_secret_key'
+      '123'
     );
   }
 

@@ -20,7 +20,7 @@ import { RedisService } from 'src/redis/redis.service';
         secret:
           config.get<string>('JWT_ACCESS_SECRET') ||
           config.get<string>('JWT_SECRET') ||
-          'jwt_access_secret_key',
+          '123',
         signOptions: { expiresIn: '15m' },
       }),
       inject: [ConfigService],
