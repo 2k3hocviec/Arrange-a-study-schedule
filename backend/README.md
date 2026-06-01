@@ -115,3 +115,14 @@ MAIL_USER=your_email@gmail.com
 MAIL_PASSWORD=your_app_password
 MAIL_FROM=your_email@gmail.com
 MAIL_FROM_NAME=Hệ Thống Quản Lý
+
+Hướng dẫn 
+
+docker compose up -d
+
+npx prisma db push
+npm run seed database
+npx prisma studio: xem database
+
+
+npm run dev backend

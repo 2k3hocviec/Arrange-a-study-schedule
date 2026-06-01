@@ -3,24 +3,15 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
-import { Student } from './entities/student.entity';
-import { Enrollment } from '../enrollments/entities/enrollment.entity';
-import { Schedule } from '../schedules/entities/schedule.entity';
 import { UsersService } from '../users/users.service';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class StudentsService {
   constructor(
-    @InjectRepository(Student)
-    private readonly studentRepository: Repository<Student>,
-    @InjectRepository(Enrollment)
-    private readonly enrollmentRepository: Repository<Enrollment>,
-    @InjectRepository(Schedule)
-    private readonly scheduleRepository: Repository<Schedule>,
+    private readonly prisma: PrismaService,
     private readonly userService: UsersService,
   ) {}
 
@@ -30,8 +21,8 @@ export class StudentsService {
       throw new NotFoundException('User not found');
     }
 
-    const existingStudent = await this.studentRepository.findOneBy({
-      student_id: createStudentDto.student_id,
+    const existingStudent = await this.prisma.student.findUnique({
+      where: { student_id: createStudentDto.student_id },
     });
     if (existingStudent) {
       throw new BadRequestException('Student already exists');
@@ -41,17 +32,15 @@ export class StudentsService {
       throw new BadRequestException('This user is not a student');
     }
 
-    const newStudent = this.studentRepository.create(createStudentDto);
-
-    return await this.studentRepository.save(newStudent);
+    return this.prisma.student.create({ data: createStudentDto });
   }
 
   async findAll() {
-    return await this.studentRepository.find();
+    return this.prisma.student.findMany();
   }
 
   findOneByStudentID(studentId: string) {
-    return this.studentRepository.findOneBy({ student_id: studentId });
+    return this.prisma.student.findUnique({ where: { student_id: studentId } });
   }
 
   async update(id: string, updateStudentDto: UpdateStudentDto) {
@@ -64,26 +53,31 @@ export class StudentsService {
       throw new BadRequestException('This Objects does not student');
     }
 
-    const student = await this.studentRepository.findOneBy({ student_id: id });
-
+    const student = await this.findOneByStudentID(id);
     if (!student) {
       throw new NotFoundException('Student not found');
     }
-    return this.studentRepository.update({ student_id: id }, updateStudentDto);
+
+    return this.prisma.student.update({
+      where: { student_id: id },
+      data: updateStudentDto,
+    });
   }
 
   async remove(studentId: string) {
-    const student = await this.studentRepository.findOneBy({
-      student_id: studentId,
-    });
+    const student = await this.findOneByStudentID(studentId);
     if (!student) {
       throw new NotFoundException('Student not found');
     }
-    return this.studentRepository.delete({ student_id: studentId });
+
+    await this.prisma.student.delete({ where: { student_id: studentId } });
+    return student;
   }
 
   async findByUserId(userId: number) {
-    const student = await this.studentRepository.findOneBy({ user_id: userId });
+    const student = await this.prisma.student.findUnique({
+      where: { user_id: userId },
+    });
     if (!student) {
       throw new NotFoundException('Student not found for this user');
     }

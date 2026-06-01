@@ -210,17 +210,21 @@ export class AuthService {
   ) {
     const user = await this.usersServive.findOneById(userId);
     if (!user) {
-      throw new NotFoundException('User khong ton tai');
+      throw new NotFoundException('User not found');
+    }
+
+    if (user.role === 'sysadmin') {
+      throw new BadRequestException('Cannot change password of sysadmin user');
     }
 
     const isMatch = await bcrypt.compare(currentPassword, user.password);
     if (!isMatch) {
-      throw new BadRequestException('Mat khau hien tai khong dung');
+      throw new BadRequestException('Password is incorret');
     }
 
     user.password = await bcrypt.hash(newPassword, 10);
     await this.usersServive.save(user);
 
-    return { message: 'Doi mat khau thanh cong' };
+    return { message: 'Change Password success' };
   }
 }

@@ -51,6 +51,7 @@ export class UsersController {
   findAll() {
     return this.usersService.findAll();
   }
+
   @Roles('sysadmin')
   @Get(':id')
   findOne(@Param('id') id: string) {

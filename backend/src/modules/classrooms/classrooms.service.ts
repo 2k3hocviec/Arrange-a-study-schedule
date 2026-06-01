@@ -5,64 +5,52 @@ import {
 } from '@nestjs/common';
 import { CreateClassroomDto } from './dto/create-classroom.dto';
 import { UpdateClassroomDto } from './dto/update-classroom.dto';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Classroom } from './entities/classroom.entity';
-import { Repository } from 'typeorm';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class ClassroomsService {
-  constructor(
-    @InjectRepository(Classroom)
-    private readonly classroomsRepository: Repository<Classroom>,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
+
   async create(createClassroomDto: CreateClassroomDto) {
-    // Kiểm tra classrooms tồn tại chưa
-    const classroom = await this.classroomsRepository.findOneBy({
-      classroom_id: createClassroomDto.classroom_id,
-    });
+    const classroom = await this.findOne(createClassroomDto.classroom_id);
 
     if (classroom) {
       throw new BadRequestException('Classroom already exists');
     }
 
-    const newClassroom =
-      await this.classroomsRepository.save(createClassroomDto);
-    return newClassroom;
+    return this.prisma.classroom.create({ data: createClassroomDto });
   }
 
   async findAll() {
-    return await this.classroomsRepository.find();
+    return this.prisma.classroom.findMany();
   }
 
   async findOne(classroomId: string) {
-    return await this.classroomsRepository.findOneBy({
-      classroom_id: classroomId,
+    return this.prisma.classroom.findUnique({
+      where: { classroom_id: classroomId },
     });
   }
 
   async update(id: string, updateclassroomsDto: UpdateClassroomDto) {
-    const classrooms = await this.classroomsRepository.findOneBy({
-      classroom_id: id,
-    });
+    const classroom = await this.findOne(id);
 
-    if (!classrooms) {
+    if (!classroom) {
       throw new NotFoundException('classrooms not found');
     }
-    return this.classroomsRepository.update(
-      { classroom_id: id },
-      updateclassroomsDto,
-    );
+
+    return this.prisma.classroom.update({
+      where: { classroom_id: id },
+      data: updateclassroomsDto,
+    });
   }
 
   async remove(id: string) {
-    const teacher = await this.classroomsRepository.findOneBy({
-      classroom_id: id,
-    });
-    if (!teacher) {
+    const classroom = await this.findOne(id);
+    if (!classroom) {
       throw new NotFoundException('Classroom not found');
     }
 
-    await this.classroomsRepository.delete({ classroom_id: id });
-    return teacher;
+    await this.prisma.classroom.delete({ where: { classroom_id: id } });
+    return classroom;
   }
 }

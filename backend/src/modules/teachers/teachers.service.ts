@@ -5,30 +5,23 @@ import {
 } from '@nestjs/common';
 import { CreateTeacherDto } from './dto/create-teacher.dto';
 import { UpdateTeacherDto } from './dto/update-teacher.dto';
-import { Teacher } from './entities/teacher.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { UsersService } from '../users/users.service';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class TeachersService {
   constructor(
-    @InjectRepository(Teacher)
-    private readonly teachersRepository: Repository<Teacher>,
+    private readonly prisma: PrismaService,
     private readonly userService: UsersService,
   ) {}
 
   async create(createTeacherDto: CreateTeacherDto) {
-    // Kiểm tra user tồn tại không
     const user = await this.userService.findOne(createTeacherDto.user_id);
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
-    // Kiểm tra teacher tồn tại chưa
-    const teacher = await this.teachersRepository.findOneBy({
-      teacher_id: createTeacherDto.teacher_id,
-    });
+    const teacher = await this.findOne(createTeacherDto.teacher_id);
     if (teacher) {
       throw new BadRequestException('Teacher already exists');
     }
@@ -37,15 +30,15 @@ export class TeachersService {
       throw new BadRequestException('This Objects does not teacher');
     }
 
-    return await this.teachersRepository.save(createTeacherDto);
+    return this.prisma.teacher.create({ data: createTeacherDto });
   }
 
   async findAll() {
-    return await this.teachersRepository.find();
+    return this.prisma.teacher.findMany();
   }
 
   async findOne(id: string) {
-    return await this.teachersRepository.findOneBy({ teacher_id: id });
+    return this.prisma.teacher.findUnique({ where: { teacher_id: id } });
   }
 
   async update(id: string, updateTeacherDto: UpdateTeacherDto) {
@@ -58,47 +51,55 @@ export class TeachersService {
       throw new BadRequestException('This Objects does not teacher');
     }
 
-    const teacher = await this.teachersRepository.findOneBy({ teacher_id: id });
-
+    const teacher = await this.findOne(id);
     if (!teacher) {
       throw new NotFoundException('Teacher not found');
     }
-    return this.teachersRepository.update({ teacher_id: id }, updateTeacherDto);
+
+    return this.prisma.teacher.update({
+      where: { teacher_id: id },
+      data: updateTeacherDto,
+    });
   }
 
   async remove(id: string) {
-    const teacher = await this.teachersRepository.findOneBy({ teacher_id: id });
+    const teacher = await this.findOne(id);
     if (!teacher) {
       throw new NotFoundException('User not found');
     }
 
-    await this.teachersRepository.delete({ teacher_id: id });
+    await this.prisma.teacher.delete({ where: { teacher_id: id } });
     return teacher;
   }
 
   async findTeacherCoursesWithDetails(teacherId: string) {
-    return await this.teachersRepository.findOne({
+    return this.prisma.teacher.findUnique({
       where: { teacher_id: teacherId },
-      relations: ['course', 'course.schedule', 'course.subject'],
       select: {
         teacher_id: true,
         course: {
-          course_id: true,
-          subject_id: true,
-          teacher_id: true,
-          subject: {
+          select: {
+            course_id: true,
             subject_id: true,
-            name: true,
-            credits: true,
-          },
-          schedule: {
-            schedule_id: true,
-            classroom_id: true,
-            dayOfWeek: true,
-            start_slot: true,
-            end_slot: true,
-            start_date: true,
-            end_date: true,
+            teacher_id: true,
+            subject: {
+              select: {
+                subject_id: true,
+                name: true,
+                credits: true,
+              },
+            },
+            schedule: {
+              select: {
+                schedule_id: true,
+                classroom_id: true,
+                dayOfWeek: true,
+                start_slot: true,
+                end_slot: true,
+                start_date: true,
+                end_date: true,
+              },
+            },
           },
         },
       },
@@ -106,8 +107,8 @@ export class TeachersService {
   }
 
   async findByUserId(userId: number) {
-    const teacher = await this.teachersRepository.findOneBy({
-      user_id: userId,
+    const teacher = await this.prisma.teacher.findUnique({
+      where: { user_id: userId },
     });
     if (!teacher) {
       throw new NotFoundException('Teacher not found for this user');
@@ -116,8 +117,8 @@ export class TeachersService {
   }
 
   async findAllId() {
-    return await this.teachersRepository.find({
-      select: ['teacher_id'],
+    return this.prisma.teacher.findMany({
+      select: { teacher_id: true },
     });
   }
 }

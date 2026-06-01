@@ -1,113 +1,145 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { InjectRepository } from '@nestjs/typeorm';
-import { User } from './entities/user.entity';
-import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-import { Student } from '../students/entities/student.entity';
-import { Teacher } from '../teachers/entities/teacher.entity';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class UsersService {
-  constructor(
-    @InjectRepository(User)
-    private readonly usersRepository: Repository<User>,
-  ) {}
-  async create(createUserDto: CreateUserDto) {
-    const user = await this.usersRepository.create(createUserDto);
-    user.createdAt = new Date();
-    // Hash mật khẩu trước khi lưu
-    if (user.password) {
-      const saltRounds = 10;
-      user.password = await bcrypt.hash(user.password, saltRounds);
+  constructor(private readonly prisma: PrismaService) {}
+
+  private ensureRoleIsNotSysadmin(role?: string) {
+    if (role === 'sysadmin') {
+      throw new BadRequestException('Cannot create user with sysadmin role');
     }
-    return await this.usersRepository.save(user);
+  }
+
+  private ensureSysadminIsNotCredentialEdited(
+    user: { role: string },
+    data: Partial<UpdateUserDto>,
+  ) {
+    if (user.role !== 'sysadmin') {
+      return;
+    }
+
+    const protectedFields = ['email', 'role'].filter(
+      (field) => data[field] !== undefined,
+    );
+
+    if (protectedFields.length > 0) {
+      throw new BadRequestException(
+        'Cannot change email or role of sysadmin user',
+      );
+    }
+  }
+
+  async create(createUserDto: CreateUserDto) {
+    const data = { ...createUserDto };
+    this.ensureRoleIsNotSysadmin(data.role);
+
+    if (data.password) {
+      data.password = await bcrypt.hash(data.password, 10);
+    }
+
+    return this.prisma.user.create({ data });
   }
 
   async findAll() {
-    return await this.usersRepository.find();
+    return this.prisma.user.findMany();
   }
 
   async findOne(id: number) {
-    return await this.usersRepository.findOneBy({ id });
+    return this.prisma.user.findUnique({ where: { id } });
   }
 
   async update(id: number, updateUserDto: UpdateUserDto) {
-    const user = await this.usersRepository.findOneBy({ id });
+    const user = await this.findOne(id);
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    // Nếu cập nhật mật khẩu, hash nó trước
-    if (updateUserDto.password) {
-      const saltRounds = 10;
-      updateUserDto.password = await bcrypt.hash(
-        updateUserDto.password,
-        saltRounds,
-      );
+
+    const data = { ...updateUserDto };
+    this.ensureSysadminIsNotCredentialEdited(user, data);
+
+    if (data.password) {
+      data.password = await bcrypt.hash(data.password, 10);
     }
-    return this.usersRepository.update(id, updateUserDto);
+
+    return this.prisma.user.update({ where: { id }, data });
   }
 
   async remove(id: number) {
-    const user = await this.usersRepository.findOneBy({ id });
+    const user = await this.findOne(id);
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    await this.usersRepository.delete({ id });
+
+    if (user.role === 'sysadmin') {
+      throw new BadRequestException('Cannot delete sysadmin user');
+    }
+
+    await this.prisma.user.delete({ where: { id } });
     return user;
   }
 
   async findByEmail(email: string) {
-    return await this.usersRepository.findOneBy({ email });
+    return this.prisma.user.findUnique({ where: { email } });
   }
 
   async findById(id: number) {
-    return await this.usersRepository.findOneBy({ id });
+    return this.findOne(id);
   }
 
   async updatePassword(id: number, newPassword: string) {
-    const user = await this.usersRepository.findOneBy({ id });
+    const user = await this.findOne(id);
     if (!user) {
       throw new NotFoundException('The user does not exist.');
     }
-    // Hash mật khẩu mới trước khi lưu
-    const saltRounds = 10;
-    user.password = await bcrypt.hash(newPassword, saltRounds);
-    return await this.usersRepository.save(user);
-  }
 
-  async getUserId() {
-    return await this.usersRepository.find({ select: ['id'] });
-  }
+    if (user.role === 'sysadmin') {
+      throw new BadRequestException('Cannot change password of sysadmin user');
+    }
 
-  async getAvailableStudents() {
-    return await this.usersRepository
-      .createQueryBuilder('user')
-      .leftJoin(Student, 'student', 'student.user_id = user.id')
-      .where('user.role = :role', { role: 'student' })
-      .andWhere('student.user_id IS NULL')
-      .select(['user.id'])
-      .getMany();
-  }
-
-  async getAvailableTeachers() {
-    return await this.usersRepository
-      .createQueryBuilder('user')
-      .leftJoin(Teacher, 'teacher', 'teacher.user_id = user.id')
-      .where('user.role = :role', { role: 'teacher' })
-      .andWhere('teacher.user_id IS NULL')
-      .select(['user.id'])
-      .getMany();
-  }
-
-  async findOneById(id: number) {
-    return await this.usersRepository.findOne({
+    return this.prisma.user.update({
       where: { id },
+      data: { password: await bcrypt.hash(newPassword, 10) },
     });
   }
 
-  async save(user) {
-    return this.usersRepository.save(user);
+  async getUserId() {
+    return this.prisma.user.findMany({ select: { id: true } });
+  }
+
+  async getAvailableStudents() {
+    return this.prisma.user.findMany({
+      where: {
+        role: 'student',
+        student: null,
+      },
+      select: { id: true },
+    });
+  }
+
+  async getAvailableTeachers() {
+    return this.prisma.user.findMany({
+      where: {
+        role: 'teacher',
+        teacher: null,
+      },
+      select: { id: true },
+    });
+  }
+
+  async findOneById(id: number) {
+    return this.findOne(id);
+  }
+
+  async save(user: any) {
+    const { id, ...data } = user;
+    return this.prisma.user.update({ where: { id }, data });
   }
 }

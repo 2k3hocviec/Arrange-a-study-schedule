@@ -1,61 +1,50 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateSubjectDto } from './dto/create-subject.dto';
 import { UpdateSubjectDto } from './dto/update-subject.dto';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Subject } from './entities/subject.entity';
-import { Repository } from 'typeorm';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class SubjectsService {
-  constructor(
-    @InjectRepository(Subject)
-    private readonly subjectRepository: Repository<Subject>,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
+
   async create(createSubjectDto: CreateSubjectDto) {
-    const subjectOld = await this.subjectRepository.findOneBy({
-      subject_id: createSubjectDto.subject_id,
-    });
+    const subjectOld = await this.findOne(createSubjectDto.subject_id);
 
     if (subjectOld) {
       throw new BadRequestException('Subject_ID already exists');
     }
 
-    const subject = await this.subjectRepository.create(createSubjectDto);
-
-    await this.subjectRepository.save(subject);
-    return subject;
+    return this.prisma.subject.create({ data: createSubjectDto });
   }
 
   async findAll() {
-    return await this.subjectRepository.find();
+    return this.prisma.subject.findMany();
   }
 
   async findOne(id: string) {
-    return await this.subjectRepository.findOneBy({ subject_id: id });
+    return this.prisma.subject.findUnique({ where: { subject_id: id } });
   }
 
   async update(id: string, updateSubjectDto: UpdateSubjectDto) {
-    const subjectOld = await this.subjectRepository.findOneBy({
-      subject_id: id,
-    });
+    const subjectOld = await this.findOne(id);
 
     if (!subjectOld) {
       throw new BadRequestException('Subject does not exists');
     }
 
-    return await this.subjectRepository.update(
-      { subject_id: id },
-      updateSubjectDto,
-    );
+    return this.prisma.subject.update({
+      where: { subject_id: id },
+      data: updateSubjectDto,
+    });
   }
 
   async remove(id: string) {
-    return this.subjectRepository.delete(id);
+    return this.prisma.subject.delete({ where: { subject_id: id } });
   }
 
   async findAllId() {
-    return await this.subjectRepository.find({
-      select: ['subject_id'],
+    return this.prisma.subject.findMany({
+      select: { subject_id: true },
     });
   }
 }
