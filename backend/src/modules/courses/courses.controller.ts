@@ -22,31 +22,31 @@ export class CoursesController {
     return this.coursesService.findInfoCourse();
   }
 
-  @Roles('admin')
+  @Roles('ministry')
   @Post()
   create(@Body() createCourseDto: CreateCourseDto) {
     return this.coursesService.create(createCourseDto);
   }
 
-  @Roles('admin', 'student')
+  @Roles('ministry', 'student')
   @Get()
   findAll() {
     return this.coursesService.findAll();
   }
 
-  @Roles('admin')
+  @Roles('ministry')
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.coursesService.findOne(id);
   }
 
-  @Roles('admin')
+  @Roles('ministry')
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateCourseDto: UpdateCourseDto) {
     return this.coursesService.update(id, updateCourseDto);
   }
 
-  @Roles('admin')
+  @Roles('ministry')
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.coursesService.remove(id);
