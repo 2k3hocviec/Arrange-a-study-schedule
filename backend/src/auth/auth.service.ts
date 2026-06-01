@@ -12,6 +12,7 @@ import { MailService } from 'src/mail/mail.service';
 import { RedisService } from 'src/redis/redis.service';
 import * as bcrypt from 'bcrypt';
 
+const otpStore = new Map<string, { otp: string; expiry: number }>();
 const REFRESH_TTL = 7 * 24 * 60 * 60;
 
 @Injectable()
@@ -20,42 +21,54 @@ export class AuthService {
     private readonly usersServive: UsersService,
     private readonly jwtService: JwtService,
     private readonly mailService: MailService,
-    private readonly configService: ConfigService, // ← thêm
-    private readonly redisService: RedisService, // ← thêm
+    private readonly configService: ConfigService,
+    private readonly redisService: RedisService,
   ) {}
 
-  // ─── HELPER: tạo cặp access + refresh token ───────────────────────────────
+  private getAccessSecret() {
+    return (
+      this.configService.get<string>('JWT_ACCESS_SECRET') ||
+      this.configService.get<string>('JWT_SECRET') ||
+      'jwt_access_secret_key'
+    );
+  }
+
+  private getRefreshSecret() {
+    return (
+      this.configService.get<string>('JWT_REFRESH_SECRET') ||
+      'jwt_refresh_secret_key'
+    );
+  }
+
   private async generateTokens(userId: number, email: string, role: string) {
     const payload = { sub: userId, email, role };
 
     const [access_token, refresh_token] = await Promise.all([
       this.jwtService.signAsync(payload, {
-        secret: this.configService.get('JWT_ACCESS_SECRET'),
+        secret: this.getAccessSecret(),
         expiresIn: '15m',
       }),
       this.jwtService.signAsync(payload, {
-        secret: this.configService.get('JWT_REFRESH_SECRET'),
+        secret: this.getRefreshSecret(),
         expiresIn: '7d',
       }),
     ]);
 
-    // Lưu hashed refresh token vào Redis
     const hashed = await bcrypt.hash(refresh_token, 10);
     await this.redisService.set(`refresh_token:${userId}`, hashed, REFRESH_TTL);
 
     return { access_token, refresh_token };
   }
 
-  // ─── LOGIN: giữ nguyên logic, chỉ đổi return ──────────────────────────────
   async login(email: string, password: string) {
     const user = await this.usersServive.findByEmail(email);
     if (!user) {
-      throw new UnauthorizedException('Invalid email or password');
+      throw new UnauthorizedException('Email hoac mat khau khong dung');
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid email or password');
+      throw new UnauthorizedException('Email hoac mat khau khong dung');
     }
 
     const { access_token, refresh_token } = await this.generateTokens(
@@ -66,55 +79,115 @@ export class AuthService {
 
     return {
       access_token,
-      refresh_token, // controller sẽ lấy cái này set vào cookie
+      refresh_token,
       user: { id: user.id, email: user.email, role: user.role },
     };
   }
 
-  // ─── REFRESH: nhận raw token từ cookie, verify + cấp token mới ─────────────
   async refreshTokens(rawRefreshToken: string) {
-    // 1. Decode để lấy userId
     let payload: any;
     try {
       payload = this.jwtService.verify(rawRefreshToken, {
-        secret: this.configService.get('JWT_REFRESH_SECRET'),
+        secret: this.getRefreshSecret(),
       });
     } catch {
       throw new UnauthorizedException(
-        'Refresh token không hợp lệ hoặc đã hết hạn',
+        'Refresh token khong hop le hoac da het han',
       );
     }
 
     const userId = payload.sub;
-
-    // 2. Lấy hash từ Redis
     const storedHash = await this.redisService.get(`refresh_token:${userId}`);
     if (!storedHash) {
       throw new ForbiddenException(
-        'Refresh token đã bị thu hồi hoặc không tồn tại',
+        'Refresh token da bi thu hoi hoac khong ton tai',
       );
     }
 
-    // 3. So sánh token gửi lên với hash đã lưu
     const isMatch = await bcrypt.compare(rawRefreshToken, storedHash);
     if (!isMatch) {
-      throw new ForbiddenException('Refresh token không khớp');
+      throw new ForbiddenException('Refresh token khong khop');
     }
 
-    // 4. Cấp cặp token mới (rotation: xóa cũ, tạo mới)
     return this.generateTokens(userId, payload.email, payload.role);
   }
 
-  // ─── LOGOUT: xóa refresh token khỏi Redis ─────────────────────────────────
   async logout(userId: number) {
     await this.redisService.delete(`refresh_token:${userId}`);
   }
 
-  // ─── FORGOT PASSWORD: giữ nguyên hoàn toàn ────────────────────────────────
+  async sendOtp(email: string) {
+    const user = await this.usersServive.findByEmail(email);
+    if (!user) {
+      throw new BadRequestException('Email khong ton tai trong he thong');
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiry = Date.now() + 5 * 60 * 1000;
+    otpStore.set(email, { otp, expiry });
+
+    try {
+      const userName = user.email.split('@')[0];
+      await this.mailService.sendOtpEmail(email, otp, userName);
+    } catch (error) {
+      console.error('Failed to send OTP email:', error);
+      throw new BadRequestException(
+        'Khong the gui email. Kiem tra cau hinh SMTP trong .env',
+      );
+    }
+
+    return { message: 'Ma OTP da duoc gui toi email cua ban' };
+  }
+
+  async verifyOtp(email: string, otp: string) {
+    const stored = otpStore.get(email);
+    if (!stored) {
+      throw new BadRequestException('Khong tim thay yeu cau OTP. Vui long gui lai.');
+    }
+    if (Date.now() > stored.expiry) {
+      otpStore.delete(email);
+      throw new BadRequestException('Ma OTP da het han. Vui long yeu cau lai.');
+    }
+    if (stored.otp !== otp) {
+      throw new BadRequestException('Ma OTP khong dung');
+    }
+
+    otpStore.delete(email);
+    const resetToken = this.jwtService.sign(
+      { email, purpose: 'reset-password' },
+      { secret: this.getAccessSecret(), expiresIn: '10m' },
+    );
+
+    return { message: 'Xac minh OTP thanh cong', reset_token: resetToken };
+  }
+
+  async resetPassword(resetToken: string, newPassword: string) {
+    let payload: any;
+    try {
+      payload = this.jwtService.verify(resetToken, {
+        secret: this.getAccessSecret(),
+      });
+    } catch {
+      throw new BadRequestException('Token khong hop le hoac da het han');
+    }
+
+    if (payload.purpose !== 'reset-password') {
+      throw new BadRequestException('Token khong hop le');
+    }
+
+    const user = await this.usersServive.findByEmail(payload.email);
+    if (!user) {
+      throw new BadRequestException('Nguoi dung khong ton tai');
+    }
+
+    await this.usersServive.updatePassword(user.id, newPassword);
+    return { message: 'Mat khau da duoc cap nhat thanh cong' };
+  }
+
   async forgotPassword(email: string) {
     const user = await this.usersServive.findByEmail(email);
     if (!user) {
-      throw new BadRequestException('Email does not exist in the system');
+      throw new BadRequestException('Email khong ton tai trong he thong');
     }
 
     const newPassword = '123456';
@@ -127,24 +200,27 @@ export class AuthService {
       console.error('Failed to send email:', error);
     }
 
-    return { message: 'New password has been sent to your email' };
+    return { message: 'Mat khau moi da duoc gui toi email cua ban' };
   }
 
-  // ─── CHANGE PASSWORD: giữ nguyên hoàn toàn ────────────────────────────────
   async changePassword(
     userId: number,
     currentPassword: string,
     newPassword: string,
   ) {
     const user = await this.usersServive.findOneById(userId);
-    if (!user) throw new NotFoundException('User không tồn tại');
+    if (!user) {
+      throw new NotFoundException('User khong ton tai');
+    }
 
     const isMatch = await bcrypt.compare(currentPassword, user.password);
-    if (!isMatch) throw new BadRequestException('Mật khẩu hiện tại không đúng');
+    if (!isMatch) {
+      throw new BadRequestException('Mat khau hien tai khong dung');
+    }
 
     user.password = await bcrypt.hash(newPassword, 10);
     await this.usersServive.save(user);
 
-    return { message: 'Đổi mật khẩu thành công' };
+    return { message: 'Doi mat khau thanh cong' };
   }
 }

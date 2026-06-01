@@ -10,31 +10,28 @@ import {
 import { AuthService } from './auth.service';
 import { Public } from 'src/role/public.decorator';
 import { ChangePasswordDto } from './dto/change.password.dto';
-import * as Express from 'express';
-import type { Response } from 'express';
+import type { Request, Response } from 'express';
 
-interface RequestWithUser extends Express.Request {
-  user: {
-    sub: string;
+interface AuthenticatedRequest extends Request {
+  user?: {
+    sub: number;
     email: string;
-    // Thêm các thuộc tính khác của user nếu có (ví dụ: role, name...)
+    role: string;
   };
 }
 
-// Cookie config dùng chung
 const REFRESH_COOKIE_OPTIONS = {
-  httpOnly: true, // JS không đọc được → chống XSS
-  secure: process.env.NODE_ENV === 'production', // chỉ HTTPS ở production
-  sameSite: 'lax' as const, // chống CSRF
-  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 ngày (ms)
-  path: '/auth/refresh', // cookie chỉ gửi lên endpoint này
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'lax' as const,
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+  path: '/auth/refresh',
 };
 
 @Controller('/auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  // ─── LOGIN ─────────────────────────────────────────────────────────────────
   @Post('/login')
   @Public()
   async login(
@@ -46,63 +43,80 @@ export class AuthController {
       body.password,
     );
 
-    // Refresh token → HttpOnly cookie (không lộ ra JS)
     res.cookie('refresh_token', refresh_token, REFRESH_COOKIE_OPTIONS);
-
-    // Chỉ trả access_token + user info ra body
     return { access_token, user };
   }
 
-  // ─── REFRESH TOKEN ─────────────────────────────────────────────────────────
   @Post('/refresh')
-  @Public() // không có access token khi gọi endpoint này
+  @Public()
   async refresh(
-    @Req() req: Express.Request, // Đã sửa thành Express.Request để nhận diện thuộc tính 'cookies'
+    @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ) {
     const token = req.cookies?.refresh_token;
-    if (!token) throw new UnauthorizedException('Không tìm thấy refresh token');
+    if (!token) {
+      throw new UnauthorizedException('Khong tim thay refresh token');
+    }
 
     const { access_token, refresh_token } =
       await this.authService.refreshTokens(token);
 
-    // Cập nhật cookie với refresh token mới (rotation)
     res.cookie('refresh_token', refresh_token, REFRESH_COOKIE_OPTIONS);
-
     return { access_token };
   }
 
-  // ─── LOGOUT ────────────────────────────────────────────────────────────────
   @Post('/logout')
-  // KHÔNG @Public() → cần access token hợp lệ, JwtAuthGuard global sẽ check
   async logout(
-    @Req() req: Express.Request, // Đã thêm kiểu dữ liệu tường minh
+    @Req() req: AuthenticatedRequest,
     @Res({ passthrough: true }) res: Response,
   ) {
-    // Ép kiểu (req.user as any) đề phòng TypeScript chưa nhận diện được cấu trúc của payload trong JWT
-    const userId = (req.user as any)?.sub;
-    await this.authService.logout(userId);
+    const userId = req.user?.sub;
+    if (!userId) {
+      throw new UnauthorizedException('Khong tim thay thong tin nguoi dung');
+    }
 
-    // Xóa cookie
+    await this.authService.logout(userId);
     res.clearCookie('refresh_token', { path: '/auth/refresh' });
 
     return { message: 'Logged out successfully' };
   }
 
-  // ─── FORGOT PASSWORD ───────────────────────────────────────────────────────
+  @Post('/send-otp')
+  @Public()
+  async sendOtp(@Body() body: { email: string }) {
+    return this.authService.sendOtp(body.email);
+  }
+
+  @Post('/verify-otp')
+  @Public()
+  async verifyOtp(@Body() body: { email: string; otp: string }) {
+    return this.authService.verifyOtp(body.email, body.otp);
+  }
+
+  @Post('/reset-password')
+  @Public()
+  async resetPassword(
+    @Body() body: { reset_token: string; newPassword: string },
+  ) {
+    return this.authService.resetPassword(body.reset_token, body.newPassword);
+  }
+
   @Post('/forgot-password')
   @Public()
   async forgotPassword(@Body() body: { email: string }) {
     return this.authService.forgotPassword(body.email);
   }
 
-  // ─── CHANGE PASSWORD ───────────────────────────────────────────────────────
   @Patch('/change-password')
   changePassword(
-    @Req() req: Express.Request, // Đã thêm kiểu dữ liệu tường minh
+    @Req() req: AuthenticatedRequest,
     @Body() body: ChangePasswordDto,
   ) {
-    const userId = (req.user as any)?.sub;
+    const userId = req.user?.sub;
+    if (!userId) {
+      throw new UnauthorizedException('Khong tim thay thong tin nguoi dung');
+    }
+
     return this.authService.changePassword(
       userId,
       body.currentPassword,
