@@ -5,6 +5,7 @@ import { SchedulesService } from '../schedules/schedules.service';
 import { StudentsService } from '../students/students.service';
 import { CoursesService } from '../courses/courses.service';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class EnrollmentsService {
@@ -30,13 +31,13 @@ export class EnrollmentsService {
       await this.scheduleService.findScheduleWithCourseID(newCourseID);
 
     if (!newSchedule) {
-      throw new Error('Mon nay chua co lich day');
+      throw new Error('This course has not yet been scheduled.');
     }
 
     for (const existingSchedule of existingSchedules) {
       const slotConflict =
         newSchedule.dayOfWeek === existingSchedule.dayOfWeek &&
-        newSchedule.start_slot <= existingSchedule.start_slot &&
+        newSchedule.start_slot <= existingSchedule.end_slot &&
         newSchedule.end_slot >= existingSchedule.start_slot;
 
       if (!slotConflict) continue;
@@ -57,10 +58,10 @@ export class EnrollmentsService {
           !existingEndDate ||
           (existingStartDate <= newEndDate && existingEndDate >= newStartDate)
         ) {
-          return `Conflict with ${existingSchedule.course_id}`;
+          return `Conflict with course with ID ${existingSchedule.course_id}`;
         }
       } else {
-        return `Conflict with ${existingSchedule.course_id}`;
+        return `Conflict with course with ID ${existingSchedule.course_id}`;
       }
     }
 
@@ -99,6 +100,14 @@ export class EnrollmentsService {
       include: { course: { include: { subject: true } } },
     });
 
+    const hasEnrolledSameCourse = existingEnrollments.some(
+      (enrollment) => enrollment.course_id === createEnrollmentDto.course_id,
+    );
+
+    if (hasEnrolledSameCourse) {
+      throw new BadRequestException(`This course has already been registered`);
+    }
+
     const hasEnrolledSameSubject = existingEnrollments.some(
       (enrollment) => enrollment.course.subject_id === course.subject_id,
     );
@@ -130,18 +139,44 @@ export class EnrollmentsService {
       throw new BadRequestException(conflict);
     }
 
-    const savedEnrollment = await this.prisma.enrollment.create({
-      data: createEnrollmentDto,
+    // Đoạn code này sử transcion/lock kiểm soát nếu 2 người cùng đăng kí môn học tại cùng một thời điểm
+    return this.prisma.$transaction(async (tx) => {
+      if (
+        course.remaining_capacity !== undefined &&
+        course.remaining_capacity !== null
+      ) {
+        const capacityUpdate = await tx.course.updateMany({
+          where: {
+            course_id: createEnrollmentDto.course_id,
+            remaining_capacity: { gt: 0 },
+          },
+          data: {
+            remaining_capacity: { decrement: 1 },
+          },
+        });
+
+        if (capacityUpdate.count === 0) {
+          throw new BadRequestException('This course is fully booked');
+        }
+      }
+
+      try {
+        return await tx.enrollment.create({
+          data: createEnrollmentDto,
+        });
+      } catch (error) {
+        if (
+          error instanceof Prisma.PrismaClientKnownRequestError &&
+          error.code === 'P2002'
+        ) {
+          throw new BadRequestException(
+            'This course has already been registered',
+          );
+        }
+
+        throw error;
+      }
     });
-
-    if (course.remaining_capacity !== undefined && course.remaining_capacity !== null) {
-      await this.coursesService.updateRemaining(
-        createEnrollmentDto.course_id,
-        course.remaining_capacity - 1,
-      );
-    }
-
-    return savedEnrollment;
   }
 
   findOne(id: number) {

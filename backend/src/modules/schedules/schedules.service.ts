@@ -5,6 +5,8 @@ import { CoursesService } from '../courses/courses.service';
 import { ClassroomsService } from '../classrooms/classrooms.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 
+const READY_CLASSROOM_STATUS = 'Ready';
+
 @Injectable()
 export class SchedulesService {
   constructor(
@@ -15,6 +17,7 @@ export class SchedulesService {
 
   private async checkClassroomConflict(
     dto: CreateScheduleDto | UpdateScheduleDto,
+    excludeScheduleId?: string,
   ) {
     const where: any = {
       classroom_id: dto.classroom_id,
@@ -22,6 +25,11 @@ export class SchedulesService {
       start_slot: { lte: dto.end_slot },
       end_slot: { gte: dto.start_slot },
     };
+
+    // Khi update schedule có thể tự báo trùng với chính nó, vì vậy ta cần loại trừ cái hiện tại
+    if (excludeScheduleId) {
+      where.schedule_id = { not: excludeScheduleId };
+    }
 
     if (dto.start_date && dto.end_date) {
       where.start_date = { lte: new Date(dto.end_date) };
@@ -33,6 +41,7 @@ export class SchedulesService {
 
   private async checkTeacherConflict(
     dto: CreateScheduleDto | UpdateScheduleDto,
+    excludeScheduleId?: string,
   ) {
     const currentCourse = await this.courseService.findOneByCourseID(
       dto.course_id,
@@ -48,6 +57,10 @@ export class SchedulesService {
         teacher_id: currentCourse.teacher_id,
       },
     };
+
+    if (excludeScheduleId) {
+      where.schedule_id = { not: excludeScheduleId };
+    }
 
     if (dto.start_date && dto.end_date) {
       where.start_date = { lte: new Date(dto.end_date) };
@@ -67,6 +80,12 @@ export class SchedulesService {
 
     if (!classroom) {
       throw new BadRequestException(`Classroom not exist`);
+    }
+
+    if (classroom.status !== READY_CLASSROOM_STATUS) {
+      throw new BadRequestException(
+        `Classroom ${createScheduleDto.classroom_id} is not ready for scheduling`,
+      );
     }
 
     const course = await this.courseService.findOne(
@@ -152,6 +171,12 @@ export class SchedulesService {
       throw new BadRequestException(`Classroom not exist`);
     }
 
+    if (classroom.status !== READY_CLASSROOM_STATUS) {
+      throw new BadRequestException(
+        `Classroom ${updateScheduleDto.classroom_id} is not ready for scheduling`,
+      );
+    }
+
     const course = await this.courseService.findOne(
       updateScheduleDto.course_id,
     );
@@ -166,8 +191,10 @@ export class SchedulesService {
       );
     }
 
-    const classroomConflict =
-      await this.checkClassroomConflict(updateScheduleDto);
+    const classroomConflict = await this.checkClassroomConflict(
+      updateScheduleDto,
+      id,
+    );
 
     if (classroomConflict) {
       throw new BadRequestException(
@@ -175,7 +202,10 @@ export class SchedulesService {
       );
     }
 
-    const teacherConflict = await this.checkTeacherConflict(updateScheduleDto);
+    const teacherConflict = await this.checkTeacherConflict(
+      updateScheduleDto,
+      id,
+    );
     if (teacherConflict) {
       throw new BadRequestException(
         `Teacher already has schedule on ${updateScheduleDto.dayOfWeek} at this time`,
