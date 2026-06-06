@@ -36,6 +36,38 @@ export class CoursesService {
     return `${prefix}${String(maxGroupNumber + 1).padStart(2, '0')}`;
   }
 
+  private async ensureCourseSchedulesFitSemester(
+    courseId: string,
+    semesterId?: string,
+  ) {
+    if (!semesterId) {
+      return;
+    }
+
+    const semester = await this.semestersService.findOne(semesterId);
+    if (!semester) {
+      throw new BadRequestException('Semester not found');
+    }
+
+    const scheduleOutOfRange = await this.prisma.schedule.findFirst({
+      where: {
+        course_id: courseId,
+        OR: [
+          { start_date: null },
+          { end_date: null },
+          { start_date: { lt: semester.start_date } },
+          { end_date: { gt: semester.end_date } },
+        ],
+      },
+    });
+
+    if (scheduleOutOfRange) {
+      throw new BadRequestException(
+        'Cannot move course to this semester because an existing schedule is outside the semester date range',
+      );
+    }
+  }
+
   async create(createCourseDto: CreateCourseDto) {
     if (!createCourseDto.required_room_type) {
       throw new BadRequestException('Required room type is required');
@@ -103,6 +135,13 @@ export class CoursesService {
       throw new BadRequestException('Not teacher or Not subject or Not semester');
     }
 
+    if (updateCourseDto.semester_id) {
+      await this.ensureCourseSchedulesFitSemester(
+        id,
+        updateCourseDto.semester_id,
+      );
+    }
+
     if (updateCourseDto.capacity !== undefined) {
       const course = await this.findOneByCourseID(id);
       if (!course) {
@@ -135,6 +174,19 @@ export class CoursesService {
   }
 
   async remove(id: string) {
+    const [scheduleCount, enrollmentCount] = await Promise.all([
+      this.prisma.schedule.count({ where: { course_id: id } }),
+      this.prisma.enrollment.count({ where: { course_id: id } }),
+    ]);
+
+    if (scheduleCount > 0) {
+      throw new BadRequestException('Cannot delete course that has schedules');
+    }
+
+    if (enrollmentCount > 0) {
+      throw new BadRequestException('Cannot delete course that has enrollments');
+    }
+
     return this.prisma.course.delete({ where: { course_id: id } });
   }
 

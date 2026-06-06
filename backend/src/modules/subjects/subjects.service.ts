@@ -39,6 +39,14 @@ export class SubjectsService {
   }
 
   async remove(id: string) {
+    const courseCount = await this.prisma.course.count({
+      where: { subject_id: id },
+    });
+
+    if (courseCount > 0) {
+      throw new BadRequestException('Cannot delete subject that has courses');
+    }
+
     return this.prisma.subject.delete({ where: { subject_id: id } });
   }
 

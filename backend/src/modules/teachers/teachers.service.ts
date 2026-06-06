@@ -77,6 +77,14 @@ export class TeachersService {
       throw new NotFoundException('User not found');
     }
 
+    const courseCount = await this.prisma.course.count({
+      where: { teacher_id: id },
+    });
+
+    if (courseCount > 0) {
+      throw new BadRequestException('Cannot delete teacher that has courses');
+    }
+
     await this.prisma.teacher.delete({ where: { teacher_id: id } });
     return teacher;
   }

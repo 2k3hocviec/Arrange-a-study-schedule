@@ -36,9 +36,9 @@ export class SemestersService {
     const scheduleOutOfRange = await this.prisma.schedule.findFirst({
       where: {
         course: { semester_id: semesterId },
-        start_date: { not: null },
-        end_date: { not: null },
         OR: [
+          { start_date: null },
+          { end_date: null },
           { start_date: { lt: this.startOfDay(startDate) } },
           { end_date: { gt: this.startOfDay(endDate) } },
         ],

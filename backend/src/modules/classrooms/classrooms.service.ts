@@ -50,6 +50,14 @@ export class ClassroomsService {
       throw new NotFoundException('Classroom not found');
     }
 
+    const scheduleCount = await this.prisma.schedule.count({
+      where: { classroom_id: id },
+    });
+
+    if (scheduleCount > 0) {
+      throw new BadRequestException('Cannot delete classroom that has schedules');
+    }
+
     await this.prisma.classroom.delete({ where: { classroom_id: id } });
     return classroom;
   }

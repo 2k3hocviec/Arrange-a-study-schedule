@@ -79,6 +79,14 @@ export class StudentsService {
       throw new NotFoundException('Student not found');
     }
 
+    const enrollmentCount = await this.prisma.enrollment.count({
+      where: { student_id: studentId },
+    });
+
+    if (enrollmentCount > 0) {
+      throw new BadRequestException('Cannot delete student that has enrollments');
+    }
+
     await this.prisma.student.delete({ where: { student_id: studentId } });
     return student;
   }

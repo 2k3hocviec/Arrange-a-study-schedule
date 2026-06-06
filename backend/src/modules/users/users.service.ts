@@ -82,6 +82,17 @@ export class UsersService {
       throw new BadRequestException('Cannot delete sysadmin user');
     }
 
+    const [student, teacher] = await Promise.all([
+      this.prisma.student.findUnique({ where: { user_id: id } }),
+      this.prisma.teacher.findUnique({ where: { user_id: id } }),
+    ]);
+
+    if (student || teacher) {
+      throw new BadRequestException(
+        'Cannot delete user that is linked to a student or teacher profile',
+      );
+    }
+
     await this.prisma.user.delete({ where: { id } });
     return user;
   }

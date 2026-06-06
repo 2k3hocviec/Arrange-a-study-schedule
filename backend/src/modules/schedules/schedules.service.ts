@@ -27,10 +27,38 @@ export class SchedulesService {
   }
 
   private normalizeSlots(dto: CreateScheduleDto | UpdateScheduleDto) {
+    const start_slot = Number(dto.start_slot);
+    const end_slot = Number(dto.end_slot);
+
+    if (
+      !Number.isInteger(start_slot) ||
+      !Number.isInteger(end_slot) ||
+      start_slot < 1 ||
+      end_slot > 10 ||
+      start_slot > end_slot
+    ) {
+      throw new BadRequestException(
+        'Schedule slots must be valid and start_slot must be less than or equal to end_slot',
+      );
+    }
+
     return {
-      start_slot: Number(dto.start_slot),
-      end_slot: Number(dto.end_slot),
+      start_slot,
+      end_slot,
     };
+  }
+
+  private normalizeScheduleDates(dto: CreateScheduleDto | UpdateScheduleDto) {
+    const scheduleStart = dto.start_date ? new Date(dto.start_date) : undefined;
+    const scheduleEnd = dto.end_date ? new Date(dto.end_date) : undefined;
+
+    if (scheduleStart && scheduleEnd && scheduleStart > scheduleEnd) {
+      throw new BadRequestException(
+        'Schedule start_date must be before or equal to end_date',
+      );
+    }
+
+    return { scheduleStart, scheduleEnd };
   }
 
   private ensureScheduleDatesWithinSemester(
@@ -41,8 +69,11 @@ export class SchedulesService {
       return;
     }
 
-    const scheduleStart = new Date(dto.start_date);
-    const scheduleEnd = new Date(dto.end_date);
+    const { scheduleStart, scheduleEnd } = this.normalizeScheduleDates(dto);
+    if (!scheduleStart || !scheduleEnd) {
+      return;
+    }
+
     const semesterStart = new Date(course.semester.start_date);
     const semesterEnd = new Date(course.semester.end_date);
 
