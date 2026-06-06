@@ -4,6 +4,8 @@ import toast from "react-hot-toast";
 import { MdMenuBook } from "react-icons/md";
 import { FiPlus, FiEdit2, FiTrash2 } from "react-icons/fi";
 
+const PAGE_SIZE = 10;
+
 const MinistryCourses = () => {
   const roomTypeOptions = [
     { value: "Theory", label: "Lý thuyết" },
@@ -15,6 +17,7 @@ const MinistryCourses = () => {
   const [courses, setCourses] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [repair, setRepair] = useState(false);
+  const [page, setPage] = useState(1);
 
   const [formData, setFormData] = useState({
     subject_id: "",
@@ -27,6 +30,7 @@ const MinistryCourses = () => {
     try {
       const response = await coursesAPI.getAll();
       setCourses(response.data);
+      setPage(1);
     } catch (e) {
       toast.error("Không thể tải dữ liệu khóa học");
     }
@@ -115,6 +119,12 @@ const MinistryCourses = () => {
 
   const activeCount = courses.filter((c) => c.status === "Active").length;
   const inactiveCount = courses.filter((c) => c.status === "Inactive").length;
+  const totalPages = Math.max(1, Math.ceil(courses.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const pagedCourses = courses.slice(
+    (safePage - 1) * PAGE_SIZE,
+    safePage * PAGE_SIZE,
+  );
 
   return (
     <div style={pageWrapper}>
@@ -301,7 +311,7 @@ const MinistryCourses = () => {
               <tr style={theadRow}>
                 <th style={th}>STT</th>
                 <th style={th}>LOẠI PHÒNG</th>
-                <th style={th}>MÃ KHÓA HỌC</th>
+                <th style={th}>MÃ CODE</th>
                 <th style={th}>TÊN MÔN HỌC</th>
                 <th style={th}>GIÁO VIÊN</th>
                 <th style={th}>TỐI ĐA</th>
@@ -310,7 +320,7 @@ const MinistryCourses = () => {
               </tr>
             </thead>
             <tbody>
-              {courses.map((course, index) => {
+              {pagedCourses.map((course, index) => {
                 const capacity = course.capacity || 0;
                 const remainingCapacity =
                   course.remaining_capacity !== undefined
@@ -324,7 +334,10 @@ const MinistryCourses = () => {
                 return (
                   <tr key={course.course_id} style={tbodyRow}>
                     <td style={{ ...td, color: "#94a3b8" }}>
-                      {String(index + 1).padStart(2, "0")}
+                      {String((safePage - 1) * PAGE_SIZE + index + 1).padStart(
+                        2,
+                        "0",
+                      )}
                     </td>
                     <td style={td}>
                       <span
@@ -386,6 +399,53 @@ const MinistryCourses = () => {
         </div>
 
         {courses.length > 0 && (
+          <div style={tableFooter}>
+            <span style={{ color: "#94a3b8", fontSize: "13px" }}>
+              Hiển thị {(safePage - 1) * PAGE_SIZE + 1}-
+              {Math.min(safePage * PAGE_SIZE, courses.length)} trên{" "}
+              {courses.length} khóa học
+            </span>
+            <div style={paginationControls}>
+              <button
+                style={{
+                  ...pageBtn,
+                  ...(safePage === 1 ? pageBtnDisabled : {}),
+                }}
+                disabled={safePage === 1}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+              >
+                ‹
+              </button>
+              {Array.from({ length: totalPages }, (_, index) => {
+                const pageNumber = index + 1;
+                return (
+                  <button
+                    key={pageNumber}
+                    style={{
+                      ...pageBtn,
+                      ...(safePage === pageNumber ? pageBtnActive : {}),
+                    }}
+                    onClick={() => setPage(pageNumber)}
+                  >
+                    {pageNumber}
+                  </button>
+                );
+              })}
+              <button
+                style={{
+                  ...pageBtn,
+                  ...(safePage === totalPages ? pageBtnDisabled : {}),
+                }}
+                disabled={safePage === totalPages}
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              >
+                ›
+              </button>
+            </div>
+          </div>
+        )}
+
+        {false && courses.length > 0 && (
           <div style={tableFooter}>
             <span style={{ color: "#94a3b8", fontSize: "13px" }}>
               Hiển thị 1–{courses.length} trên {courses.length} khóa học
@@ -640,6 +700,37 @@ const deleteBtn = {
 const tableFooter = {
   padding: "14px 24px",
   borderTop: "1px solid #f1f5f9",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: "12px",
+  flexWrap: "wrap",
+};
+const paginationControls = {
+  display: "flex",
+  alignItems: "center",
+  gap: "4px",
+};
+const pageBtn = {
+  minWidth: "32px",
+  height: "32px",
+  padding: "0 10px",
+  border: "1px solid #e2e8f0",
+  borderRadius: "7px",
+  background: "#fff",
+  color: "#334155",
+  cursor: "pointer",
+  fontSize: "13px",
+  fontWeight: 600,
+};
+const pageBtnActive = {
+  background: "#4f46e5",
+  color: "#fff",
+  border: "1px solid #4f46e5",
+};
+const pageBtnDisabled = {
+  opacity: 0.45,
+  cursor: "not-allowed",
 };
 
 const modalOverlay = {

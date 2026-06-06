@@ -39,6 +39,7 @@ const DAY_LABELS = [
   "Chủ Nhật",
 ];
 const SLOTS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+const SLOT_ROW_HEIGHT = 76;
 
 const PALETTES = [
   { bg: "#d1fae5", border: "#34d399", text: "#065f46", dot: "#059669" },
@@ -241,27 +242,33 @@ const TeacherSchedule = ({ teacherInfo }) => {
                   {DAY_ENUMS.map((de, idx) => {
                     const item = getSlotItem(de, slot);
                     if (item) {
-                      if (item.start_slot !== slot) return null;
+                      if (item.start_slot !== slot) {
+                        return <td key={idx} style={S.tdEmpty} />;
+                      }
                       const span = item.end_slot - item.start_slot + 1;
                       const c = pal(paletteMap[item.courseId]);
                       return (
                         <td
                           key={idx}
-                          rowSpan={span}
-                          style={{
-                            ...S.tdClass,
-                            background: c.bg,
-                            borderLeft: `3px solid ${c.border}`,
-                          }}
+                          style={S.tdClass}
                           onClick={() => setSelectedClass(item)}
                         >
-                          <div style={{ ...S.dot, background: c.dot }} />
-                          <div style={{ ...S.cName, color: c.text }}>
-                            {item.subjectName}
-                          </div>
-                          <div style={{ ...S.cInfo, color: c.text }}>
-                            <FaDoorOpen size={10} />
-                            &nbsp;{item.room}
+                          <div
+                            style={{
+                              ...S.classBlock,
+                              height: span * SLOT_ROW_HEIGHT - 8,
+                              background: c.bg,
+                              borderLeft: `3px solid ${c.border}`,
+                            }}
+                          >
+                            <div style={{ ...S.dot, background: c.dot }} />
+                            <div style={{ ...S.cName, color: c.text }}>
+                              {item.subjectName}
+                            </div>
+                            <div style={{ ...S.cInfo, color: c.text }}>
+                              <FaDoorOpen size={10} />
+                              &nbsp;{item.room}
+                            </div>
                           </div>
                         </td>
                       );
@@ -483,7 +490,12 @@ const S = {
     overflow: "hidden",
     marginBottom: 16,
   },
-  table: { width: "100%", borderCollapse: "collapse", minWidth: 700 },
+  table: {
+    width: "100%",
+    borderCollapse: "collapse",
+    minWidth: 700,
+    tableLayout: "fixed",
+  },
   th: {
     padding: "12px 8px",
     fontSize: 12,
@@ -502,7 +514,7 @@ const S = {
     background: "#f8fafc",
     borderBottom: "2px solid #e8eaef",
     textAlign: "left",
-    width: 90,
+    width: 110,
     whiteSpace: "nowrap",
   },
   thToday: { color: "#3a4db7", background: "#eef1ff" },
@@ -513,6 +525,8 @@ const S = {
     borderRight: "1px solid #f1f5f9",
     verticalAlign: "middle",
     whiteSpace: "nowrap",
+    height: SLOT_ROW_HEIGHT,
+    boxSizing: "border-box",
   },
   slotNum: {
     display: "block",
@@ -521,16 +535,43 @@ const S = {
     color: "#334155",
   },
   slotTime: { display: "block", fontSize: 11, color: "#94a3b8", marginTop: 2 },
-  tdEmpty: { border: "1px solid #f8fafc", height: 52 },
+  tdEmpty: {
+    border: "1px solid #f8fafc",
+    height: SLOT_ROW_HEIGHT,
+    boxSizing: "border-box",
+  },
   tdClass: {
     border: "1px solid #f1f5f9",
-    padding: "8px 10px",
+    padding: 0,
     verticalAlign: "top",
     cursor: "pointer",
     transition: "filter 0.15s",
+    position: "relative",
+    height: SLOT_ROW_HEIGHT,
+    boxSizing: "border-box",
+    overflow: "visible",
+  },
+  classBlock: {
+    position: "absolute",
+    top: 4,
+    left: 0,
+    right: 0,
+    zIndex: 2,
+    padding: "8px 10px",
+    boxSizing: "border-box",
+    overflow: "hidden",
   },
   dot: { width: 7, height: 7, borderRadius: "50%", marginBottom: 4 },
-  cName: { fontSize: 12, fontWeight: 700, lineHeight: 1.3, marginBottom: 3 },
+  cName: {
+    fontSize: 12,
+    fontWeight: 700,
+    lineHeight: 1.3,
+    marginBottom: 3,
+    display: "-webkit-box",
+    WebkitLineClamp: 2,
+    WebkitBoxOrient: "vertical",
+    overflow: "hidden",
+  },
   cInfo: { fontSize: 11, display: "flex", alignItems: "center", opacity: 0.8 },
   legend: {
     display: "flex",

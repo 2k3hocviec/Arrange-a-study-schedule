@@ -218,7 +218,7 @@ const MinistryEnrollments = () => {
                 <th style={th}>STT</th>
                 <th style={th}>MÃ ĐK</th>
                 <th style={th}>MÃ SV</th>
-                <th style={th}>MÃ KHÓA HỌC</th>
+                <th style={th}>MÃ CODE</th>
                 <th style={th}>MÃ MÔN HỌC</th>
                 <th style={th}>NGÀY ĐĂNG KÝ</th>
                 <th style={th}>THAO TÁC</th>

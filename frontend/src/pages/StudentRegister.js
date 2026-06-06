@@ -15,6 +15,48 @@ const formatSchedules = (schedules) => {
     .join(", ");
 };
 
+const getRegistrationErrorMessage = (err) => {
+  const message = err?.response?.data?.message || err?.message || "";
+
+  if (message.includes("has not yet been scheduled")) {
+    return "Kh\u00f4ng th\u1ec3 \u0111\u0103ng k\u00fd v\u00ec h\u1ecdc ph\u1ea7n n\u00e0y ch\u01b0a \u0111\u01b0\u1ee3c x\u1ebfp l\u1ecbch h\u1ecdc.";
+  }
+
+  if (message.includes("Conflict with course")) {
+    return "Kh\u00f4ng th\u1ec3 \u0111\u0103ng k\u00fd v\u00ec l\u1ecbch h\u1ecdc b\u1ecb tr\u00f9ng v\u1edbi h\u1ecdc ph\u1ea7n b\u1ea1n \u0111\u00e3 \u0111\u0103ng k\u00fd.";
+  }
+
+  if (message.includes("fully booked")) {
+    return "Kh\u00f4ng th\u1ec3 \u0111\u0103ng k\u00fd v\u00ec l\u1edbp h\u1ecdc ph\u1ea7n \u0111\u00e3 h\u1ebft ch\u1ed7.";
+  }
+
+  if (message.includes("already been registered")) {
+    return "B\u1ea1n \u0111\u00e3 \u0111\u0103ng k\u00fd l\u1edbp h\u1ecdc ph\u1ea7n n\u00e0y r\u1ed3i.";
+  }
+
+  if (message.includes("subject has been")) {
+    return "B\u1ea1n \u0111\u00e3 \u0111\u0103ng k\u00fd m\u1ed9t l\u1edbp kh\u00e1c c\u1ee7a c\u00f9ng m\u00f4n h\u1ecdc n\u00e0y.";
+  }
+
+  if (message.includes("Over max 18 credit")) {
+    return "Kh\u00f4ng th\u1ec3 \u0111\u0103ng k\u00fd v\u00ec t\u1ed5ng s\u1ed1 t\u00edn ch\u1ec9 v\u01b0\u1ee3t qu\u00e1 18.";
+  }
+
+  if (message.includes("Student with ID")) {
+    return "Kh\u00f4ng th\u1ec3 \u0111\u0103ng k\u00fd v\u00ec kh\u00f4ng t\u00ecm th\u1ea5y th\u00f4ng tin sinh vi\u00ean.";
+  }
+
+  if (message.includes("Course with ID")) {
+    return "Kh\u00f4ng th\u1ec3 \u0111\u0103ng k\u00fd v\u00ec kh\u00f4ng t\u00ecm th\u1ea5y l\u1edbp h\u1ecdc ph\u1ea7n.";
+  }
+
+  if (message.includes("only access your own enrollment")) {
+    return "B\u1ea1n ch\u1ec9 c\u00f3 th\u1ec3 \u0111\u0103ng k\u00fd h\u1ecdc ph\u1ea7n cho ch\u00ednh t\u00e0i kho\u1ea3n sinh vi\u00ean c\u1ee7a m\u00ecnh.";
+  }
+
+  return "\u0110\u0103ng k\u00fd th\u1ea5t b\u1ea1i. Vui l\u00f2ng ki\u1ec3m tra l\u1ea1i \u0111i\u1ec1u ki\u1ec7n \u0111\u0103ng k\u00fd.";
+};
+
 // ─── countdown helper ───────────────────────────────────────────────────────
 const useCountdown = (targetDate) => {
   const calc = () => {
@@ -52,9 +94,6 @@ const S = {
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
-    position: "sticky",
-    top: 0,
-    zIndex: 10,
   },
   topBarTitle: {
     fontWeight: 700,
@@ -186,37 +225,23 @@ const S = {
     borderBottom: "1px solid #f0f2f7",
     flexWrap: "wrap",
   },
-  filterSelect: {
-    padding: "7px 12px",
-    borderRadius: 8,
-    border: "1px solid #e0e4ef",
-    fontSize: 13,
-    color: "#334",
-    background: "#fff",
-    cursor: "pointer",
-    outline: "none",
-  },
-  filterBtn: {
-    padding: "7px 14px",
-    borderRadius: 8,
-    border: "1px solid #e0e4ef",
-    background: "#fff",
-    fontSize: 13,
-    color: "#334",
-    cursor: "pointer",
+  tableSearchWrap: {
     display: "flex",
     alignItems: "center",
-    gap: 6,
-  },
-  exportBtn: {
-    marginLeft: "auto",
-    padding: "7px 14px",
-    borderRadius: 8,
+    gap: 8,
+    width: "min(420px, 100%)",
+    background: "#f7f8fc",
     border: "1px solid #e0e4ef",
-    background: "#fff",
+    borderRadius: 10,
+    padding: "9px 12px",
+  },
+  tableSearchInput: {
+    border: "none",
+    background: "transparent",
+    outline: "none",
+    width: "100%",
     fontSize: 13,
-    color: "#334",
-    cursor: "pointer",
+    color: "#1e2a5e",
   },
   table: { width: "100%", borderCollapse: "collapse", fontSize: 13 },
   th: {
@@ -380,7 +405,6 @@ const StudentRegister = ({
   const [error, setError] = useState(null);
   const [enrollingCourseId, setEnrollingCourseId] = useState(null);
   const [page, setPage] = useState(1);
-  const [semesterFilter, setSemesterFilter] = useState("all");
 
   // countdown to a mock deadline (replace with real date)
   const deadline = useMemo(
@@ -396,10 +420,8 @@ const StudentRegister = ({
       const matchKw =
         !kw ||
         (c.course_code || "").toLowerCase().includes(kw) ||
-        (c.course_id || "").toLowerCase().includes(kw) ||
         (c.subject?.subject_id || "").toLowerCase().includes(kw) ||
-        (c.subject?.name || "").toLowerCase().includes(kw) ||
-        (c.teacher?.name || "").toLowerCase().includes(kw);
+        (c.subject?.name || "").toLowerCase().includes(kw);
       return matchKw;
     });
   }, [courses, keyword]);
@@ -465,8 +487,8 @@ const StudentRegister = ({
       setRegisteredIds([...registeredIds, course.course_id]);
       toast.success(`Đã đăng ký ${course.subject?.name || "môn học"}`);
       await refreshCourses();
-    } catch {
-      toast.error("Đăng ký thất bại. Vui lòng thử lại.");
+    } catch (err) {
+      toast.error(getRegistrationErrorMessage(err));
     } finally {
       setEnrollingCourseId(null);
     }
@@ -499,20 +521,6 @@ const StudentRegister = ({
 
   return (
     <div style={S.page}>
-      {/* ── top bar ── */}
-      <div style={S.topBar}>
-        <span style={S.topBarTitle}>Đăng ký môn học</span>
-        <div style={S.searchWrap}>
-          <span style={{ color: "#8892a4", fontSize: 16 }}>🔍</span>
-          <input
-            style={S.searchInput}
-            placeholder="Tìm theo mã môn, tên môn, giảng viên..."
-            value={keyword}
-            onChange={(e) => setKeyword(e.target.value)}
-          />
-        </div>
-      </div>
-
       {/* ── hero banner ── */}
       <div style={S.hero}>
         <div style={S.heroBg} />
@@ -594,20 +602,15 @@ const StudentRegister = ({
         <div style={S.tableCard}>
           {/* toolbar */}
           <div style={S.tableToolbar}>
-            <select
-              style={S.filterSelect}
-              value={semesterFilter}
-              onChange={(e) => setSemesterFilter(e.target.value)}
-            >
-              <option value="all">Tất cả khoa</option>
-              <option value="it">Công nghệ thông tin</option>
-              <option value="math">Toán - Lý</option>
-            </select>
-            <button style={S.filterSelect}>Học kỳ 2 ▾</button>
-            <button style={S.filterBtn}>≡ Lọc nâng cao</button>
-            <button style={{ ...S.filterBtn, ...S.exportBtn }}>
-              ↓ Xuất biểu mẫu
-            </button>
+            <div style={S.tableSearchWrap}>
+              <span style={{ color: "#8892a4", fontSize: 16 }}>🔍</span>
+              <input
+                style={S.tableSearchInput}
+                placeholder="Tìm kiếm theo mã hoặc tên môn"
+                value={keyword}
+                onChange={(e) => setKeyword(e.target.value)}
+              />
+            </div>
           </div>
 
           {/* table */}

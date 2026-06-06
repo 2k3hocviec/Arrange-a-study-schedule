@@ -32,6 +32,44 @@ const EMPTY_FORM = {
   end_date: "",
 };
 
+const getErrorMessage = (err) => {
+  const message = err?.response?.data?.message || err?.message;
+
+  if (!message) {
+    return "Thao tác thất bại. Vui lòng kiểm tra lại dữ liệu.";
+  }
+
+  if (message.includes("does not match required room type")) {
+    return "Loại phòng không phù hợp với loại phòng yêu cầu của học phần.";
+  }
+
+  if (message.includes("is not ready for scheduling")) {
+    return "Phòng học đang bảo trì hoặc chưa sẵn sàng để xếp lịch.";
+  }
+
+  if (message.includes("Classroom capacity")) {
+    return "Sức chứa phòng học nhỏ hơn sĩ số tối đa của học phần.";
+  }
+
+  if (message.includes("already has schedule")) {
+    return "Phòng học đã có lịch ở khoảng thời gian này.";
+  }
+
+  if (message.includes("Teacher already has schedule")) {
+    return "Giảng viên đã có lịch dạy ở khoảng thời gian này.";
+  }
+
+  if (message.includes("Course not exist")) {
+    return "Học phần không tồn tại.";
+  }
+
+  if (message.includes("Classroom not exist")) {
+    return "Phòng học không tồn tại.";
+  }
+
+  return message;
+};
+
 const MinistrySchedule = () => {
   const [schedules, setSchedules] = useState([]);
   const [courses, setCourses] = useState([]);
@@ -88,7 +126,7 @@ const MinistrySchedule = () => {
       handleResetForm();
       fetchData();
     } catch (err) {
-      toast.error("Thao tác thất bại. Lịch học có thể bị trùng, lớp học không đủ yêu cầu");
+      toast.error(getErrorMessage(err));
     }
   };
 
@@ -98,7 +136,7 @@ const MinistrySchedule = () => {
       fetchData();
       toast.success("Đã hủy lịch học!");
     } catch (err) {
-      toast.error("Không thể xóa lịch này");
+      toast.error(getErrorMessage(err));
     }
   };
 
@@ -315,7 +353,7 @@ const MinistrySchedule = () => {
             <thead>
               <tr style={S.theadRow}>
                 <th style={S.th}>MÃ LỊCH HỌC</th>
-                <th style={S.th}>MÃ KHÓA HỌC</th>
+                <th style={S.th}>MÃ CODE</th>
                 <th style={S.th}>PHÒNG</th>
                 <th style={S.th}>THỨ HỌC</th>
                 <th style={S.th}>TIẾT BẮT ĐẦU</th>
@@ -418,10 +456,6 @@ const MinistrySchedule = () => {
             </button>
           </div>
         </div>
-      </div>
-
-      <div style={S.footer}>
-        © 2024 EduAdmin Management System • Phiên bản 4.2.1-Stable
       </div>
     </div>
   );
