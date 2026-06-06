@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { schedulesAPI, coursesAPI, roomsAPI } from "../services/api";
+import { schedulesAPI, coursesAPI, roomsAPI, semestersAPI } from "../services/api";
 import toast from "react-hot-toast";
 import { IoCalendar, IoSaveOutline } from "react-icons/io5";
 import {
@@ -33,10 +33,21 @@ const EMPTY_FORM = {
 };
 
 const getErrorMessage = (err) => {
-  const message = err?.response?.data?.message || err?.message;
+  const rawMessage = err?.response?.data?.message || err?.message || "";
+  const message = Array.isArray(rawMessage)
+    ? rawMessage.join(" ")
+    : String(rawMessage);
+  const lowerMessage = message.toLowerCase();
 
   if (!message) {
     return "Thao tác thất bại. Vui lòng kiểm tra lại dữ liệu.";
+  }
+
+  if (
+    lowerMessage.includes("schedule dates must be within") ||
+    lowerMessage.includes("semester date range")
+  ) {
+    return "Ngày bắt đầu và ngày kết thúc phải nằm trong khoảng thời gian của kỳ học.";
   }
 
   if (message.includes("does not match required room type")) {
@@ -67,12 +78,14 @@ const getErrorMessage = (err) => {
     return "Phòng học không tồn tại.";
   }
 
-  return message;
+  return "Thao tác thất bại. Vui lòng kiểm tra lại dữ liệu.";
 };
 
 const MinistrySchedule = () => {
   const [schedules, setSchedules] = useState([]);
   const [courses, setCourses] = useState([]);
+  const [semesters, setSemesters] = useState([]);
+  const [selectedSemesterId, setSelectedSemesterId] = useState("");
   const [rooms, setRooms] = useState([]);
   const [repair, setRepair] = useState(false);
   const [page, setPage] = useState(1);
@@ -80,14 +93,19 @@ const MinistrySchedule = () => {
 
   const fetchData = async () => {
     try {
-      const [resSchedules, resCourses, resRooms] = await Promise.all([
+      const [resSchedules, resCourses, resRooms, resSemesters] = await Promise.all([
         schedulesAPI.getAll(),
         coursesAPI.getAll(),
         roomsAPI.getAll(),
+        semestersAPI.getAll(),
       ]);
       setSchedules(resSchedules.data);
       setCourses(resCourses.data);
       setRooms(resRooms.data);
+      setSemesters(resSemesters.data);
+      setSelectedSemesterId((current) =>
+        current || resSemesters.data.find((s) => s.is_active)?.semester_id || "",
+      );
     } catch (e) {
       toast.error("Không thể tải dữ liệu lịch học");
     }
@@ -103,7 +121,18 @@ const MinistrySchedule = () => {
   };
 
   const handleOpenUpdate = (item) => {
-    setFormData(item);
+    setSelectedSemesterId(
+      item.course?.semester_id || item.course?.semester?.semester_id || selectedSemesterId,
+    );
+    setFormData({
+      ...item,
+      start_date: item.start_date
+        ? new Date(item.start_date).toISOString().slice(0, 10)
+        : "",
+      end_date: item.end_date
+        ? new Date(item.end_date).toISOString().slice(0, 10)
+        : "",
+    });
     setRepair(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -126,7 +155,7 @@ const MinistrySchedule = () => {
       handleResetForm();
       fetchData();
     } catch (err) {
-      toast.error(getErrorMessage(err));
+      toast.error(getErrorMessage(err), { id: "schedule-error" });
     }
   };
 
@@ -136,13 +165,19 @@ const MinistrySchedule = () => {
       fetchData();
       toast.success("Đã hủy lịch học!");
     } catch (err) {
-      toast.error(getErrorMessage(err));
+      toast.error(getErrorMessage(err), { id: "schedule-error" });
     }
   };
 
-  const totalPages = Math.ceil(schedules.length / PAGE_SIZE);
-  const paginated = schedules.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-  const uniqueCourses = new Set(schedules.map((s) => s.course_id)).size;
+  const filteredCourses = selectedSemesterId
+    ? courses.filter((c) => c.semester_id === selectedSemesterId)
+    : courses;
+  const filteredSchedules = selectedSemesterId
+    ? schedules.filter((s) => s.course?.semester_id === selectedSemesterId)
+    : schedules;
+  const totalPages = Math.ceil(filteredSchedules.length / PAGE_SIZE);
+  const paginated = filteredSchedules.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const uniqueCourses = new Set(filteredSchedules.map((s) => s.course_id)).size;
 
   return (
     <div style={S.page}>
@@ -152,6 +187,28 @@ const MinistrySchedule = () => {
         <span style={S.breadcrumbSep}>/</span>
         <span style={S.breadcrumbCurrent}>Điều phối lịch học</span>
       </div>
+      <div style={S.filterBar}>
+        <label style={S.label}>Kỳ học</label>
+        <select
+          value={selectedSemesterId}
+          onChange={(e) => {
+            setSelectedSemesterId(e.target.value);
+            setPage(1);
+            setFormData(EMPTY_FORM);
+            setRepair(false);
+          }}
+          style={S.input}
+        >
+          <option value="">Tất cả kỳ học</option>
+          {semesters.map((semester) => (
+            <option key={semester.semester_id} value={semester.semester_id}>
+              {semester.name} {semester.school_year}
+              {semester.is_active ? " - Hiện hành" : ""}
+            </option>
+          ))}
+        </select>
+      </div>
+
 
       {/* STAT CARDS */}
       <div style={S.statsRow}>
@@ -161,7 +218,7 @@ const MinistrySchedule = () => {
           </div>
           <div>
             <div style={S.statLabel}>Tổng số lịch</div>
-            <div style={S.statValue}>{schedules.length}</div>
+            <div style={S.statValue}>{filteredSchedules.length}</div>
           </div>
         </div>
 
@@ -225,7 +282,7 @@ const MinistrySchedule = () => {
                 required
               >
                 <option value="">Chọn khóa học...</option>
-                {courses.map((c) => (
+                {filteredCourses.map((c) => (
                   <option key={c.course_id} value={c.course_id}>
                     {`${c.course_code || c.course_id} - ${c.subject_id} - ${c.teacher_id}`}
                   </option>
@@ -416,8 +473,8 @@ const MinistrySchedule = () => {
         <div style={S.paginationRow}>
           <span style={S.pageInfo}>
             Hiển thị {(page - 1) * PAGE_SIZE + 1} –{" "}
-            {Math.min(page * PAGE_SIZE, schedules.length)} của{" "}
-            {schedules.length} lịch học
+            {Math.min(page * PAGE_SIZE, filteredSchedules.length)} của{" "}
+            {filteredSchedules.length} lịch học
           </span>
           <div style={S.pageControls}>
             <button
@@ -479,6 +536,17 @@ const S = {
   breadcrumbHome: { color: "#94a3b8", cursor: "pointer" },
   breadcrumbSep: { color: "#cbd5e1" },
   breadcrumbCurrent: { color: "#4f46e5", fontWeight: 700 },
+  filterBar: {
+    display: "grid",
+    gridTemplateColumns: "120px minmax(220px, 360px)",
+    alignItems: "center",
+    gap: "12px",
+    background: "#fff",
+    border: "1px solid #e2e8f0",
+    borderRadius: "12px",
+    padding: "14px 18px",
+    marginBottom: "18px",
+  },
 
   statsRow: {
     display: "grid",

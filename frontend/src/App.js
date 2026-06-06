@@ -11,7 +11,18 @@ import { Toaster } from "react-hot-toast";
 function App() {
     return (
         <>
-            <Toaster position="top-right" />
+            <Toaster
+                position="top-right"
+                containerStyle={{ zIndex: 100000 }}
+                toastOptions={{
+                    style: {
+                        zIndex: 100000,
+                        background: "#fff",
+                        color: "#1e293b",
+                        boxShadow: "0 18px 45px rgba(15, 23, 42, 0.22)",
+                    },
+                }}
+            />
             <BrowserRouter>
                 <Routes>
                     {/* Auth */}

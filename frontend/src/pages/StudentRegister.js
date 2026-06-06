@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import toast from "react-hot-toast";
 import { REGISTRATION_OPEN } from "./studentData";
-import { coursesAPI, enrollmentsAPI } from "../services/api";
+import { coursesAPI, enrollmentsAPI, semestersAPI } from "../services/api";
 import ChatBox from "../components/ChatBox";
 
 // ─── helpers ───────────────────────────────────────────────────────────────
@@ -403,6 +403,7 @@ const StudentRegister = ({
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [activeSemester, setActiveSemester] = useState(null);
   const [enrollingCourseId, setEnrollingCourseId] = useState(null);
   const [page, setPage] = useState(1);
 
@@ -442,7 +443,12 @@ const StudentRegister = ({
     (async () => {
       try {
         setLoading(true);
-        const res = await coursesAPI.getInfoCourse();
+        const [semesterRes, courseRes] = await Promise.all([
+          semestersAPI.getActive(),
+          coursesAPI.getInfoCourse(),
+        ]);
+        setActiveSemester(semesterRes.data || null);
+        const res = courseRes;
         setCourses(res.data);
         setError(null);
       } catch {
@@ -524,7 +530,11 @@ const StudentRegister = ({
       {/* ── hero banner ── */}
       <div style={S.hero}>
         <div style={S.heroBg} />
-        <div style={S.heroTitle}>Kỳ Đăng Ký Môn Học 2023.2</div>
+        <div style={S.heroTitle}>
+          {activeSemester
+            ? `Kỳ đăng ký ${activeSemester.name} ${activeSemester.school_year}`
+            : "Chưa mở kỳ đăng ký"}
+        </div>
         <div
           style={{
             display: "flex",
@@ -537,11 +547,6 @@ const StudentRegister = ({
             <span style={S.heroDot} />
             Trạng thái đăng ký: {REGISTRATION_OPEN ? "Đang mở" : "Đã đóng"}
           </span>
-          {REGISTRATION_OPEN && (
-            <span style={{ fontSize: 13, opacity: 0.85 }}>
-              ⏱ Kết thúc sau: {days} ngày {hours} giờ {mins} phút
-            </span>
-          )}
         </div>
       </div>
 
@@ -618,7 +623,9 @@ const StudentRegister = ({
             <div style={{ padding: 40, textAlign: "center", color: "#8892a4" }}>
               {keyword
                 ? `🔍 Không tìm thấy môn học với từ khóa "${keyword}"`
-                : "📭 Không có môn học"}
+                : activeSemester
+                  ? "Không có môn học trong kỳ hiện hành"
+                  : "Chưa có kỳ học hiện hành để đăng ký"}
             </div>
           ) : (
             <table style={S.table}>

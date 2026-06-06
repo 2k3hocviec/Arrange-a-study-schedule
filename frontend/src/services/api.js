@@ -169,12 +169,23 @@ export const roomsAPI = {
 
 export const coursesAPI = {
   getAll: () => api.get("/courses"),
-  create: ({ course_code, subject_id, teacher_id, capacity, required_room_type }) =>
-      api.post("/courses", { course_code, subject_id, teacher_id, capacity, required_room_type }),
+  create: ({ course_code, subject_id, teacher_id, semester_id, capacity, required_room_type }) =>
+      api.post("/courses", { course_code, subject_id, teacher_id, semester_id, capacity, required_room_type }),
   delete: (course_id) => api.delete(`/courses/${course_id}`),
-  update: (course_id, { course_code, subject_id, teacher_id, capacity, required_room_type }) =>
-      api.patch(`/courses/${course_id}`, { course_code, subject_id, teacher_id, capacity, required_room_type }),
+  update: (course_id, { course_code, subject_id, teacher_id, semester_id, capacity, required_room_type }) =>
+      api.patch(`/courses/${course_id}`, { course_code, subject_id, teacher_id, semester_id, capacity, required_room_type }),
   getInfoCourse: () => api.get("/courses/student"),
+};
+
+export const semestersAPI = {
+  getAll: () => api.get("/semesters"),
+  getActive: () => api.get("/semesters/active"),
+  create: ({ name, school_year, start_date, end_date, is_active }) =>
+      api.post("/semesters", { name, school_year, start_date, end_date, is_active }),
+  update: (semester_id, { name, school_year, start_date, end_date, is_active }) =>
+      api.patch(`/semesters/${semester_id}`, { name, school_year, start_date, end_date, is_active }),
+  activate: (semester_id) => api.patch(`/semesters/${semester_id}/activate`),
+  delete: (semester_id) => api.delete(`/semesters/${semester_id}`),
 };
 
 export const schedulesAPI = {

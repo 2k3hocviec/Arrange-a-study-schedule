@@ -6,12 +6,14 @@ import MinistryTeachers from "./MinistryTeachers";
 import MinistrySubjectsAndCourses from "./MinistrySubjectsAndCourses";
 import MinistryStudents from "./MinistryStudent";
 import MinistryEnrollments from "./MinistryEnrollments";
+import MinistrySemesters from "./MinistrySemesters";
 import { PiStudentDuotone } from "react-icons/pi";
 import { MdMeetingRoom, MdSubject, MdDashboard } from "react-icons/md";
 import { IoCalendar } from "react-icons/io5";
 import { GiTeacher } from "react-icons/gi";
 import { FiSearch, FiLogOut } from "react-icons/fi";
 import { roomsAPI, subjectsAPI } from "../services/api";
+import { GrSchedule } from "react-icons/gr";
 import toast from "react-hot-toast";
 import { FaLock } from "react-icons/fa";
 import ChangePassword from "./ChangePassword";
@@ -220,6 +222,7 @@ const NAV_ITEMS = [
   { path: "students", label: "Sinh viên", Icon: PiStudentDuotone },
   { path: "teachers", label: "Giảng viên", Icon: GiTeacher },
   { path: "rooms", label: "Phòng học", Icon: MdMeetingRoom },
+  { path: "semesters", label: "Kỳ học", Icon: GrSchedule },
   { path: "subjects", label: "Môn học & Khóa học", Icon: MdSubject },
   { path: "schedule", label: "Lịch học", Icon: IoCalendar },
   { path: "enrollments", label: "Ghi danh", Icon: PiStudentDuotone },
@@ -492,9 +495,9 @@ const MinistryDashboard = () => {
             }}
           >
             Dashboard Overview
-                    </div>
+          </div>
           <div style={{ flex: 1 }} />
-          
+
           {/* Logout button góc phải */}
           <div
             style={{
@@ -535,6 +538,7 @@ const MinistryDashboard = () => {
             <Route path="/" element={HomeContent} />
             <Route path="dashboard" element={HomeContent} />
             <Route path="subjects" element={<MinistrySubjectsAndCourses />} />
+            <Route path="semesters" element={<MinistrySemesters />} />
             <Route path="schedule" element={<MinistrySchedule />} />
             <Route path="rooms" element={<MinistryRooms />} />
             <Route path="teachers" element={<MinistryTeachers />} />

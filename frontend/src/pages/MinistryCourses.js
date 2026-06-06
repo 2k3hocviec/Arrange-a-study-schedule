@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { coursesAPI, subjectsAPI, teachersAPI } from "../services/api";
+import { coursesAPI, subjectsAPI, teachersAPI, semestersAPI } from "../services/api";
 import toast from "react-hot-toast";
 import { MdMenuBook } from "react-icons/md";
 import { FiPlus, FiEdit2, FiTrash2 } from "react-icons/fi";
@@ -14,6 +14,7 @@ const MinistryCourses = () => {
 
   const [teachers, setTeachers] = useState([]);
   const [subjects, setSubjects] = useState([]);
+  const [semesters, setSemesters] = useState([]);
   const [courses, setCourses] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [repair, setRepair] = useState(false);
@@ -22,6 +23,7 @@ const MinistryCourses = () => {
   const [formData, setFormData] = useState({
     subject_id: "",
     teacher_id: "",
+    semester_id: "",
     capacity: "",
     required_room_type: "Theory",
   });
@@ -54,10 +56,20 @@ const MinistryCourses = () => {
     }
   };
 
+  const fetchSemesters = async () => {
+    try {
+      const response = await semestersAPI.getAll();
+      setSemesters(response.data);
+    } catch (e) {
+      toast.error("Không thể tải danh sách kỳ học");
+    }
+  };
+
   useEffect(() => {
     fetchCourses();
     fetchTeachers();
     fetchSubjects();
+    fetchSemesters();
   }, []);
 
   const handleInputChange = (e) => {
@@ -72,6 +84,7 @@ const MinistryCourses = () => {
     setFormData({
       subject_id: "",
       teacher_id: "",
+      semester_id: semesters.find((s) => s.is_active)?.semester_id || "",
       capacity: "",
       required_room_type: "Theory",
     });
@@ -84,6 +97,7 @@ const MinistryCourses = () => {
       ...course,
       subject_id: course.subject_id || course.subject?.subject_id || "",
       teacher_id: course.teacher_id || course.teacher?.teacher_id || "",
+      semester_id: course.semester_id || course.semester?.semester_id || "",
       required_room_type: course.required_room_type || "Theory",
     });
     setRepair(true);
@@ -219,6 +233,27 @@ const MinistryCourses = () => {
                 </div>
 
                 <div style={fieldGroup}>
+                  <label style={fieldLabel}>Kỳ học</label>
+
+                  <select
+                    name="semester_id"
+                    value={formData.semester_id}
+                    onChange={handleInputChange}
+                    style={fieldInput}
+                    required
+                  >
+                    <option value="">-- Chọn kỳ học --</option>
+
+                    {semesters.map((semester) => (
+                      <option key={semester.semester_id} value={semester.semester_id}>
+                        {semester.name} {semester.school_year}
+                        {semester.is_active ? " - Hiện hành" : ""}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div style={fieldGroup}>
                   <label style={fieldLabel}>Số chỗ tối đa</label>
 
                   <input
@@ -313,6 +348,7 @@ const MinistryCourses = () => {
                 <th style={th}>LOẠI PHÒNG</th>
                 <th style={th}>MÃ CODE</th>
                 <th style={th}>TÊN MÔN HỌC</th>
+                <th style={th}>KỲ HỌC</th>
                 <th style={th}>GIÁO VIÊN</th>
                 <th style={th}>TỐI ĐA</th>
                 <th style={th}>CÒN LẠI</th>
@@ -357,6 +393,11 @@ const MinistryCourses = () => {
                     </td>
                     <td style={td}>
                       {course.subject?.name || course.subject_id}
+                    </td>
+                    <td style={td}>
+                      {course.semester
+                        ? `${course.semester.name} ${course.semester.school_year}`
+                        : course.semester_id || "-"}
                     </td>
                     <td style={td}>
                       {course.teacher?.name || course.teacher_id}
