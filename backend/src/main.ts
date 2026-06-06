@@ -2,12 +2,14 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { AllHttpExceptionFilter } from './exceptions/http-exception.filter';
 import { ValidationPipe } from '@nestjs/common';
+import cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     // logger: ['error', 'warn'],
   });
-  app.useGlobalPipes(new ValidationPipe());
+  app.use(cookieParser());
+  app.useGlobalPipes(new ValidationPipe({ transform: true }));
   app.useGlobalFilters(new AllHttpExceptionFilter());
 
   // Support environment variables for production

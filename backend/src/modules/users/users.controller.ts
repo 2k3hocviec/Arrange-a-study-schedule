@@ -27,7 +27,7 @@ export class UsersController {
 
   @Get('profile')
   getProfile(@Request() req) {
-    return req.user;
+    return { user: req.user };
   }
   @Roles('sysadmin')
   @Post()

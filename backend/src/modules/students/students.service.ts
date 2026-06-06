@@ -36,7 +36,16 @@ export class StudentsService {
   }
 
   async findAll() {
-    return this.prisma.student.findMany();
+    return this.prisma.student.findMany({
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+          },
+        },
+      },
+    });
   }
 
   findOneByStudentID(studentId: string) {

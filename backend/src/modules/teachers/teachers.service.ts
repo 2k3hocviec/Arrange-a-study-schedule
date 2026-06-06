@@ -34,7 +34,16 @@ export class TeachersService {
   }
 
   async findAll() {
-    return this.prisma.teacher.findMany();
+    return this.prisma.teacher.findMany({
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+          },
+        },
+      },
+    });
   }
 
   async findOne(id: string) {
@@ -80,6 +89,7 @@ export class TeachersService {
         course: {
           select: {
             course_id: true,
+            course_code: true,
             subject_id: true,
             teacher_id: true,
             subject: {

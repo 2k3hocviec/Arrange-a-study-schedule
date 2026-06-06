@@ -63,12 +63,12 @@ export class AuthService {
   async login(email: string, password: string) {
     const user = await this.usersServive.findByEmail(email);
     if (!user) {
-      throw new UnauthorizedException('Email hoac mat khau khong dung');
+      throw new UnauthorizedException('Email or passwrod unvalid');
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      throw new UnauthorizedException('Email hoac mat khau khong dung');
+      throw new UnauthorizedException('Email or passwrod unvalid');
     }
 
     const { access_token, refresh_token } = await this.generateTokens(
@@ -92,7 +92,7 @@ export class AuthService {
       });
     } catch {
       throw new UnauthorizedException(
-        'Refresh token khong hop le hoac da het han',
+        'Refresh token unvalid or expire',
       );
     }
 
@@ -106,7 +106,7 @@ export class AuthService {
 
     const isMatch = await bcrypt.compare(rawRefreshToken, storedHash);
     if (!isMatch) {
-      throw new ForbiddenException('Refresh token khong khop');
+      throw new ForbiddenException('Refresh token unvalid');
     }
 
     return this.generateTokens(userId, payload.email, payload.role);
@@ -119,7 +119,7 @@ export class AuthService {
   async sendOtp(email: string) {
     const user = await this.usersServive.findByEmail(email);
     if (!user) {
-      throw new BadRequestException('Email khong ton tai trong he thong');
+      throw new BadRequestException('Email not Found');
     }
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -132,24 +132,24 @@ export class AuthService {
     } catch (error) {
       console.error('Failed to send OTP email:', error);
       throw new BadRequestException(
-        'Khong the gui email. Kiem tra cau hinh SMTP trong .env',
+        'Can not send email. Check SMTP in .env',
       );
     }
 
-    return { message: 'Ma OTP da duoc gui toi email cua ban' };
+    return { message: 'The OTP has been sent to you' };
   }
 
   async verifyOtp(email: string, otp: string) {
     const stored = otpStore.get(email);
     if (!stored) {
-      throw new BadRequestException('Khong tim thay yeu cau OTP. Vui long gui lai.');
+      throw new BadRequestException('Not found OTP. Try again.');
     }
     if (Date.now() > stored.expiry) {
       otpStore.delete(email);
-      throw new BadRequestException('Ma OTP da het han. Vui long yeu cau lai.');
+      throw new BadRequestException('The OTP code has expired. Please request it again.');
     }
     if (stored.otp !== otp) {
-      throw new BadRequestException('Ma OTP khong dung');
+      throw new BadRequestException('The OTP code is incorrect.');
     }
 
     otpStore.delete(email);
@@ -158,7 +158,7 @@ export class AuthService {
       { secret: this.getAccessSecret(), expiresIn: '10m' },
     );
 
-    return { message: 'Xac minh OTP thanh cong', reset_token: resetToken };
+    return { message: 'OTP verification successful', reset_token: resetToken };
   }
 
   async resetPassword(resetToken: string, newPassword: string) {
@@ -182,25 +182,6 @@ export class AuthService {
 
     await this.usersServive.updatePassword(user.id, newPassword);
     return { message: 'Mat khau da duoc cap nhat thanh cong' };
-  }
-
-  async forgotPassword(email: string) {
-    const user = await this.usersServive.findByEmail(email);
-    if (!user) {
-      throw new BadRequestException('Email khong ton tai trong he thong');
-    }
-
-    const newPassword = '123456';
-    await this.usersServive.updatePassword(user.id, newPassword);
-
-    try {
-      const userName = user.email.split('@')[0];
-      await this.mailService.sendNewPasswordEmail(email, newPassword, userName);
-    } catch (error) {
-      console.error('Failed to send email:', error);
-    }
-
-    return { message: 'Mat khau moi da duoc gui toi email cua ban' };
   }
 
   async changePassword(

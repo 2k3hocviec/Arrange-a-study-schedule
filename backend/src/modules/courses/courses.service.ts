@@ -13,7 +13,32 @@ export class CoursesService {
     private readonly subjectService: SubjectsService,
   ) {}
 
+  private async generateCourseCode(subjectId: string) {
+    const courses = await this.prisma.course.findMany({
+      where: { subject_id: subjectId },
+      select: { course_code: true },
+    });
+
+    const prefix = `${subjectId}-`;
+    const maxGroupNumber = courses.reduce((max, course) => {
+      if (!course.course_code?.startsWith(prefix)) {
+        return max;
+      }
+
+      const groupNumber = Number(course.course_code.slice(prefix.length));
+      return Number.isInteger(groupNumber) && groupNumber > max
+        ? groupNumber
+        : max;
+    }, 0);
+
+    return `${prefix}${String(maxGroupNumber + 1).padStart(2, '0')}`;
+  }
+
   async create(createCourseDto: CreateCourseDto) {
+    if (!createCourseDto.required_room_type) {
+      throw new BadRequestException('Required room type is required');
+    }
+
     const teacher = await this.teacherService.findOne(
       createCourseDto.teacher_id,
     );
@@ -25,16 +50,23 @@ export class CoursesService {
       throw new BadRequestException('Not teacher or Not subject');
     }
 
+    const courseCode =
+      createCourseDto.course_code?.trim() ||
+      (await this.generateCourseCode(createCourseDto.subject_id));
+
     return this.prisma.course.create({
       data: {
         ...createCourseDto,
+        course_code: courseCode,
         remaining_capacity: createCourseDto.capacity,
       },
     });
   }
 
   findAll() {
-    return this.prisma.course.findMany();
+    return this.prisma.course.findMany({
+      include: { subject: true, teacher: true },
+    });
   }
 
   findOne(id: string) {
@@ -42,6 +74,10 @@ export class CoursesService {
   }
 
   async update(id: string, updateCourseDto: UpdateCourseDto) {
+    if (updateCourseDto.required_room_type === '') {
+      throw new BadRequestException('Required room type is required');
+    }
+
     const teacher = await this.teacherService.findOne(
       updateCourseDto.teacher_id,
     );
@@ -109,8 +145,10 @@ export class CoursesService {
     return this.prisma.course.findMany({
       select: {
         course_id: true,
+        course_code: true,
         capacity: true,
         remaining_capacity: true,
+        required_room_type: true,
         subject: {
           select: {
             subject_id: true,

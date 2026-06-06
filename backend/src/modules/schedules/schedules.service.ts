@@ -15,15 +15,34 @@ export class SchedulesService {
     private readonly classroomService: ClassroomsService,
   ) {}
 
+  private ensureRoomTypeMatches(
+    course: { required_room_type: string },
+    classroom: { type: string },
+  ) {
+    if (course.required_room_type !== classroom.type) {
+      throw new BadRequestException(
+        `Classroom type ${classroom.type} does not match required room type ${course.required_room_type}`,
+      );
+    }
+  }
+
+  private normalizeSlots(dto: CreateScheduleDto | UpdateScheduleDto) {
+    return {
+      start_slot: Number(dto.start_slot),
+      end_slot: Number(dto.end_slot),
+    };
+  }
+
   private async checkClassroomConflict(
     dto: CreateScheduleDto | UpdateScheduleDto,
     excludeScheduleId?: string,
   ) {
+    const { start_slot, end_slot } = this.normalizeSlots(dto);
     const where: any = {
       classroom_id: dto.classroom_id,
       dayOfWeek: String(dto.dayOfWeek),
-      start_slot: { lte: dto.end_slot },
-      end_slot: { gte: dto.start_slot },
+      start_slot: { lte: end_slot },
+      end_slot: { gte: start_slot },
     };
 
     // Khi update schedule có thể tự báo trùng với chính nó, vì vậy ta cần loại trừ cái hiện tại
@@ -49,10 +68,11 @@ export class SchedulesService {
 
     if (!currentCourse) return null;
 
+    const { start_slot, end_slot } = this.normalizeSlots(dto);
     const where: any = {
       dayOfWeek: String(dto.dayOfWeek),
-      start_slot: { lte: dto.end_slot },
-      end_slot: { gte: dto.start_slot },
+      start_slot: { lte: end_slot },
+      end_slot: { gte: start_slot },
       course: {
         teacher_id: currentCourse.teacher_id,
       },
@@ -74,6 +94,7 @@ export class SchedulesService {
   }
 
   async create(createScheduleDto: CreateScheduleDto) {
+    const { start_slot, end_slot } = this.normalizeSlots(createScheduleDto);
     const classroom = await this.classroomService.findOne(
       createScheduleDto.classroom_id,
     );
@@ -95,6 +116,8 @@ export class SchedulesService {
     if (!course) {
       throw new BadRequestException(`Course not exist`);
     }
+
+    this.ensureRoomTypeMatches(course, classroom);
 
     if (course.capacity && classroom.capacity < course.capacity) {
       throw new BadRequestException(
@@ -123,8 +146,8 @@ export class SchedulesService {
         course_id: createScheduleDto.course_id,
         classroom_id: createScheduleDto.classroom_id,
         dayOfWeek: String(createScheduleDto.dayOfWeek),
-        start_slot: createScheduleDto.start_slot,
-        end_slot: createScheduleDto.end_slot,
+        start_slot,
+        end_slot,
         start_date: createScheduleDto.start_date
           ? new Date(createScheduleDto.start_date)
           : null,
@@ -163,6 +186,7 @@ export class SchedulesService {
   }
 
   async update(id: string, updateScheduleDto: UpdateScheduleDto) {
+    const { start_slot, end_slot } = this.normalizeSlots(updateScheduleDto);
     const classroom = await this.classroomService.findOne(
       updateScheduleDto.classroom_id,
     );
@@ -184,6 +208,8 @@ export class SchedulesService {
     if (!course) {
       throw new BadRequestException(`Course not exist`);
     }
+
+    this.ensureRoomTypeMatches(course, classroom);
 
     if (course.capacity && classroom.capacity < course.capacity) {
       throw new BadRequestException(
@@ -220,6 +246,8 @@ export class SchedulesService {
           updateScheduleDto.dayOfWeek === undefined
             ? undefined
             : String(updateScheduleDto.dayOfWeek),
+        start_slot,
+        end_slot,
         start_date: updateScheduleDto.start_date
           ? new Date(updateScheduleDto.start_date)
           : undefined,

@@ -120,7 +120,7 @@ export class UsersService {
         role: 'student',
         student: null,
       },
-      select: { id: true },
+      select: { id: true, email: true },
     });
   }
 
@@ -130,7 +130,7 @@ export class UsersService {
         role: 'teacher',
         teacher: null,
       },
-      select: { id: true },
+      select: { id: true, email: true },
     });
   }
 

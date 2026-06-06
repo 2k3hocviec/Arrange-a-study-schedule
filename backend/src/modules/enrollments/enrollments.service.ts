@@ -221,6 +221,7 @@ export class EnrollmentsService {
         course: {
           select: {
             course_id: true,
+            course_code: true,
             subject_id: true,
             teacher_id: true,
             subject: {
@@ -257,6 +258,7 @@ export class EnrollmentsService {
         course: {
           select: {
             course_id: true,
+            course_code: true,
             subject_id: true,
             teacher_id: true,
           },

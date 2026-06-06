@@ -55,7 +55,7 @@ export class AuthController {
   ) {
     const token = req.cookies?.refresh_token;
     if (!token) {
-      throw new UnauthorizedException('Khong tim thay refresh token');
+      throw new UnauthorizedException('Refresh token not found');
     }
 
     const { access_token, refresh_token } =
@@ -72,7 +72,7 @@ export class AuthController {
   ) {
     const userId = req.user?.sub;
     if (!userId) {
-      throw new UnauthorizedException('Khong tim thay thong tin nguoi dung');
+      throw new UnauthorizedException('User token not found');
     }
 
     await this.authService.logout(userId);
@@ -101,12 +101,6 @@ export class AuthController {
     return this.authService.resetPassword(body.reset_token, body.newPassword);
   }
 
-  @Post('/forgot-password')
-  @Public()
-  async forgotPassword(@Body() body: { email: string }) {
-    return this.authService.forgotPassword(body.email);
-  }
-
   @Patch('/change-password')
   changePassword(
     @Req() req: AuthenticatedRequest,
@@ -114,7 +108,7 @@ export class AuthController {
   ) {
     const userId = req.user?.sub;
     if (!userId) {
-      throw new UnauthorizedException('Khong tim thay thong tin nguoi dung');
+      throw new UnauthorizedException('User not found');
     }
 
     return this.authService.changePassword(
