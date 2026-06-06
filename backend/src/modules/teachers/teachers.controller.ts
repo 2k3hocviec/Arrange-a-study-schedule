@@ -41,6 +41,7 @@ export class TeachersController {
   }
 
   @Get('teacher/:id/courses-details')
+  @Roles('teacher')
   findStudentCoursesWithDetails(@Param('id') teacherId: string) {
     return this.teachersService.findTeacherCoursesWithDetails(teacherId);
   }

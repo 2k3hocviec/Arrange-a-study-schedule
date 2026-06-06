@@ -196,6 +196,137 @@ const subjectSeeds = [
   { subject_id: 'INT1450', name: 'Phát triển ứng dụng web', credits: 4 },
 ];
 
+const courseSeeds = [
+  {
+    course_code: 'INT1337-01',
+    subject_id: 'INT1337',
+    teacher_id: 'GV001',
+    capacity: 5,
+    remaining_capacity: 5,
+    required_room_type: 'Theory',
+  },
+  {
+    course_code: 'INT1337-02',
+    subject_id: 'INT1337',
+    teacher_id: 'GV002',
+    capacity: 6,
+    remaining_capacity: 6,
+    required_room_type: 'Theory',
+  },
+  {
+    course_code: 'INT1337-03',
+    subject_id: 'INT1337',
+    teacher_id: 'GV007',
+    capacity: 7,
+    remaining_capacity: 7,
+    required_room_type: 'Practice',
+  },
+  {
+    course_code: 'INT1306-01',
+    subject_id: 'INT1306',
+    teacher_id: 'GV005',
+    capacity: 8,
+    remaining_capacity: 8,
+    required_room_type: 'Theory',
+  },
+  {
+    course_code: 'INT1306-02',
+    subject_id: 'INT1306',
+    teacher_id: 'GV008',
+    capacity: 6,
+    remaining_capacity: 6,
+    required_room_type: 'Practice',
+  },
+  {
+    course_code: 'INT1312-01',
+    subject_id: 'INT1312',
+    teacher_id: 'GV003',
+    capacity: 7,
+    remaining_capacity: 7,
+    required_room_type: 'Theory',
+  },
+  {
+    course_code: 'INT1312-02',
+    subject_id: 'INT1312',
+    teacher_id: 'GV001',
+    capacity: 5,
+    remaining_capacity: 5,
+    required_room_type: 'Practice',
+  },
+  {
+    course_code: 'INT1405-01',
+    subject_id: 'INT1405',
+    teacher_id: 'GV003',
+    capacity: 8,
+    remaining_capacity: 8,
+    required_room_type: 'Theory',
+  },
+  {
+    course_code: 'INT1405-02',
+    subject_id: 'INT1405',
+    teacher_id: 'GV006',
+    capacity: 5,
+    remaining_capacity: 5,
+    required_room_type: 'Practice',
+  },
+  {
+    course_code: 'INT1414-01',
+    subject_id: 'INT1414',
+    teacher_id: 'GV005',
+    capacity: 9,
+    remaining_capacity: 9,
+    required_room_type: 'Theory',
+  },
+  {
+    course_code: 'INT1434-01',
+    subject_id: 'INT1434',
+    teacher_id: 'GV004',
+    capacity: 6,
+    remaining_capacity: 6,
+    required_room_type: 'Theory',
+  },
+  {
+    course_code: 'INT1434-02',
+    subject_id: 'INT1434',
+    teacher_id: 'GV010',
+    capacity: 8,
+    remaining_capacity: 8,
+    required_room_type: 'Practice',
+  },
+  {
+    course_code: 'INT1448-01',
+    subject_id: 'INT1448',
+    teacher_id: 'GV006',
+    capacity: 6,
+    remaining_capacity: 6,
+    required_room_type: 'Theory',
+  },
+  {
+    course_code: 'INT1448-02',
+    subject_id: 'INT1448',
+    teacher_id: 'GV009',
+    capacity: 5,
+    remaining_capacity: 5,
+    required_room_type: 'Practice',
+  },
+  {
+    course_code: 'INT1450-01',
+    subject_id: 'INT1450',
+    teacher_id: 'GV008',
+    capacity: 9,
+    remaining_capacity: 9,
+    required_room_type: 'Practice',
+  },
+  {
+    course_code: 'INT1450-02',
+    subject_id: 'INT1450',
+    teacher_id: 'GV010',
+    capacity: 10,
+    remaining_capacity: 10,
+    required_room_type: 'Theory',
+  },
+];
+
 if (!databaseUrl) {
   throw new Error('DATABASE_URL is required to run seed');
 }
@@ -354,6 +485,20 @@ async function main() {
         credits: subject.credits,
       },
       create: subject,
+    });
+  }
+
+  for (const course of courseSeeds) {
+    await prisma.course.upsert({
+      where: { course_code: course.course_code },
+      update: {
+        subject_id: course.subject_id,
+        teacher_id: course.teacher_id,
+        capacity: course.capacity,
+        remaining_capacity: course.remaining_capacity,
+        required_room_type: course.required_room_type,
+      },
+      create: course,
     });
   }
 

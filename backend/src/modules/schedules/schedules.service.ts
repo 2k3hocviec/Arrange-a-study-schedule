@@ -175,8 +175,8 @@ export class SchedulesService {
     });
   }
 
-  findScheduleWithCourseID(courseID: string) {
-    return this.prisma.schedule.findFirst({
+  findSchedulesWithCourseID(courseID: string) {
+    return this.prisma.schedule.findMany({
       where: { course_id: courseID },
     });
   }

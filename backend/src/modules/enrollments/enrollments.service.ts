@@ -16,6 +16,24 @@ export class EnrollmentsService {
     private readonly scheduleService: SchedulesService,
   ) {}
 
+  private hasDateOverlap(newSchedule: any, existingSchedule: any) {
+    if (
+      !newSchedule.start_date ||
+      !newSchedule.end_date ||
+      !existingSchedule.start_date ||
+      !existingSchedule.end_date
+    ) {
+      return true;
+    }
+
+    const newStartDate = new Date(newSchedule.start_date);
+    const newEndDate = new Date(newSchedule.end_date);
+    const existingStartDate = new Date(existingSchedule.start_date);
+    const existingEndDate = new Date(existingSchedule.end_date);
+
+    return newStartDate <= existingEndDate && newEndDate >= existingStartDate;
+  }
+
   async checkScheduleConflict(studentID: string, newCourseID: string) {
     const enrollments = await this.prisma.enrollment.findMany({
       where: { student_id: studentID },
@@ -27,41 +45,26 @@ export class EnrollmentsService {
     const existingSchedules =
       await this.scheduleService.findExistingSchedules(courseIDs);
 
-    const newSchedule =
-      await this.scheduleService.findScheduleWithCourseID(newCourseID);
+    const newSchedules =
+      await this.scheduleService.findSchedulesWithCourseID(newCourseID);
 
-    if (!newSchedule) {
-      throw new Error('This course has not yet been scheduled.');
+    if (newSchedules.length === 0) {
+      throw new BadRequestException('This course has not yet been scheduled.');
     }
 
-    for (const existingSchedule of existingSchedules) {
-      const slotConflict =
-        newSchedule.dayOfWeek === existingSchedule.dayOfWeek &&
-        newSchedule.start_slot <= existingSchedule.end_slot &&
-        newSchedule.end_slot >= existingSchedule.start_slot;
-
-      if (!slotConflict) continue;
-
-      if (newSchedule.start_date && newSchedule.end_date) {
-        const newStartDate = new Date(newSchedule.start_date);
-        const newEndDate = new Date(newSchedule.end_date);
-
-        const existingStartDate = existingSchedule.start_date
-          ? new Date(existingSchedule.start_date)
-          : null;
-        const existingEndDate = existingSchedule.end_date
-          ? new Date(existingSchedule.end_date)
-          : null;
+    for (const newSchedule of newSchedules) {
+      for (const existingSchedule of existingSchedules) {
+        const slotConflict =
+          newSchedule.dayOfWeek === existingSchedule.dayOfWeek &&
+          newSchedule.start_slot <= existingSchedule.end_slot &&
+          newSchedule.end_slot >= existingSchedule.start_slot;
 
         if (
-          !existingStartDate ||
-          !existingEndDate ||
-          (existingStartDate <= newEndDate && existingEndDate >= newStartDate)
+          slotConflict &&
+          this.hasDateOverlap(newSchedule, existingSchedule)
         ) {
           return `Conflict with course with ID ${existingSchedule.course_id}`;
         }
-      } else {
-        return `Conflict with course with ID ${existingSchedule.course_id}`;
       }
     }
 
