@@ -6,6 +6,60 @@ import { FiPlus, FiEdit2, FiTrash2 } from "react-icons/fi";
 
 const PAGE_SIZE = 10;
 
+const getCourseErrorMessage = (err, action = "save") => {
+  const rawMessage = err?.response?.data?.message || err?.message || "";
+  const message = Array.isArray(rawMessage)
+    ? rawMessage.join(" ")
+    : String(rawMessage);
+  const lowerMessage = message.toLowerCase();
+
+  if (
+    lowerMessage.includes("unique") ||
+    lowerMessage.includes("duplicate") ||
+    lowerMessage.includes("p2002") ||
+    lowerMessage.includes("course_code")
+  ) {
+    return "Mã lớp học phần đã tồn tại. Vui lòng kiểm tra lại mã khóa học.";
+  }
+
+  if (lowerMessage.includes("required room type")) {
+    return "Vui lòng chọn loại phòng yêu cầu.";
+  }
+
+  if (
+    lowerMessage.includes("not teacher") ||
+    lowerMessage.includes("not subject") ||
+    lowerMessage.includes("not semester")
+  ) {
+    return "Giáo viên, môn học hoặc kỳ học không tồn tại. Vui lòng kiểm tra lại.";
+  }
+
+  if (lowerMessage.includes("capacity must be at least")) {
+    return "Sĩ số tối đa không được nhỏ hơn số sinh viên đã đăng ký.";
+  }
+
+  if (
+    lowerMessage.includes("cannot move course to this semester") ||
+    lowerMessage.includes("outside the semester date range")
+  ) {
+    return "Không thể chuyển khóa học sang kỳ này vì đã có lịch học nằm ngoài khoảng thời gian của kỳ mới.";
+  }
+
+  if (lowerMessage.includes("cannot delete course that has schedules")) {
+    return "Không thể xóa khóa học vì đã có lịch học.";
+  }
+
+  if (lowerMessage.includes("cannot delete course that has enrollments")) {
+    return "Không thể xóa khóa học vì đã có sinh viên đăng ký.";
+  }
+
+  if (action === "delete") {
+    return "Không thể xóa khóa học.";
+  }
+
+  return "Thao tác thất bại. Vui lòng kiểm tra lại dữ liệu.";
+};
+
 const MinistryCourses = () => {
   const roomTypeOptions = [
     { value: "Theory", label: "Lý thuyết" },
@@ -117,7 +171,7 @@ const MinistryCourses = () => {
       setShowForm(false);
       fetchCourses();
     } catch (err) {
-      toast.error("Thao tác thất bại!");
+      toast.error(getCourseErrorMessage(err));
     }
   };
 
@@ -127,7 +181,7 @@ const MinistryCourses = () => {
       toast.success("Xóa khóa học thành công!");
       fetchCourses();
     } catch (err) {
-      toast.error("Không thể xóa khóa học");
+      toast.error(getCourseErrorMessage(err, "delete"));
     }
   };
 

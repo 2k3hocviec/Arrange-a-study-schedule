@@ -5,6 +5,21 @@ import { GiTeacher } from "react-icons/gi";
 
 const ROWS_PER_PAGE = 5;
 
+const getTeacherErrorMessage = (err, action = "save") => {
+  const rawMessage = err?.response?.data?.message || err?.message || "";
+  const message = Array.isArray(rawMessage) ? rawMessage.join(" ") : String(rawMessage);
+  const lowerMessage = message.toLowerCase();
+
+  if (lowerMessage.includes("cannot delete teacher that has courses")) {
+    return "Không thể xóa giảng viên vì giảng viên đã được phân công khóa học.";
+  }
+  if (lowerMessage.includes("unique") || lowerMessage.includes("duplicate")) {
+    return "Mã giảng viên hoặc tài khoản đã tồn tại. Vui lòng kiểm tra lại.";
+  }
+  if (action === "delete") return "Không thể xóa giảng viên.";
+  return "Thao tác thất bại. Vui lòng kiểm tra lại dữ liệu.";
+};
+
 const AdminTeachers = () => {
   const [teachers, setTeachers] = useState([]);
   const [availableUsers, setAvailableUsers] = useState([]);
@@ -94,7 +109,7 @@ const AdminTeachers = () => {
       await fetchTeachers();
       await fetchAvailableUsers();
     } catch (err) {
-      toast.error("Tạo giáo viên thất bại!");
+      toast.error(getTeacherErrorMessage(err));
     }
   };
 
@@ -117,7 +132,7 @@ const AdminTeachers = () => {
       await fetchTeachers();
       await fetchAvailableUsers();
     } catch (err) {
-      toast.error("Cập nhật giáo viên thất bại!");
+      toast.error(getTeacherErrorMessage(err));
     }
   };
 
@@ -130,7 +145,7 @@ const AdminTeachers = () => {
       await fetchAvailableUsers();
     } catch (error) {
       console.error(error);
-      toast.error("Xóa thất bại!");
+      toast.error(getTeacherErrorMessage(error, "delete"));
     }
   };
 

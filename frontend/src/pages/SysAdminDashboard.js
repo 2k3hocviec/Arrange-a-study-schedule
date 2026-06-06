@@ -43,6 +43,21 @@ const maskPassword = (password) => {
   return "$2b$" + "******" + password.slice(-4);
 };
 
+const getUserErrorMessage = (err, action = "save") => {
+  const rawMessage = err?.response?.data?.message || err?.message || "";
+  const message = Array.isArray(rawMessage) ? rawMessage.join(" ") : String(rawMessage);
+  const lowerMessage = message.toLowerCase();
+
+  if (lowerMessage.includes("cannot delete user that is linked")) {
+    return "Không thể xóa người dùng vì tài khoản đang liên kết với hồ sơ sinh viên hoặc giảng viên.";
+  }
+  if (lowerMessage.includes("unique") || lowerMessage.includes("duplicate")) {
+    return "Email đã tồn tại. Vui lòng kiểm tra lại.";
+  }
+  if (action === "delete") return "Không thể xóa người dùng.";
+  return "Thao tác thất bại. Vui lòng kiểm tra lại dữ liệu.";
+};
+
 const RoleBadge = ({ role }) => {
   const cfg = ROLE_CONFIG[role] || {
     label: role?.toUpperCase(),
@@ -128,8 +143,8 @@ export default function SysAdminUsers() {
       resetForm();
       await fetchUsers();
       toast.success("Tạo người dùng thành công");
-    } catch {
-      toast.error("Tạo người dùng thất bại");
+    } catch (err) {
+      toast.error(getUserErrorMessage(err));
     }
   };
 
@@ -153,8 +168,8 @@ export default function SysAdminUsers() {
       resetForm();
       await fetchUsers();
       toast.success("Cập nhật thành công");
-    } catch {
-      toast.error("Cập nhật thất bại");
+    } catch (err) {
+      toast.error(getUserErrorMessage(err));
     }
   };
 
@@ -168,8 +183,8 @@ export default function SysAdminUsers() {
       await usersAPI.delete(user.id);
       await fetchUsers();
       toast.success("Xóa thành công");
-    } catch {
-      toast.error("Xóa thất bại!");
+    } catch (err) {
+      toast.error(getUserErrorMessage(err, "delete"));
     }
   };
 

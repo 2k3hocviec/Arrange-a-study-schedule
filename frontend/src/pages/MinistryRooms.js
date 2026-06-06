@@ -12,6 +12,21 @@ import {
 
 const PAGE_SIZE = 5;
 
+const getRoomErrorMessage = (err, action = "save") => {
+  const rawMessage = err?.response?.data?.message || err?.message || "";
+  const message = Array.isArray(rawMessage) ? rawMessage.join(" ") : String(rawMessage);
+  const lowerMessage = message.toLowerCase();
+
+  if (lowerMessage.includes("cannot delete classroom that has schedules")) {
+    return "Không thể xóa phòng vì đã có lịch học sử dụng phòng này.";
+  }
+  if (lowerMessage.includes("unique") || lowerMessage.includes("duplicate")) {
+    return "Mã phòng đã tồn tại. Vui lòng kiểm tra lại.";
+  }
+  if (action === "delete") return "Không thể xóa phòng học.";
+  return "Thao tác thất bại. Vui lòng kiểm tra lại dữ liệu.";
+};
+
 const MinistryRooms = () => {
   const [rooms, setRooms] = useState([]);
   const [showForm, setShowForm] = useState(false);
@@ -78,7 +93,7 @@ const MinistryRooms = () => {
       setShowForm(false);
       fetchRooms();
     } catch (err) {
-      toast.error("Thao tác thất bại");
+      toast.error(getRoomErrorMessage(err));
     }
   };
 
@@ -88,7 +103,7 @@ const MinistryRooms = () => {
       toast.success("Xóa phòng thành công!");
       fetchRooms();
     } catch (err) {
-      toast.error("Không thể xóa phòng");
+      toast.error(getRoomErrorMessage(err, "delete"));
     }
   };
 

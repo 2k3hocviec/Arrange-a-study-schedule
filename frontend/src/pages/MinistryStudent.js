@@ -5,6 +5,21 @@ import { PiStudentDuotone } from "react-icons/pi";
 
 const ROWS_PER_PAGE = 5;
 
+const getStudentErrorMessage = (err, action = "save") => {
+  const rawMessage = err?.response?.data?.message || err?.message || "";
+  const message = Array.isArray(rawMessage) ? rawMessage.join(" ") : String(rawMessage);
+  const lowerMessage = message.toLowerCase();
+
+  if (lowerMessage.includes("cannot delete student that has enrollments")) {
+    return "Không thể xóa sinh viên vì sinh viên đã có đăng ký học phần.";
+  }
+  if (lowerMessage.includes("unique") || lowerMessage.includes("duplicate")) {
+    return "Mã sinh viên hoặc tài khoản đã tồn tại. Vui lòng kiểm tra lại.";
+  }
+  if (action === "delete") return "Không thể xóa sinh viên.";
+  return "Thao tác thất bại. Vui lòng kiểm tra lại dữ liệu.";
+};
+
 const MinistryStudents = () => {
   const [students, setStudents] = useState([]);
   const [availableUsers, setAvailableUsers] = useState([]);
@@ -84,7 +99,7 @@ const MinistryStudents = () => {
       fetchStudents();
       fetchAvailableUsers();
     } catch (err) {
-      toast.error(err.response?.data?.message || "Tạo sinh viên thất bại!");
+      toast.error(getStudentErrorMessage(err));
     }
   };
 
@@ -100,7 +115,7 @@ const MinistryStudents = () => {
       closeModal();
       fetchStudents();
     } catch (err) {
-      toast.error("Cập nhật thất bại!");
+      toast.error(getStudentErrorMessage(err));
     }
   };
 
@@ -112,7 +127,7 @@ const MinistryStudents = () => {
       fetchStudents();
       fetchAvailableUsers();
     } catch (error) {
-      toast.error("Xóa sinh viên thất bại!");
+      toast.error(getStudentErrorMessage(error, "delete"));
     }
   };
 

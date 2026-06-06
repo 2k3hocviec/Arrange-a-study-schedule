@@ -6,6 +6,21 @@ import { FiPlus, FiEdit2, FiTrash2 } from "react-icons/fi";
 
 const PAGE_SIZE = 5;
 
+const getSubjectErrorMessage = (err, action = "save") => {
+  const rawMessage = err?.response?.data?.message || err?.message || "";
+  const message = Array.isArray(rawMessage) ? rawMessage.join(" ") : String(rawMessage);
+  const lowerMessage = message.toLowerCase();
+
+  if (lowerMessage.includes("cannot delete subject that has courses")) {
+    return "Không thể xóa môn học vì đã có khóa học thuộc môn này.";
+  }
+  if (lowerMessage.includes("unique") || lowerMessage.includes("duplicate")) {
+    return "Mã môn học đã tồn tại. Vui lòng kiểm tra lại.";
+  }
+  if (action === "delete") return "Không thể xóa môn học.";
+  return "Thao tác thất bại. Vui lòng kiểm tra lại dữ liệu.";
+};
+
 const MinistrySubjects = () => {
   const [subjects, setSubjects] = useState([]);
   const [showForm, setShowForm] = useState(false);
@@ -57,7 +72,7 @@ const MinistrySubjects = () => {
       await fetchSubjects();
       toast.success("Tạo môn học thành công!");
     } catch (err) {
-      toast.error("Tạo môn học thất bại!");
+      toast.error(getSubjectErrorMessage(err));
     }
   };
 
@@ -75,7 +90,7 @@ const MinistrySubjects = () => {
       await fetchSubjects();
       toast.success("Cập nhật môn học thành công!");
     } catch (err) {
-      toast.error("Cập nhật môn học thất bại!");
+      toast.error(getSubjectErrorMessage(err));
     }
   };
 
@@ -91,7 +106,7 @@ const MinistrySubjects = () => {
       await fetchSubjects();
       toast.success("Xóa môn học thành công!");
     } catch (err) {
-      toast.error("Không thể xóa môn học này");
+      toast.error(getSubjectErrorMessage(err, "delete"));
     }
   };
 
