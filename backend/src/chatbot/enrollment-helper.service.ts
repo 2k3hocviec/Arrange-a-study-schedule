@@ -7,7 +7,10 @@ export class EnrollmentHelperService {
 
   async getStudentEnrollments(studentId: string) {
     const enrollments = await this.prisma.enrollment.findMany({
-      where: { student_id: studentId },
+      where: {
+        student_id: studentId,
+        course: { semester: { is_active: true } },
+      },
       include: { course: true },
     });
 
@@ -47,7 +50,10 @@ export class EnrollmentHelperService {
     courseId: string,
   ): Promise<{ conflict: boolean; conflictWith?: string }> {
     const newCourseSchedule = await this.prisma.schedule.findFirst({
-      where: { course_id: courseId },
+      where: {
+        course_id: courseId,
+        course: { semester: { is_active: true } },
+      },
     });
 
     if (!newCourseSchedule) {
@@ -102,13 +108,20 @@ export class EnrollmentHelperService {
 
     const course = await this.prisma.course.findUnique({
       where: { course_id: courseId },
-      include: { subject: true },
+      include: { subject: true, semester: true },
     });
 
     if (!course) {
       return {
         canEnroll: false,
         reason: 'Mon hoc khong ton tai',
+      };
+    }
+
+    if (!course.semester?.is_active) {
+      return {
+        canEnroll: false,
+        reason: 'Mon hoc khong thuoc ky dang mo',
       };
     }
 
@@ -131,6 +144,7 @@ export class EnrollmentHelperService {
     const normalizedFreeDays = freeDays.map(normalizeDay);
 
     const allSchedules = await this.prisma.schedule.findMany({
+      where: { course: { semester: { is_active: true } } },
       include: {
         course: {
           include: {

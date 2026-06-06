@@ -87,11 +87,21 @@ export class TeachersService {
       select: {
         teacher_id: true,
         course: {
+          where: { semester: { is_active: true } },
           select: {
             course_id: true,
             course_code: true,
             subject_id: true,
             teacher_id: true,
+            semester_id: true,
+            semester: {
+              select: {
+                semester_id: true,
+                name: true,
+                school_year: true,
+                is_active: true,
+              },
+            },
             subject: {
               select: {
                 subject_id: true,

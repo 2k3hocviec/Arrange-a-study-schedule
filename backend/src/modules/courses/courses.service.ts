@@ -4,6 +4,7 @@ import { UpdateCourseDto } from './dto/update-course.dto';
 import { TeachersService } from '../teachers/teachers.service';
 import { SubjectsService } from '../subjects/subjects.service';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { SemestersService } from '../semesters/semesters.service';
 
 @Injectable()
 export class CoursesService {
@@ -11,6 +12,7 @@ export class CoursesService {
     private readonly prisma: PrismaService,
     private readonly teacherService: TeachersService,
     private readonly subjectService: SubjectsService,
+    private readonly semestersService: SemestersService,
   ) {}
 
   private async generateCourseCode(subjectId: string) {
@@ -39,15 +41,22 @@ export class CoursesService {
       throw new BadRequestException('Required room type is required');
     }
 
+    if (!createCourseDto.semester_id) {
+      throw new BadRequestException('Semester is required');
+    }
+
     const teacher = await this.teacherService.findOne(
       createCourseDto.teacher_id,
     );
     const subject = await this.subjectService.findOne(
       createCourseDto.subject_id,
     );
+    const semester = await this.semestersService.findOne(
+      createCourseDto.semester_id,
+    );
 
-    if (!teacher || !subject) {
-      throw new BadRequestException('Not teacher or Not subject');
+    if (!teacher || !subject || !semester) {
+      throw new BadRequestException('Not teacher or Not subject or Not semester');
     }
 
     const courseCode =
@@ -65,12 +74,15 @@ export class CoursesService {
 
   findAll() {
     return this.prisma.course.findMany({
-      include: { subject: true, teacher: true },
+      include: { subject: true, teacher: true, semester: true },
     });
   }
 
   findOne(id: string) {
-    return this.prisma.course.findUnique({ where: { course_id: id } });
+    return this.prisma.course.findUnique({
+      where: { course_id: id },
+      include: { semester: true },
+    });
   }
 
   async update(id: string, updateCourseDto: UpdateCourseDto) {
@@ -78,14 +90,17 @@ export class CoursesService {
       throw new BadRequestException('Required room type is required');
     }
 
-    const teacher = await this.teacherService.findOne(
-      updateCourseDto.teacher_id,
-    );
-    const subject = await this.subjectService.findOne(
-      updateCourseDto.subject_id,
-    );
-    if (!teacher || !subject) {
-      throw new BadRequestException('Not teacher or Not subject');
+    const teacher = updateCourseDto.teacher_id
+      ? await this.teacherService.findOne(updateCourseDto.teacher_id)
+      : true;
+    const subject = updateCourseDto.subject_id
+      ? await this.subjectService.findOne(updateCourseDto.subject_id)
+      : true;
+    const semester = updateCourseDto.semester_id
+      ? await this.semestersService.findOne(updateCourseDto.semester_id)
+      : true;
+    if (!teacher || !subject || !semester) {
+      throw new BadRequestException('Not teacher or Not subject or Not semester');
     }
 
     if (updateCourseDto.capacity !== undefined) {
@@ -124,13 +139,16 @@ export class CoursesService {
   }
 
   async findOneByCourseID(courseId: string) {
-    return this.prisma.course.findUnique({ where: { course_id: courseId } });
+    return this.prisma.course.findUnique({
+      where: { course_id: courseId },
+      include: { semester: true },
+    });
   }
 
   async findOneByCourseIDWithSubject(courseId: string) {
     return this.prisma.course.findUnique({
       where: { course_id: courseId },
-      include: { subject: true },
+      include: { subject: true, semester: true },
     });
   }
 
@@ -142,13 +160,30 @@ export class CoursesService {
   }
 
   async findInfoCourse() {
+    const activeSemester = await this.semestersService.findActive();
+    if (!activeSemester) {
+      return [];
+    }
+
     return this.prisma.course.findMany({
+      where: { semester_id: activeSemester.semester_id },
       select: {
         course_id: true,
         course_code: true,
+        semester_id: true,
         capacity: true,
         remaining_capacity: true,
         required_room_type: true,
+        semester: {
+          select: {
+            semester_id: true,
+            name: true,
+            school_year: true,
+            start_date: true,
+            end_date: true,
+            is_active: true,
+          },
+        },
         subject: {
           select: {
             subject_id: true,

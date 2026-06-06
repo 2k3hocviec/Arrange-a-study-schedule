@@ -2,8 +2,11 @@ FROM node:22-alpine AS deps
 
 WORKDIR /app
 
+ENV DATABASE_URL=postgresql://postgres:postgres@postgres:5432/school1?schema=public
+
 COPY package*.json ./
 COPY prisma ./prisma
+COPY prisma.config.ts ./prisma.config.ts
 
 RUN npm install
 

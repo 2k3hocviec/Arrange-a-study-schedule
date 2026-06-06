@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import { PrismaPg } from '@prisma/adapter-pg';
-import { PrismaClient, User } from '@prisma/client';
+import { PrismaClient, type User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 const databaseUrl = process.env.DATABASE_URL;
@@ -93,7 +93,7 @@ const teacherProfiles = [
   },
   {
     teacher_id: 'GV010',
-    name: 'Mai Thành Tâm',
+    name: 'Mai Th�nh T�m',
     degree: 'TS',
     expertise: 'Đa phương tiện 2',
   },
@@ -195,6 +195,14 @@ const subjectSeeds = [
   { subject_id: 'INT1448', name: 'An toàn thông tin', credits: 3 },
   { subject_id: 'INT1450', name: 'Phát triển ứng dụng web', credits: 4 },
 ];
+
+const semesterSeed = {
+  name: 'HK2',
+  school_year: '2025-2026',
+  start_date: new Date('2026-01-05'),
+  end_date: new Date('2026-05-31'),
+  is_active: true,
+};
 
 const courseSeeds = [
   {
@@ -488,17 +496,41 @@ async function main() {
     });
   }
 
+  let semester = await prisma.semester.findFirst({
+    where: {
+      name: semesterSeed.name,
+      school_year: semesterSeed.school_year,
+    },
+  });
+
+  await prisma.semester.updateMany({ data: { is_active: false } });
+
+  if (semester) {
+    semester = await prisma.semester.update({
+      where: { semester_id: semester.semester_id },
+      data: semesterSeed,
+    });
+  } else {
+    semester = await prisma.semester.create({
+      data: semesterSeed,
+    });
+  }
+
   for (const course of courseSeeds) {
     await prisma.course.upsert({
       where: { course_code: course.course_code },
       update: {
         subject_id: course.subject_id,
         teacher_id: course.teacher_id,
+        semester_id: semester.semester_id,
         capacity: course.capacity,
         remaining_capacity: course.remaining_capacity,
         required_room_type: course.required_room_type,
       },
-      create: course,
+      create: {
+        ...course,
+        semester_id: semester.semester_id,
+      },
     });
   }
 

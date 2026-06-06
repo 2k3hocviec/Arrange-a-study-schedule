@@ -55,17 +55,33 @@ model Subject {
   @@map("subject")
 }
 
+model Semester {
+  semester_id String   @id @default(uuid())
+  name        String
+  school_year String
+  start_date  DateTime @db.Date
+  end_date    DateTime @db.Date
+  is_active   Boolean  @default(false)
+
+  courses Course[]
+
+  @@unique([name, school_year])
+  @@map("semester")
+}
+
 model Course {
   course_id          String @id @default(uuid())
   course_code        String? @unique
   subject_id         String
   teacher_id         String
+  semester_id        String
   capacity           Int?
   remaining_capacity Int?
   required_room_type String @default("Theory")
 
   subject     Subject      @relation(fields: [subject_id], references: [subject_id])
   teacher     Teacher      @relation(fields: [teacher_id], references: [teacher_id])
+  semester    Semester     @relation(fields: [semester_id], references: [semester_id])
   schedule    Schedule[]
   enrollments Enrollment[]
 

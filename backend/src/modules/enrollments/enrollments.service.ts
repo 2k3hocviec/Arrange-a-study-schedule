@@ -35,8 +35,16 @@ export class EnrollmentsService {
   }
 
   async checkScheduleConflict(studentID: string, newCourseID: string) {
+    const newCourse = await this.coursesService.findOneByCourseID(newCourseID);
+    if (!newCourse) {
+      throw new BadRequestException(`Course with ID ${newCourseID} not exist`);
+    }
+
     const enrollments = await this.prisma.enrollment.findMany({
-      where: { student_id: studentID },
+      where: {
+        student_id: studentID,
+        course: { semester_id: newCourse.semester_id },
+      },
       include: { course: { include: { subject: true } } },
     });
 
@@ -90,6 +98,12 @@ export class EnrollmentsService {
       );
     }
 
+    if (!course.semester?.is_active) {
+      throw new BadRequestException(
+        'This course is not in the active semester',
+      );
+    }
+
     if (
       course.remaining_capacity !== undefined &&
       course.remaining_capacity !== null &&
@@ -99,7 +113,10 @@ export class EnrollmentsService {
     }
 
     const existingEnrollments = await this.prisma.enrollment.findMany({
-      where: { student_id: createEnrollmentDto.student_id },
+      where: {
+        student_id: createEnrollmentDto.student_id,
+        course: { semester_id: course.semester_id },
+      },
       include: { course: { include: { subject: true } } },
     });
 
@@ -200,7 +217,7 @@ export class EnrollmentsService {
       },
     });
 
-    if (course && course.remaining_capacity !== undefined && course.remaining_capacity !== null) {
+    if (result.count > 0 && course && course.remaining_capacity !== undefined && course.remaining_capacity !== null) {
       const newRemaining = course.remaining_capacity + 1;
       if (course.capacity === undefined || course.capacity === null || newRemaining <= course.capacity) {
         await this.coursesService.updateRemaining(courseId, newRemaining);
@@ -211,12 +228,20 @@ export class EnrollmentsService {
   }
 
   async findEnrollOfStudentId(studentId: string) {
-    return this.prisma.enrollment.findMany({ where: { student_id: studentId } });
+    return this.prisma.enrollment.findMany({
+      where: {
+        student_id: studentId,
+        course: { semester: { is_active: true } },
+      },
+    });
   }
 
   async findStudentCoursesWithDetails(studentId: string) {
     return this.prisma.enrollment.findMany({
-      where: { student_id: studentId },
+      where: {
+        student_id: studentId,
+        course: { semester: { is_active: true } },
+      },
       select: {
         student_id: true,
         enrollment_id: true,
@@ -227,6 +252,15 @@ export class EnrollmentsService {
             course_code: true,
             subject_id: true,
             teacher_id: true,
+            semester_id: true,
+            semester: {
+              select: {
+                semester_id: true,
+                name: true,
+                school_year: true,
+                is_active: true,
+              },
+            },
             subject: {
               select: {
                 subject_id: true,

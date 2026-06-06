@@ -33,8 +33,29 @@ export class SchedulesService {
     };
   }
 
+  private ensureScheduleDatesWithinSemester(
+    dto: CreateScheduleDto | UpdateScheduleDto,
+    course: { semester?: { start_date: Date; end_date: Date } | null },
+  ) {
+    if (!dto.start_date || !dto.end_date || !course.semester) {
+      return;
+    }
+
+    const scheduleStart = new Date(dto.start_date);
+    const scheduleEnd = new Date(dto.end_date);
+    const semesterStart = new Date(course.semester.start_date);
+    const semesterEnd = new Date(course.semester.end_date);
+
+    if (scheduleStart < semesterStart || scheduleEnd > semesterEnd) {
+      throw new BadRequestException(
+        'Schedule dates must be within the course semester date range',
+      );
+    }
+  }
+
   private async checkClassroomConflict(
     dto: CreateScheduleDto | UpdateScheduleDto,
+    semesterId: string,
     excludeScheduleId?: string,
   ) {
     const { start_slot, end_slot } = this.normalizeSlots(dto);
@@ -43,6 +64,7 @@ export class SchedulesService {
       dayOfWeek: String(dto.dayOfWeek),
       start_slot: { lte: end_slot },
       end_slot: { gte: start_slot },
+      course: { semester_id: semesterId },
     };
 
     // Khi update schedule có thể tự báo trùng với chính nó, vì vậy ta cần loại trừ cái hiện tại
@@ -51,8 +73,14 @@ export class SchedulesService {
     }
 
     if (dto.start_date && dto.end_date) {
-      where.start_date = { lte: new Date(dto.end_date) };
-      where.end_date = { gte: new Date(dto.start_date) };
+      where.OR = [
+        { start_date: null },
+        { end_date: null },
+        {
+          start_date: { lte: new Date(dto.end_date) },
+          end_date: { gte: new Date(dto.start_date) },
+        },
+      ];
     }
 
     return this.prisma.schedule.findFirst({ where });
@@ -60,14 +88,9 @@ export class SchedulesService {
 
   private async checkTeacherConflict(
     dto: CreateScheduleDto | UpdateScheduleDto,
+    currentCourse: { teacher_id: string; semester_id: string },
     excludeScheduleId?: string,
   ) {
-    const currentCourse = await this.courseService.findOneByCourseID(
-      dto.course_id,
-    );
-
-    if (!currentCourse) return null;
-
     const { start_slot, end_slot } = this.normalizeSlots(dto);
     const where: any = {
       dayOfWeek: String(dto.dayOfWeek),
@@ -75,6 +98,7 @@ export class SchedulesService {
       end_slot: { gte: start_slot },
       course: {
         teacher_id: currentCourse.teacher_id,
+        semester_id: currentCourse.semester_id,
       },
     };
 
@@ -83,8 +107,14 @@ export class SchedulesService {
     }
 
     if (dto.start_date && dto.end_date) {
-      where.start_date = { lte: new Date(dto.end_date) };
-      where.end_date = { gte: new Date(dto.start_date) };
+      where.OR = [
+        { start_date: null },
+        { end_date: null },
+        {
+          start_date: { lte: new Date(dto.end_date) },
+          end_date: { gte: new Date(dto.start_date) },
+        },
+      ];
     }
 
     return this.prisma.schedule.findFirst({
@@ -118,6 +148,7 @@ export class SchedulesService {
     }
 
     this.ensureRoomTypeMatches(course, classroom);
+    this.ensureScheduleDatesWithinSemester(createScheduleDto, course);
 
     if (course.capacity && classroom.capacity < course.capacity) {
       throw new BadRequestException(
@@ -126,7 +157,7 @@ export class SchedulesService {
     }
 
     const classroomConflict =
-      await this.checkClassroomConflict(createScheduleDto);
+      await this.checkClassroomConflict(createScheduleDto, course.semester_id);
 
     if (classroomConflict) {
       throw new BadRequestException(
@@ -134,7 +165,10 @@ export class SchedulesService {
       );
     }
 
-    const teacherConflict = await this.checkTeacherConflict(createScheduleDto);
+    const teacherConflict = await this.checkTeacherConflict(
+      createScheduleDto,
+      course,
+    );
     if (teacherConflict) {
       throw new BadRequestException(
         `Teacher already has schedule on ${createScheduleDto.dayOfWeek} at this time`,
@@ -165,13 +199,15 @@ export class SchedulesService {
   }
 
   findAll() {
-    return this.prisma.schedule.findMany({ include: { course: true, room: true } });
+    return this.prisma.schedule.findMany({
+      include: { course: { include: { semester: true } }, room: true },
+    });
   }
 
   findOneWithRoom(schedule_id: string) {
     return this.prisma.schedule.findUnique({
       where: { schedule_id },
-      include: { course: true, room: true },
+      include: { course: { include: { semester: true } }, room: true },
     });
   }
 
@@ -210,6 +246,7 @@ export class SchedulesService {
     }
 
     this.ensureRoomTypeMatches(course, classroom);
+    this.ensureScheduleDatesWithinSemester(updateScheduleDto, course);
 
     if (course.capacity && classroom.capacity < course.capacity) {
       throw new BadRequestException(
@@ -219,6 +256,7 @@ export class SchedulesService {
 
     const classroomConflict = await this.checkClassroomConflict(
       updateScheduleDto,
+      course.semester_id,
       id,
     );
 
@@ -230,6 +268,7 @@ export class SchedulesService {
 
     const teacherConflict = await this.checkTeacherConflict(
       updateScheduleDto,
+      course,
       id,
     );
     if (teacherConflict) {

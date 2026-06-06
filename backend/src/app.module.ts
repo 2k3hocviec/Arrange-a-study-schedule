@@ -16,6 +16,7 @@ import { JwtAuthGuard } from './guard/jwt.guard';
 import { RoleGuard } from './guard/role.guard';
 import { ChatbotModule } from './chatbot/chatbot.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { SemestersModule } from './modules/semesters/semesters.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { PrismaModule } from './prisma/prisma.module';
     CoursesModule,
     SchedulesModule,
     EnrollmentsModule,
+    SemestersModule,
     AuthModule,
     ChatbotModule,
   ],
