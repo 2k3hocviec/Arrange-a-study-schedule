@@ -3,7 +3,7 @@ import { studentsAPI, usersAPI } from "../services/api";
 import toast from "react-hot-toast";
 import { PiStudentDuotone } from "react-icons/pi";
 
-const ROWS_PER_PAGE = 10;
+const ROWS_PER_PAGE = 5;
 
 const MinistryStudents = () => {
   const [students, setStudents] = useState([]);
@@ -243,6 +243,7 @@ const MinistryStudents = () => {
               <th style={styles.th}>STT</th>
               <th style={styles.th}>MÃ SINH VIÊN</th>
               <th style={styles.th}>HỌ TÊN</th>
+              <th style={styles.th}>TÀI KHOẢN</th>
               <th style={styles.th}>USER ID</th>
               <th style={styles.th}>THAO TÁC</th>
             </tr>
@@ -250,7 +251,7 @@ const MinistryStudents = () => {
           <tbody>
             {paginatedStudents.length === 0 ? (
               <tr>
-                <td colSpan={5} style={styles.emptyCell}>
+                <td colSpan={6} style={styles.emptyCell}>
                   Không có dữ liệu sinh viên
                 </td>
               </tr>
@@ -268,6 +269,7 @@ const MinistryStudents = () => {
                     {student.student_id}
                   </td>
                   <td style={styles.td}>{student.name}</td>
+                  <td style={styles.td}>{student.user?.email || "-"}</td>
                   <td style={styles.td}>{student.user_id}</td>
                   <td style={styles.td}>
                     <button

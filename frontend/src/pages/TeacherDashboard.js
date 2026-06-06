@@ -394,13 +394,16 @@ const TeacherDashboard = () => {
 const S = {
   root: {
     display: "flex",
+    height: "100vh",
     minHeight: "100vh",
     fontFamily: "'Be Vietnam Pro','Segoe UI',sans-serif",
     background: "#f0f2f7",
+    overflow: "hidden",
   },
 
   sidebar: {
     width: 250,
+    height: "100vh",
     background: "#18181b",
     color: "#fff",
     display: "flex",
@@ -510,6 +513,7 @@ const S = {
     display: "flex",
     flexDirection: "column",
     minWidth: 0,
+    minHeight: 0,
   },
 
   topbar: {
@@ -531,6 +535,7 @@ const S = {
 
   content: {
     flex: 1,
+    minHeight: 0,
     padding: "24px 28px",
     overflowY: "auto",
   },

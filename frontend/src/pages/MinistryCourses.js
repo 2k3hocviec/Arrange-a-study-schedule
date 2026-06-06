@@ -5,6 +5,11 @@ import { MdMenuBook } from "react-icons/md";
 import { FiPlus, FiEdit2, FiTrash2 } from "react-icons/fi";
 
 const MinistryCourses = () => {
+  const roomTypeOptions = [
+    { value: "Theory", label: "Lý thuyết" },
+    { value: "Practice", label: "Thực hành" },
+  ];
+
   const [teachers, setTeachers] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [courses, setCourses] = useState([]);
@@ -15,6 +20,7 @@ const MinistryCourses = () => {
     subject_id: "",
     teacher_id: "",
     capacity: "",
+    required_room_type: "Theory",
   });
 
   const fetchCourses = async () => {
@@ -59,7 +65,12 @@ const MinistryCourses = () => {
   };
 
   const handleClickCreateCourse = () => {
-    setFormData({ subject_id: "", teacher_id: "", capacity: "" });
+    setFormData({
+      subject_id: "",
+      teacher_id: "",
+      capacity: "",
+      required_room_type: "Theory",
+    });
     setRepair(false);
     setShowForm(!showForm);
   };
@@ -69,6 +80,7 @@ const MinistryCourses = () => {
       ...course,
       subject_id: course.subject_id || course.subject?.subject_id || "",
       teacher_id: course.teacher_id || course.teacher?.teacher_id || "",
+      required_room_type: course.required_room_type || "Theory",
     });
     setRepair(true);
     setShowForm(true);
@@ -212,6 +224,24 @@ const MinistryCourses = () => {
                 </div>
 
                 <div style={fieldGroup}>
+                  <label style={fieldLabel}>Loại phòng yêu cầu</label>
+
+                  <select
+                    name="required_room_type"
+                    value={formData.required_room_type}
+                    onChange={handleInputChange}
+                    style={fieldInput}
+                    required
+                  >
+                    {roomTypeOptions.map((type) => (
+                      <option key={type.value} value={type.value}>
+                        {type.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div style={fieldGroup}>
                   <label style={fieldLabel}>Chỗ còn lại</label>
 
                   <input
@@ -270,6 +300,7 @@ const MinistryCourses = () => {
             <thead>
               <tr style={theadRow}>
                 <th style={th}>STT</th>
+                <th style={th}>LOẠI PHÒNG</th>
                 <th style={th}>MÃ KHÓA HỌC</th>
                 <th style={th}>TÊN MÔN HỌC</th>
                 <th style={th}>GIÁO VIÊN</th>
@@ -285,14 +316,31 @@ const MinistryCourses = () => {
                   course.remaining_capacity !== undefined
                     ? course.remaining_capacity
                     : capacity;
+                const roomType = course.required_room_type || "Theory";
+                const roomTypeLabel =
+                  roomTypeOptions.find((type) => type.value === roomType)
+                    ?.label || roomType;
 
                 return (
                   <tr key={course.course_id} style={tbodyRow}>
                     <td style={{ ...td, color: "#94a3b8" }}>
                       {String(index + 1).padStart(2, "0")}
                     </td>
+                    <td style={td}>
+                      <span
+                        style={{
+                          ...roomTypeBadge,
+                          background:
+                            roomType === "Practice" ? "#e0f2fe" : "#ede9fe",
+                          color:
+                            roomType === "Practice" ? "#0369a1" : "#4f46e5",
+                        }}
+                      >
+                        {roomTypeLabel}
+                      </span>
+                    </td>
                     <td style={{ ...td, fontWeight: 600, color: "#4f46e5" }}>
-                      {course.course_id}
+                      {course.course_code || course.course_id}
                     </td>
                     <td style={td}>
                       {course.subject?.name || course.subject_id}
@@ -552,6 +600,15 @@ const capacityBadge = {
   fontWeight: 600,
   background: "#ede9fe",
   color: "#4f46e5",
+};
+const roomTypeBadge = {
+  display: "inline-block",
+  minWidth: "72px",
+  padding: "4px 10px",
+  borderRadius: "20px",
+  fontSize: "12px",
+  fontWeight: 700,
+  textAlign: "center",
 };
 const editBtn = {
   display: "inline-flex",

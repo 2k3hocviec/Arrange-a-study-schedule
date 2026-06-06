@@ -114,8 +114,6 @@ export const authAPI = {
   verifyOtp: (email, otp) => api.post("/auth/verify-otp", { email, otp }),
   resetPasswordWithToken: (reset_token, newPassword) =>
       api.post("/auth/reset-password", { reset_token, newPassword }),
-
-  forgotPassword: (email) => api.post("/auth/forgot-password", { email }),
 };
 
 // ─── USERS API ───
@@ -171,11 +169,11 @@ export const roomsAPI = {
 
 export const coursesAPI = {
   getAll: () => api.get("/courses"),
-  create: ({ subject_id, teacher_id, capacity }) =>
-      api.post("/courses", { subject_id, teacher_id, capacity }),
+  create: ({ course_code, subject_id, teacher_id, capacity, required_room_type }) =>
+      api.post("/courses", { course_code, subject_id, teacher_id, capacity, required_room_type }),
   delete: (course_id) => api.delete(`/courses/${course_id}`),
-  update: (course_id, { subject_id, teacher_id, capacity }) =>
-      api.patch(`/courses/${course_id}`, { subject_id, teacher_id, capacity }),
+  update: (course_id, { course_code, subject_id, teacher_id, capacity, required_room_type }) =>
+      api.patch(`/courses/${course_id}`, { course_code, subject_id, teacher_id, capacity, required_room_type }),
   getInfoCourse: () => api.get("/courses/student"),
 };
 

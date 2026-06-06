@@ -113,6 +113,7 @@ const TeacherSchedule = ({ teacherInfo }) => {
               subjectName: c.subject?.name,
               room: sch.classroom_id,
               courseId: c.course_id,
+              courseCode: c.course_code || c.course_id,
               credits: c.subject?.credits,
             });
           });
@@ -338,7 +339,7 @@ const TeacherSchedule = ({ teacherInfo }) => {
                   selectedClass.subjectName,
                   "#3a4db7",
                 ],
-                [<FaIdCard />, "Mã lớp ghép", selectedClass.courseId, null],
+                [<FaIdCard />, "Mã lớp ghép", selectedClass.courseCode, null],
                 [
                   <FaClock />,
                   "Thời gian",

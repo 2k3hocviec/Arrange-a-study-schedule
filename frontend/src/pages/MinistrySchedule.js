@@ -88,7 +88,7 @@ const MinistrySchedule = () => {
       handleResetForm();
       fetchData();
     } catch (err) {
-      toast.error("Thao tác thất bại. Lịch học có thể bị trùng!");
+      toast.error("Thao tác thất bại. Lịch học có thể bị trùng, lớp học không đủ yêu cầu");
     }
   };
 
@@ -189,7 +189,7 @@ const MinistrySchedule = () => {
                 <option value="">Chọn khóa học...</option>
                 {courses.map((c) => (
                   <option key={c.course_id} value={c.course_id}>
-                    {`${c.course_id} - ${c.subject_id} - ${c.teacher_id}`}
+                    {`${c.course_code || c.course_id} - ${c.subject_id} - ${c.teacher_id}`}
                   </option>
                 ))}
               </select>
@@ -332,7 +332,7 @@ const MinistrySchedule = () => {
                     {s.schedule_id} {/* ← Hiển thị đầy đủ */}
                   </td>
                   <td style={{ ...S.td, fontWeight: 600 }}>
-                    {s.course_id} {/* ← Hiển thị đầy đủ */}
+                    {s.course?.course_code || s.course_id}
                   </td>
                   <td style={S.td}>
                     <span style={S.roomBadge}>{s.classroom_id}</span>

@@ -205,13 +205,16 @@ export default function SysAdminUsers() {
   const styles = {
     root: {
       display: "flex",
+      height: "100vh",
       minHeight: "100vh",
       fontFamily: "'Be Vietnam Pro', 'Segoe UI', sans-serif",
       background: "#f0f2f7",
       color: "#1e293b",
+      overflow: "hidden",
     },
     sidebar: {
       width: 240,
+      height: "100vh",
       background: "#fff",
       borderRight: "1px solid #e8eaef",
       display: "flex",
@@ -221,7 +224,7 @@ export default function SysAdminUsers() {
     sidebarBrand: { padding: "0 20px 24px", borderBottom: "1px solid #f1f3f7" },
     brandTitle: { fontSize: 17, fontWeight: 800, color: "#3730a3", margin: 0 },
     brandSub: { fontSize: 11, color: "#94a3b8", marginTop: 2 },
-    sidebarNav: { padding: "16px 10px", flex: 1 },
+    sidebarNav: { padding: "16px 10px" },
     navItem: (active) => ({
       display: "flex",
       alignItems: "center",
@@ -237,7 +240,8 @@ export default function SysAdminUsers() {
       transition: "all 0.15s",
     }),
     sidebarFooter: {
-      padding: "16px 20px",
+      padding: "10px 14px",
+      marginTop: 8,
       borderTop: "1px solid #f1f3f7",
       display: "flex",
       alignItems: "center",
@@ -261,7 +265,13 @@ export default function SysAdminUsers() {
       textTransform: "uppercase",
       letterSpacing: "0.05em",
     },
-    main: { flex: 1, display: "flex", flexDirection: "column" },
+    main: {
+      flex: 1,
+      display: "flex",
+      flexDirection: "column",
+      minWidth: 0,
+      minHeight: 0,
+    },
     topbar: {
       background: "#fff",
       borderBottom: "1px solid #e8eaef",
@@ -299,7 +309,12 @@ export default function SysAdminUsers() {
       cursor: "pointer",
       transition: "all 0.15s",
     },
-    content: { padding: "28px 32px", flex: 1 },
+    content: {
+      padding: "28px 32px",
+      flex: 1,
+      minHeight: 0,
+      overflowY: "auto",
+    },
     banner: {
       background: "#fff",
       borderRadius: 16,

@@ -3,7 +3,7 @@ import { teachersAPI, usersAPI } from "../services/api";
 import toast from "react-hot-toast";
 import { GiTeacher } from "react-icons/gi";
 
-const ROWS_PER_PAGE = 10;
+const ROWS_PER_PAGE = 5;
 
 const AdminTeachers = () => {
   const [teachers, setTeachers] = useState([]);
@@ -287,13 +287,15 @@ const AdminTeachers = () => {
               <th style={styles.th}>HỌ TÊN</th>
               <th style={styles.th}>HỌC VỊ</th>
               <th style={styles.th}>CHUYÊN MÔN</th>
+              <th style={styles.th}>TAI KHOAN</th>
+              <th style={styles.th}>USER ID</th>
               <th style={styles.th}>THAO TÁC</th>
             </tr>
           </thead>
           <tbody>
             {paginatedTeachers.length === 0 ? (
               <tr>
-                <td colSpan={6} style={styles.emptyCell}>
+                <td colSpan={8} style={styles.emptyCell}>
                   Không có dữ liệu giảng viên
                 </td>
               </tr>
@@ -313,6 +315,8 @@ const AdminTeachers = () => {
                   <td style={{ ...styles.td, fontWeight: 500 }}>{t.name}</td>
                   <td style={styles.td}>{t.degree}</td>
                   <td style={styles.td}>{t.expertise}</td>
+                  <td style={styles.td}>{t.user?.email || "-"}</td>
+                  <td style={styles.td}>{t.user_id}</td>
                   <td style={styles.td}>
                     <button
                       style={styles.editBtn}

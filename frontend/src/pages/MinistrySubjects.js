@@ -4,10 +4,13 @@ import toast from "react-hot-toast";
 import { MdMenuBook } from "react-icons/md";
 import { FiPlus, FiEdit2, FiTrash2 } from "react-icons/fi";
 
+const PAGE_SIZE = 5;
+
 const MinistrySubjects = () => {
   const [subjects, setSubjects] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [repair, setRepair] = useState(false);
+  const [page, setPage] = useState(1);
   const [formData, setFormData] = useState({
     subject_id: "",
     name: "",
@@ -91,6 +94,12 @@ const MinistrySubjects = () => {
       toast.error("Không thể xóa môn học này");
     }
   };
+
+  const totalPages = Math.max(1, Math.ceil(subjects.length / PAGE_SIZE));
+  const paginatedSubjects = subjects.slice(
+    (page - 1) * PAGE_SIZE,
+    page * PAGE_SIZE,
+  );
 
   return (
     <div style={pageWrapper}>
@@ -246,10 +255,13 @@ const MinistrySubjects = () => {
               </tr>
             </thead>
             <tbody>
-              {subjects.map((subject, index) => (
+              {paginatedSubjects.map((subject, index) => (
                 <tr key={subject.subject_id} style={tbodyRow}>
                   <td style={{ ...td, color: "#94a3b8" }}>
-                    {String(index + 1).padStart(2, "0")}
+                    {String((page - 1) * PAGE_SIZE + index + 1).padStart(
+                      2,
+                      "0",
+                    )}
                   </td>
                   <td style={{ ...td, fontWeight: 600, color: "#4f46e5" }}>
                     {subject.subject_id}
@@ -281,8 +293,29 @@ const MinistrySubjects = () => {
         {subjects.length > 0 && (
           <div style={tableFooter}>
             <span style={{ color: "#94a3b8", fontSize: "13px" }}>
-              Hiển thị 1–{subjects.length} trên {subjects.length} môn học
+              Hiển thị {(page - 1) * PAGE_SIZE + 1}–
+              {Math.min(page * PAGE_SIZE, subjects.length)} trên {subjects.length} môn học
             </span>
+            <div style={pageControls}>
+              <button
+                style={{ ...pageBtn, ...(page === 1 ? pageBtnDisabled : {}) }}
+                disabled={page === 1}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+              >
+                Trước
+              </button>
+              <span style={pageInfo}>{page} / {totalPages}</span>
+              <button
+                style={{
+                  ...pageBtn,
+                  ...(page === totalPages ? pageBtnDisabled : {}),
+                }}
+                disabled={page === totalPages}
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              >
+                Tiếp
+              </button>
+            </div>
           </div>
         )}
       </div>
@@ -511,6 +544,27 @@ const deleteBtn = {
 const tableFooter = {
   padding: "14px 24px",
   borderTop: "1px solid #f1f5f9",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: "12px",
+  flexWrap: "wrap",
+};
+const pageControls = { display: "flex", alignItems: "center", gap: "8px" };
+const pageInfo = { color: "#334155", fontWeight: 600, fontSize: "13px" };
+const pageBtn = {
+  padding: "6px 12px",
+  border: "1px solid #cbd5e1",
+  borderRadius: "7px",
+  background: "#fff",
+  color: "#334155",
+  cursor: "pointer",
+  fontWeight: 600,
+  fontSize: "13px",
+};
+const pageBtnDisabled = {
+  opacity: 0.45,
+  cursor: "not-allowed",
 };
 
 const modalOverlay = {

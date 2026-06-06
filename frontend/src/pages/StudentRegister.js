@@ -395,6 +395,7 @@ const StudentRegister = ({
     return courses.filter((c) => {
       const matchKw =
         !kw ||
+        (c.course_code || "").toLowerCase().includes(kw) ||
         (c.course_id || "").toLowerCase().includes(kw) ||
         (c.subject?.subject_id || "").toLowerCase().includes(kw) ||
         (c.subject?.name || "").toLowerCase().includes(kw) ||
@@ -663,7 +664,7 @@ const StudentRegister = ({
                             opacity: isFull && !isRegistered ? 0.45 : 1,
                           }}
                         >
-                          {course.subject?.subject_id}
+                          {course.course_code || course.subject?.subject_id}
                         </span>
                       </td>
                       <td style={S.td}>

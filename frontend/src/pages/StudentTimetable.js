@@ -106,6 +106,7 @@ const StudentTimetable = ({ studentInfo }) => {
                 room: sch.classroom_id,
                 teacherId: course.teacher_id,
                 courseId: course.course_id,
+                courseCode: course.course_code || course.course_id,
                 credits: course.subject?.credits,
               });
             });
@@ -333,7 +334,7 @@ const StudentTimetable = ({ studentInfo }) => {
                   selectedClass.subjectName,
                   pal(selectedClass.colorIdx).dot,
                 ],
-                [<FaIdCard />, "Mã lớp học", selectedClass.courseId],
+                [<FaIdCard />, "Mã lớp học", selectedClass.courseCode],
                 [<FaGraduationCap />, "Mã học phần", selectedClass.subjectId],
                 [
                   <FaIdCard />,

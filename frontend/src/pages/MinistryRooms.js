@@ -10,10 +10,13 @@ import {
   MdBuild,
 } from "react-icons/md";
 
+const PAGE_SIZE = 5;
+
 const MinistryRooms = () => {
   const [rooms, setRooms] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [repair, setRepair] = useState(false);
+  const [page, setPage] = useState(1);
 
   const [formData, setFormData] = useState({
     classroom_id: "",
@@ -89,6 +92,8 @@ const MinistryRooms = () => {
     }
   };
 
+  const totalPages = Math.max(1, Math.ceil(rooms.length / PAGE_SIZE));
+  const paginatedRooms = rooms.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
   const readyRooms = rooms.filter((r) => r.status === "Ready").length;
   const maintenanceRooms = rooms.filter((r) => r.status !== "Ready").length;
 
@@ -285,9 +290,14 @@ const MinistryRooms = () => {
               </tr>
             </thead>
             <tbody>
-              {rooms.map((room, index) => (
+              {paginatedRooms.map((room, index) => (
                 <tr key={room.classroom_id} style={S.tbodyRow}>
-                  <td style={S.td}>{String(index + 1).padStart(2, "0")}</td>
+                  <td style={S.td}>
+                    {String((page - 1) * PAGE_SIZE + index + 1).padStart(
+                      2,
+                      "0",
+                    )}
+                  </td>
                   <td style={{ ...S.td, fontWeight: 700, color: "#4f46e5" }}>
                     {room.classroom_id}
                   </td>
@@ -330,7 +340,30 @@ const MinistryRooms = () => {
         </div>
 
         <div style={S.tableFooter}>
-          Hiển thị 1–{rooms.length} trên {rooms.length} phòng học
+          <span>
+            Hiển thị {(page - 1) * PAGE_SIZE + 1}–
+            {Math.min(page * PAGE_SIZE, rooms.length)} trên {rooms.length} phòng học
+          </span>
+          <div style={S.pageControls}>
+            <button
+              style={{ ...S.pageBtn, ...(page === 1 ? S.pageBtnDisabled : {}) }}
+              disabled={page === 1}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+            >
+              Trước
+            </button>
+            <span style={S.pageInfo}>{page} / {totalPages}</span>
+            <button
+              style={{
+                ...S.pageBtn,
+                ...(page === totalPages ? S.pageBtnDisabled : {}),
+              }}
+              disabled={page === totalPages}
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            >
+              Tiếp
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -574,6 +607,27 @@ const S = {
     color: "#64748b",
     fontSize: "13px",
     borderTop: "1px solid #f1f5f9",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: "12px",
+    flexWrap: "wrap",
+  },
+  pageControls: { display: "flex", alignItems: "center", gap: "8px" },
+  pageInfo: { color: "#334155", fontWeight: 600 },
+  pageBtn: {
+    padding: "6px 12px",
+    border: "1px solid #cbd5e1",
+    borderRadius: "7px",
+    background: "#fff",
+    color: "#334155",
+    cursor: "pointer",
+    fontWeight: 600,
+    fontSize: "13px",
+  },
+  pageBtnDisabled: {
+    opacity: 0.45,
+    cursor: "not-allowed",
   },
 
   modalOverlay: {

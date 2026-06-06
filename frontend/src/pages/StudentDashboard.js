@@ -333,12 +333,15 @@ const StudentDashboard = () => {
 const S = {
   root: {
     display: "flex",
+    height: "100vh",
     minHeight: "100vh",
     fontFamily: "'Be Vietnam Pro','Segoe UI',sans-serif",
     background: "#f0f2f7",
+    overflow: "hidden",
   },
   sidebar: {
     width: 250,
+    height: "100vh",
     background: "#18181b",
     color: "#fff",
     display: "flex",
@@ -409,7 +412,13 @@ const S = {
     fontSize: 13,
     cursor: "pointer",
   },
-  main: { flex: 1, display: "flex", flexDirection: "column", minWidth: 0 },
+  main: {
+    flex: 1,
+    display: "flex",
+    flexDirection: "column",
+    minWidth: 0,
+    minHeight: 0,
+  },
   topbar: {
     background: "#fff",
     borderBottom: "1px solid #e8eaef",
@@ -420,7 +429,12 @@ const S = {
     flexShrink: 0,
   },
   pageTitle: { fontSize: 16, fontWeight: 800, color: "#1e293b", margin: 0 },
-  content: { flex: 1, padding: "24px 28px", overflowY: "auto" },
+  content: {
+    flex: 1,
+    minHeight: 0,
+    padding: "24px 28px",
+    overflowY: "auto",
+  },
   homePage: { maxWidth: "100%" },
   banner: {
     background: "linear-gradient(135deg,#4f46e5 0%,#7c3aed 100%)",

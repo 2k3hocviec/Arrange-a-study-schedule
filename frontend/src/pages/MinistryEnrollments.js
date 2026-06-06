@@ -79,7 +79,7 @@ const MinistryEnrollments = () => {
   const handleDelete = async (enroll) => {
     if (
       !window.confirm(
-        `Xóa đăng ký của SV ${enroll.student_id} - Khóa ${enroll.course_id}?`,
+        `Xóa đăng ký của SV ${enroll.student_id} - Khóa ${enroll.course?.course_code || enroll.course_id}?`,
       )
     )
       return;
@@ -184,7 +184,7 @@ const MinistryEnrollments = () => {
 
                     {courses.map((c) => (
                       <option key={c.course_id} value={c.course_id}>
-                        {c.course_id}
+                        {c.course_code || c.course_id}
                       </option>
                     ))}
                   </select>
@@ -237,7 +237,7 @@ const MinistryEnrollments = () => {
                     {enroll.enrollment_id}
                   </td>
                   <td style={td}>{enroll.student_id}</td>
-                  <td style={td}>{enroll.course_id}</td>
+                  <td style={td}>{enroll.course?.course_code || enroll.course_id}</td>
                   <td style={td}>
                     {enroll.course?.subject_id ||
                       enroll.course?.subject?.subject_id ||

@@ -377,9 +377,11 @@ const MinistryDashboard = () => {
     <div
       style={{
         display: "flex",
+        height: "100vh",
         minHeight: "100vh",
         fontFamily: "'Be Vietnam Pro', sans-serif",
         background: "#f4f5f9",
+        overflow: "hidden",
       }}
     >
       {/* Sidebar overlay (mobile) */}
@@ -425,16 +427,6 @@ const MinistryDashboard = () => {
             </Link>
           ))}
         </nav>
-
-        {/* ── Nút Đăng xuất màu đỏ rượu dưới cùng ── */}
-        <div style={{ paddingBottom: 12 }}>
-          <div
-            className="edu-btn-logout"
-            onClick={() => (window.location.href = "/login")}
-          >
-            <FiLogOut size={16} /> Đăng xuất
-          </div>
-        </div>
       </aside>
 
       {/* ── Main Content ── */}
@@ -444,6 +436,7 @@ const MinistryDashboard = () => {
           display: "flex",
           flexDirection: "column",
           minWidth: 0,
+          minHeight: 0,
         }}
       >
         {/* Topbar */}
@@ -499,14 +492,41 @@ const MinistryDashboard = () => {
             }}
           >
             Dashboard Overview
-          </div>
+                    </div>
           <div style={{ flex: 1 }} />
+          
+          {/* Logout button góc phải */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              padding: "8px 16px",
+              borderRadius: 8,
+              background: "#fee2e2",
+              color: "#dc2626",
+              fontSize: 14,
+              fontWeight: 600,
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+            }}
+            onClick={() => (window.location.href = "/login")}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "#fecaca";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "#fee2e2";
+            }}
+          >
+            <FiLogOut size={16} /> Đăng xuất
+          </div>
         </header>
 
         {/* Main View Router */}
         <main
           style={{
             flex: 1,
+            minHeight: 0,
             padding: "clamp(16px, 3vw, 32px)",
             overflowY: "auto",
           }}
