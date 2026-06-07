@@ -68,6 +68,53 @@ export class CoursesService {
     }
   }
 
+  private hasCourseUpdateChanges(
+    currentCourse: {
+      course_code: string | null;
+      subject_id: string;
+      teacher_id: string;
+      semester_id: string;
+      capacity: number | null;
+      required_room_type: string;
+    },
+    updateCourseDto: UpdateCourseDto,
+  ) {
+    const textFields: Array<
+      keyof Pick<
+        UpdateCourseDto,
+        | 'course_code'
+        | 'subject_id'
+        | 'teacher_id'
+        | 'semester_id'
+        | 'required_room_type'
+      >
+    > = [
+      'course_code',
+      'subject_id',
+      'teacher_id',
+      'semester_id',
+      'required_room_type',
+    ];
+
+    const hasTextFieldChange = textFields.some((field) => {
+      if (updateCourseDto[field] === undefined) {
+        return false;
+      }
+
+      return updateCourseDto[field] !== currentCourse[field];
+    });
+
+    if (hasTextFieldChange) {
+      return true;
+    }
+
+    if (updateCourseDto.capacity === undefined) {
+      return false;
+    }
+
+    return Number(updateCourseDto.capacity) !== currentCourse.capacity;
+  }
+
   async create(createCourseDto: CreateCourseDto) {
     if (!createCourseDto.required_room_type) {
       throw new BadRequestException('Required room type is required');
@@ -122,6 +169,33 @@ export class CoursesService {
       throw new BadRequestException('Required room type is required');
     }
 
+    const currentCourse = await this.prisma.course.findUnique({
+      where: { course_id: id },
+      select: {
+        course_code: true,
+        subject_id: true,
+        teacher_id: true,
+        semester_id: true,
+        capacity: true,
+        required_room_type: true,
+      },
+    });
+
+    if (!currentCourse) {
+      throw new BadRequestException('Course not found');
+    }
+
+    const scheduleCount = await this.prisma.schedule.count({
+      where: { course_id: id },
+    });
+
+    if (
+      scheduleCount > 0 &&
+      this.hasCourseUpdateChanges(currentCourse, updateCourseDto)
+    ) {
+      throw new BadRequestException('Cannot update course that has schedule');
+    }
+
     const teacher = updateCourseDto.teacher_id
       ? await this.teacherService.findOne(updateCourseDto.teacher_id)
       : true;
@@ -143,11 +217,6 @@ export class CoursesService {
     }
 
     if (updateCourseDto.capacity !== undefined) {
-      const course = await this.findOneByCourseID(id);
-      if (!course) {
-        throw new BadRequestException('Course not found');
-      }
-
       const enrollmentCount = await this.prisma.enrollment.count({
         where: { course_id: id },
       });

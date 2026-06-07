@@ -154,6 +154,50 @@ export class SchedulesService {
     });
   }
 
+  private async ensureCourseHasNoOtherSchedule(
+    courseId: string,
+    excludeScheduleId?: string,
+  ) {
+    const existingSchedule = await this.prisma.schedule.findFirst({
+      where: {
+        course_id: courseId,
+        ...(excludeScheduleId
+          ? { schedule_id: { not: excludeScheduleId } }
+          : {}),
+      },
+    });
+
+    if (existingSchedule) {
+      throw new BadRequestException('This course already has a schedule');
+    }
+  }
+
+  private async ensureScheduleCourseHasNoEnrollments(
+    scheduleId: string,
+    action: 'update' | 'delete',
+  ) {
+    const schedule = await this.prisma.schedule.findUnique({
+      where: { schedule_id: scheduleId },
+      select: { course_id: true },
+    });
+
+    if (!schedule) {
+      throw new BadRequestException(`Schedule not exist`);
+    }
+
+    const enrollmentCount = await this.prisma.enrollment.count({
+      where: { course_id: schedule.course_id },
+    });
+
+    if (enrollmentCount > 0) {
+      throw new BadRequestException(
+        action === 'update'
+          ? 'Cannot update schedule that has enrollments'
+          : 'Cannot delete schedule that has enrollments',
+      );
+    }
+  }
+
   async create(createScheduleDto: CreateScheduleDto) {
     const { start_slot, end_slot } = this.normalizeSlots(createScheduleDto);
     const classroom = await this.classroomService.findOne(
@@ -177,6 +221,8 @@ export class SchedulesService {
     if (!course) {
       throw new BadRequestException(`Course not exist`);
     }
+
+    await this.ensureCourseHasNoOtherSchedule(createScheduleDto.course_id);
 
     this.ensureRoomTypeMatches(course, classroom);
     this.ensureScheduleDatesWithinSemester(createScheduleDto, course);
@@ -253,6 +299,8 @@ export class SchedulesService {
   }
 
   async update(id: string, updateScheduleDto: UpdateScheduleDto) {
+    await this.ensureScheduleCourseHasNoEnrollments(id, 'update');
+
     const { start_slot, end_slot } = this.normalizeSlots(updateScheduleDto);
     const classroom = await this.classroomService.findOne(
       updateScheduleDto.classroom_id,
@@ -275,6 +323,11 @@ export class SchedulesService {
     if (!course) {
       throw new BadRequestException(`Course not exist`);
     }
+
+    await this.ensureCourseHasNoOtherSchedule(
+      updateScheduleDto.course_id,
+      id,
+    );
 
     this.ensureRoomTypeMatches(course, classroom);
     this.ensureScheduleDatesWithinSemester(updateScheduleDto, course);
@@ -328,7 +381,8 @@ export class SchedulesService {
     });
   }
 
-  remove(id: string) {
+  async remove(id: string) {
+    await this.ensureScheduleCourseHasNoEnrollments(id, 'delete');
     return this.prisma.schedule.delete({ where: { schedule_id: id } });
   }
 }

@@ -40,7 +40,9 @@ export class EnrollmentsController {
     @Request() req,
   ) {
     await this.ensureStudentCanAccess(req, createEnrollmentDto.student_id);
-    return this.enrollmentsService.create(createEnrollmentDto);
+    return this.enrollmentsService.create(createEnrollmentDto, {
+      allowInactiveSemester: req.user?.role === 'ministry',
+    });
   }
 
   @Roles('ministry')
@@ -91,6 +93,7 @@ export class EnrollmentsController {
     return this.enrollmentsService.remove({
       studentId: body.student_id,
       courseId: body.course_id,
+      allowInactiveSemester: req.user?.role === 'ministry',
     });
   }
 }

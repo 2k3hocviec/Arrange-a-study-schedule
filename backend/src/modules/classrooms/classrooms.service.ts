@@ -11,6 +11,34 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class ClassroomsService {
   constructor(private readonly prisma: PrismaService) {}
 
+  private hasScheduledClassroomProtectedChanges(
+    classroom: { capacity: number; type: string; status: string },
+    updateClassroomsDto: UpdateClassroomDto,
+  ) {
+    if (
+      updateClassroomsDto.capacity !== undefined &&
+      Number(updateClassroomsDto.capacity) !== classroom.capacity
+    ) {
+      return true;
+    }
+
+    if (
+      updateClassroomsDto.type !== undefined &&
+      updateClassroomsDto.type !== classroom.type
+    ) {
+      return true;
+    }
+
+    if (
+      updateClassroomsDto.status !== undefined &&
+      updateClassroomsDto.status !== classroom.status
+    ) {
+      return true;
+    }
+
+    return false;
+  }
+
   async create(createClassroomDto: CreateClassroomDto) {
     const classroom = await this.findOne(createClassroomDto.classroom_id);
 
@@ -36,6 +64,20 @@ export class ClassroomsService {
 
     if (!classroom) {
       throw new NotFoundException('classrooms not found');
+    }
+
+    const scheduleCount = await this.prisma.schedule.count({
+      where: { classroom_id: id },
+    });
+
+    if (
+      scheduleCount > 0 &&
+      this.hasScheduledClassroomProtectedChanges(
+        classroom,
+        updateclassroomsDto,
+      )
+    ) {
+      throw new BadRequestException('Cannot update classroom that has schedule');
     }
 
     return this.prisma.classroom.update({

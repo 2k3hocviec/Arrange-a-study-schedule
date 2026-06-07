@@ -79,7 +79,10 @@ export class EnrollmentsService {
     return null;
   }
 
-  async create(createEnrollmentDto: CreateEnrollmentDto) {
+  async create(
+    createEnrollmentDto: CreateEnrollmentDto,
+    options: { allowInactiveSemester?: boolean } = {},
+  ) {
     const student = await this.studentsService.findOneByStudentID(
       createEnrollmentDto.student_id,
     );
@@ -98,7 +101,7 @@ export class EnrollmentsService {
       );
     }
 
-    if (!course.semester?.is_active) {
+    if (!options.allowInactiveSemester && !course.semester?.is_active) {
       throw new BadRequestException(
         'This course is not in the active semester',
       );
@@ -207,8 +210,26 @@ export class EnrollmentsService {
     return `This action updates a #${id} enrollment`;
   }
 
-  async remove({ studentId, courseId }) {
+  async remove({
+    studentId,
+    courseId,
+    allowInactiveSemester = false,
+  }: {
+    studentId: string;
+    courseId: string;
+    allowInactiveSemester?: boolean;
+  }) {
     const course = await this.coursesService.findOneByCourseID(courseId);
+
+    if (!course) {
+      throw new BadRequestException(`Course with ID ${courseId} not exist`);
+    }
+
+    if (!allowInactiveSemester && !course.semester?.is_active) {
+      throw new BadRequestException(
+        'This course is not in the active semester',
+      );
+    }
 
     const result = await this.prisma.enrollment.deleteMany({
       where: {
