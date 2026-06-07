@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { coursesAPI, subjectsAPI, teachersAPI, semestersAPI } from "../services/api";
+import { useNavigate } from "react-router-dom";
+import { coursesAPI, subjectsAPI, teachersAPI, semestersAPI, schedulesAPI } from "../services/api";
 import toast from "react-hot-toast";
 import { MdMenuBook } from "react-icons/md";
-import { FiPlus, FiEdit2, FiTrash2 } from "react-icons/fi";
+import { FiCalendar, FiEdit2, FiPlus, FiSearch, FiTrash2 } from "react-icons/fi";
 
 const PAGE_SIZE = 10;
 
@@ -38,6 +39,10 @@ const getCourseErrorMessage = (err, action = "save") => {
     return "Sĩ số tối đa không được nhỏ hơn số sinh viên đã đăng ký.";
   }
 
+  if (lowerMessage.includes("cannot update course that has schedule")) {
+    return "Không thể cập nhật vì khóa học đã được xếp lịch.";
+  }
+
   if (
     lowerMessage.includes("cannot move course to this semester") ||
     lowerMessage.includes("outside the semester date range")
@@ -61,6 +66,7 @@ const getCourseErrorMessage = (err, action = "save") => {
 };
 
 const MinistryCourses = () => {
+  const navigate = useNavigate();
   const roomTypeOptions = [
     { value: "Theory", label: "Lý thuyết" },
     { value: "Practice", label: "Thực hành" },
@@ -70,9 +76,13 @@ const MinistryCourses = () => {
   const [subjects, setSubjects] = useState([]);
   const [semesters, setSemesters] = useState([]);
   const [courses, setCourses] = useState([]);
+  const [schedules, setSchedules] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [repair, setRepair] = useState(false);
   const [page, setPage] = useState(1);
+  const [keyword, setKeyword] = useState("");
+  const [selectedSemesterId, setSelectedSemesterId] = useState("");
+  const [scheduleFilter, setScheduleFilter] = useState("all");
 
   const [formData, setFormData] = useState({
     subject_id: "",
@@ -89,6 +99,15 @@ const MinistryCourses = () => {
       setPage(1);
     } catch (e) {
       toast.error("Không thể tải dữ liệu khóa học");
+    }
+  };
+
+  const fetchSchedules = async () => {
+    try {
+      const response = await schedulesAPI.getAll();
+      setSchedules(response.data);
+    } catch (e) {
+      toast.error("Không thể tải dữ liệu lịch học");
     }
   };
 
@@ -114,6 +133,9 @@ const MinistryCourses = () => {
     try {
       const response = await semestersAPI.getAll();
       setSemesters(response.data);
+      setSelectedSemesterId((current) =>
+        current || response.data.find((s) => s.is_active)?.semester_id || "",
+      );
     } catch (e) {
       toast.error("Không thể tải danh sách kỳ học");
     }
@@ -124,6 +146,7 @@ const MinistryCourses = () => {
     fetchTeachers();
     fetchSubjects();
     fetchSemesters();
+    fetchSchedules();
   }, []);
 
   const handleInputChange = (e) => {
@@ -160,6 +183,11 @@ const MinistryCourses = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (repair && scheduledCourseIds.has(formData.course_id)) {
+      toast.error("Không thể cập nhật vì khóa học đã được xếp lịch.");
+      return;
+    }
+
     try {
       if (repair) {
         await coursesAPI.update(formData.course_id, formData);
@@ -170,6 +198,7 @@ const MinistryCourses = () => {
       }
       setShowForm(false);
       fetchCourses();
+      fetchSchedules();
     } catch (err) {
       toast.error(getCourseErrorMessage(err));
     }
@@ -180,16 +209,58 @@ const MinistryCourses = () => {
       await coursesAPI.delete(id);
       toast.success("Xóa khóa học thành công!");
       fetchCourses();
+      fetchSchedules();
     } catch (err) {
       toast.error(getCourseErrorMessage(err, "delete"));
     }
   };
 
-  const activeCount = courses.filter((c) => c.status === "Active").length;
-  const inactiveCount = courses.filter((c) => c.status === "Inactive").length;
-  const totalPages = Math.max(1, Math.ceil(courses.length / PAGE_SIZE));
+  const scheduledCourseIds = new Set(schedules.map((s) => s.course_id));
+  const isScheduledRepair = repair && scheduledCourseIds.has(formData.course_id);
+  const filteredCourses = courses
+    .filter((course) =>
+      selectedSemesterId ? course.semester_id === selectedSemesterId : true,
+    )
+    .filter((course) => {
+      const hasSchedule = scheduledCourseIds.has(course.course_id);
+      if (scheduleFilter === "scheduled") return hasSchedule;
+      if (scheduleFilter === "unscheduled") return !hasSchedule;
+      if (scheduleFilter === "available") return (course.remaining_capacity ?? 0) > 0;
+      if (scheduleFilter === "full") return (course.remaining_capacity ?? 0) <= 0;
+      return true;
+    })
+    .filter((course) => {
+      const normalizedKeyword = keyword.trim().toLowerCase();
+      if (!normalizedKeyword) return true;
+      return [
+        course.course_code,
+        course.course_id,
+        course.subject_id,
+        course.subject?.name,
+        course.teacher_id,
+        course.teacher?.name,
+        course.semester?.name,
+        course.semester?.school_year,
+      ]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(normalizedKeyword));
+    })
+    .sort((a, b) => {
+      const aScheduled = scheduledCourseIds.has(a.course_id);
+      const bScheduled = scheduledCourseIds.has(b.course_id);
+      if (aScheduled !== bScheduled) return aScheduled ? 1 : -1;
+      const aActive = a.semester?.is_active ? 0 : 1;
+      const bActive = b.semester?.is_active ? 0 : 1;
+      if (aActive !== bActive) return aActive - bActive;
+      return String(a.course_code || a.course_id).localeCompare(
+        String(b.course_code || b.course_id),
+      );
+    });
+  const scheduledCount = courses.filter((c) => scheduledCourseIds.has(c.course_id)).length;
+  const unscheduledCount = Math.max(0, courses.length - scheduledCount);
+  const totalPages = Math.max(1, Math.ceil(filteredCourses.length / PAGE_SIZE));
   const safePage = Math.min(page, totalPages);
-  const pagedCourses = courses.slice(
+  const pagedCourses = filteredCourses.slice(
     (safePage - 1) * PAGE_SIZE,
     safePage * PAGE_SIZE,
   );
@@ -222,6 +293,16 @@ const MinistryCourses = () => {
           <div>
             <p style={statLabel}>Tổng số khóa học</p>
             <p style={statNumber}>{courses.length}</p>
+            <div style={miniStatRow}>
+              <span style={miniStat}>
+                <span style={miniStatDot("#22c55e")} />
+                <span style={miniStatText}>{scheduledCount} đã xếp lịch</span>
+              </span>
+              <span style={miniStat}>
+                <span style={miniStatDot("#f97316")} />
+                <span style={miniStatText}>{unscheduledCount} chưa xếp lịch</span>
+              </span>
+            </div>
           </div>
           <div style={bannerIconBg}>
             <MdMenuBook size={48} color="rgba(255,255,255,0.25)" />
@@ -253,7 +334,8 @@ const MinistryCourses = () => {
                     name="subject_id"
                     value={formData.subject_id}
                     onChange={handleInputChange}
-                    style={fieldInput}
+                    disabled={isScheduledRepair}
+                    style={isScheduledRepair ? disabledFieldInput : fieldInput}
                     required
                   >
                     <option value="">-- Chọn môn học --</option>
@@ -273,7 +355,8 @@ const MinistryCourses = () => {
                     name="teacher_id"
                     value={formData.teacher_id}
                     onChange={handleInputChange}
-                    style={fieldInput}
+                    disabled={isScheduledRepair}
+                    style={isScheduledRepair ? disabledFieldInput : fieldInput}
                     required
                   >
                     <option value="">-- Chọn giáo viên --</option>
@@ -293,7 +376,8 @@ const MinistryCourses = () => {
                     name="semester_id"
                     value={formData.semester_id}
                     onChange={handleInputChange}
-                    style={fieldInput}
+                    disabled={isScheduledRepair}
+                    style={isScheduledRepair ? disabledFieldInput : fieldInput}
                     required
                   >
                     <option value="">-- Chọn kỳ học --</option>
@@ -315,7 +399,8 @@ const MinistryCourses = () => {
                     name="capacity"
                     value={formData.capacity}
                     onChange={handleInputChange}
-                    style={fieldInput}
+                    disabled={isScheduledRepair}
+                    style={isScheduledRepair ? disabledFieldInput : fieldInput}
                     placeholder="Nhập số lượng sinh viên tối đa"
                     min="1"
                     required
@@ -329,7 +414,8 @@ const MinistryCourses = () => {
                     name="required_room_type"
                     value={formData.required_room_type}
                     onChange={handleInputChange}
-                    style={fieldInput}
+                    disabled={isScheduledRepair}
+                    style={isScheduledRepair ? disabledFieldInput : fieldInput}
                     required
                   >
                     {roomTypeOptions.map((type) => (
@@ -363,6 +449,12 @@ const MinistryCourses = () => {
                 </div>
               </div>
 
+              {isScheduledRepair && (
+                <div style={lockedNotice}>
+                  Khóa học đã được xếp lịch nên không thể chỉnh sửa thông tin.
+                </div>
+              )}
+
               {/* FOOTER */}
               <div style={modalFooter}>
                 <button
@@ -375,9 +467,11 @@ const MinistryCourses = () => {
 
                 <button
                   type="submit"
+                  disabled={isScheduledRepair}
                   style={{
                     ...submitBtn,
                     background: repair ? "#4f46e5" : "#16a34a",
+                    ...(isScheduledRepair ? disabledSubmitBtn : {}),
                   }}
                 >
                   {repair ? "Cập nhật dữ liệu" : "Lưu khóa học"}
@@ -392,6 +486,50 @@ const MinistryCourses = () => {
       <div style={tableCard}>
         <div style={tableHeader}>
           <h3 style={tableTitle}>Danh sách khóa học hiện tại</h3>
+          <div style={filterBar}>
+            <div style={searchWrap}>
+              <FiSearch size={15} color="#94a3b8" />
+              <input
+                value={keyword}
+                onChange={(e) => {
+                  setKeyword(e.target.value);
+                  setPage(1);
+                }}
+                placeholder="Tìm mã lớp, môn học, giảng viên..."
+                style={searchInput}
+              />
+            </div>
+            <select
+              value={selectedSemesterId}
+              onChange={(e) => {
+                setSelectedSemesterId(e.target.value);
+                setPage(1);
+              }}
+              style={filterSelect}
+            >
+              <option value="">Tất cả kỳ học</option>
+              {semesters.map((semester) => (
+                <option key={semester.semester_id} value={semester.semester_id}>
+                  {semester.name} {semester.school_year}
+                  {semester.is_active ? " - Hiện hành" : ""}
+                </option>
+              ))}
+            </select>
+            <select
+              value={scheduleFilter}
+              onChange={(e) => {
+                setScheduleFilter(e.target.value);
+                setPage(1);
+              }}
+              style={filterSelect}
+            >
+              <option value="all">Tất cả trạng thái</option>
+              <option value="unscheduled">Chưa xếp lịch</option>
+              <option value="scheduled">Đã xếp lịch</option>
+              <option value="available">Còn chỗ</option>
+              <option value="full">Hết chỗ</option>
+            </select>
+          </div>
         </div>
 
         <div style={{ overflowX: "auto" }}>
@@ -403,6 +541,7 @@ const MinistryCourses = () => {
                 <th style={th}>MÃ CODE</th>
                 <th style={th}>TÊN MÔN HỌC</th>
                 <th style={th}>KỲ HỌC</th>
+                <th style={th}>LỊCH</th>
                 <th style={th}>GIÁO VIÊN</th>
                 <th style={th}>TỐI ĐA</th>
                 <th style={th}>CÒN LẠI</th>
@@ -410,6 +549,13 @@ const MinistryCourses = () => {
               </tr>
             </thead>
             <tbody>
+              {pagedCourses.length === 0 && (
+                <tr>
+                  <td colSpan={10} style={emptyCell}>
+                    Không có khóa học phù hợp với bộ lọc hiện tại.
+                  </td>
+                </tr>
+              )}
               {pagedCourses.map((course, index) => {
                 const capacity = course.capacity || 0;
                 const remainingCapacity =
@@ -420,6 +566,7 @@ const MinistryCourses = () => {
                 const roomTypeLabel =
                   roomTypeOptions.find((type) => type.value === roomType)
                     ?.label || roomType;
+                const hasSchedule = scheduledCourseIds.has(course.course_id);
 
                 return (
                   <tr key={course.course_id} style={tbodyRow}>
@@ -454,6 +601,17 @@ const MinistryCourses = () => {
                         : course.semester_id || "-"}
                     </td>
                     <td style={td}>
+                      <span
+                        style={{
+                          ...scheduleBadge,
+                          background: hasSchedule ? "#dcfce7" : "#fff7ed",
+                          color: hasSchedule ? "#15803d" : "#c2410c",
+                        }}
+                      >
+                        {hasSchedule ? "Đã xếp lịch" : "Chưa xếp lịch"}
+                      </span>
+                    </td>
+                    <td style={td}>
                       {course.teacher?.name || course.teacher_id}
                     </td>
                     <td style={td}>
@@ -473,6 +631,21 @@ const MinistryCourses = () => {
                       </span>
                     </td>
                     <td style={{ ...td, whiteSpace: "nowrap" }}>
+                      {!hasSchedule && (
+                        <button
+                          onClick={() =>
+                            navigate("/ministry/schedule", {
+                              state: {
+                                courseId: course.course_id,
+                                semesterId: course.semester_id,
+                              },
+                            })
+                          }
+                          style={scheduleBtn}
+                        >
+                          <FiCalendar size={13} /> Xếp lịch
+                        </button>
+                      )}
                       <button
                         onClick={() => handleOpenFormUpdate(course)}
                         style={editBtn}
@@ -493,12 +666,12 @@ const MinistryCourses = () => {
           </table>
         </div>
 
-        {courses.length > 0 && (
+        {filteredCourses.length > 0 && (
           <div style={tableFooter}>
             <span style={{ color: "#94a3b8", fontSize: "13px" }}>
               Hiển thị {(safePage - 1) * PAGE_SIZE + 1}-
-              {Math.min(safePage * PAGE_SIZE, courses.length)} trên{" "}
-              {courses.length} khóa học
+              {Math.min(safePage * PAGE_SIZE, filteredCourses.length)} trên{" "}
+              {filteredCourses.length} khóa học
             </span>
             <div style={paginationControls}>
               <button
@@ -693,6 +866,22 @@ const fieldInput = {
   width: "100%",
   boxSizing: "border-box",
 };
+const disabledFieldInput = {
+  ...fieldInput,
+  background: "#f1f5f9",
+  cursor: "not-allowed",
+  color: "#94a3b8",
+};
+const lockedNotice = {
+  marginTop: "14px",
+  padding: "10px 12px",
+  border: "1px solid #fde68a",
+  borderRadius: "8px",
+  background: "#fffbeb",
+  color: "#92400e",
+  fontSize: "13px",
+  fontWeight: 600,
+};
 const submitBtn = {
   marginTop: "16px",
   padding: "10px 24px",
@@ -702,6 +891,11 @@ const submitBtn = {
   cursor: "pointer",
   fontWeight: 600,
   fontSize: "14px",
+};
+const disabledSubmitBtn = {
+  background: "#cbd5e1",
+  cursor: "not-allowed",
+  opacity: 0.75,
 };
 
 // Table
@@ -721,6 +915,38 @@ const tableTitle = {
   fontSize: "15px",
   fontWeight: 700,
   color: "#1e293b",
+};
+const filterBar = {
+  display: "grid",
+  gridTemplateColumns: "minmax(260px, 1fr) minmax(200px, 260px) minmax(180px, 220px)",
+  gap: "12px",
+  marginTop: "14px",
+};
+const searchWrap = {
+  display: "flex",
+  alignItems: "center",
+  gap: "8px",
+  padding: "9px 12px",
+  border: "1px solid #e2e8f0",
+  borderRadius: "8px",
+  background: "#f8fafc",
+};
+const searchInput = {
+  width: "100%",
+  border: "none",
+  outline: "none",
+  background: "transparent",
+  color: "#1e293b",
+  fontSize: "14px",
+};
+const filterSelect = {
+  padding: "9px 12px",
+  border: "1px solid #e2e8f0",
+  borderRadius: "8px",
+  background: "#fff",
+  color: "#1e293b",
+  fontSize: "14px",
+  outline: "none",
 };
 const table = {
   width: "100%",
@@ -765,6 +991,29 @@ const roomTypeBadge = {
   fontWeight: 700,
   textAlign: "center",
 };
+const scheduleBadge = {
+  display: "inline-block",
+  minWidth: "92px",
+  padding: "4px 10px",
+  borderRadius: "20px",
+  fontSize: "12px",
+  fontWeight: 700,
+  textAlign: "center",
+};
+const scheduleBtn = {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: "5px",
+  marginRight: "6px",
+  padding: "5px 12px",
+  background: "#dcfce7",
+  color: "#15803d",
+  border: "none",
+  borderRadius: "6px",
+  cursor: "pointer",
+  fontSize: "13px",
+  fontWeight: 600,
+};
 const editBtn = {
   display: "inline-flex",
   alignItems: "center",
@@ -778,6 +1027,12 @@ const editBtn = {
   cursor: "pointer",
   fontSize: "13px",
   fontWeight: 500,
+};
+const emptyCell = {
+  padding: "36px 16px",
+  textAlign: "center",
+  color: "#94a3b8",
+  fontSize: "14px",
 };
 const deleteBtn = {
   display: "inline-flex",

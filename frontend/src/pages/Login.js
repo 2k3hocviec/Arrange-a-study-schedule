@@ -75,8 +75,8 @@ const buttonStyle = {
 };
 
 const Login = () => {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("user@ptit.dkt");
+  const [password, setPassword] = useState("1");
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
 
@@ -123,6 +123,7 @@ const Login = () => {
                   type="text"
                   placeholder="Nhập email của bạn"
                   style={inputStyle}
+                  value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   onFocus={(e) => (e.target.style.borderColor = "#c0392b")}
                   onBlur={(e) => (e.target.style.borderColor = "#ddd")}
@@ -140,6 +141,7 @@ const Login = () => {
                   type="password"
                   placeholder="••••••••"
                   style={inputStyle}
+                  value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   onFocus={(e) => (e.target.style.borderColor = "#c0392b")}
                   onBlur={(e) => (e.target.style.borderColor = "#ddd")}

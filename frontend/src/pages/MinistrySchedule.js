@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { schedulesAPI, coursesAPI, roomsAPI, semestersAPI } from "../services/api";
 import toast from "react-hot-toast";
 import { IoCalendar, IoSaveOutline } from "react-icons/io5";
@@ -50,6 +51,14 @@ const getErrorMessage = (err) => {
     return "Ngày bắt đầu và ngày kết thúc phải nằm trong khoảng thời gian của kỳ học.";
   }
 
+  if (message.includes("Cannot update schedule that has enrollments")) {
+    return "Không thể cập nhật lịch vì khóa học đã có sinh viên ghi danh.";
+  }
+
+  if (message.includes("Cannot delete schedule that has enrollments")) {
+    return "Không thể xóa lịch vì khóa học đã có sinh viên ghi danh.";
+  }
+
   if (message.includes("does not match required room type")) {
     return "Loại phòng không phù hợp với loại phòng yêu cầu của học phần.";
   }
@@ -60,6 +69,10 @@ const getErrorMessage = (err) => {
 
   if (message.includes("Classroom capacity")) {
     return "Sức chứa phòng học nhỏ hơn sĩ số tối đa của học phần.";
+  }
+
+  if (message.includes("This course already has a schedule")) {
+    return "Khóa học này đã được xếp lịch.";
   }
 
   if (message.includes("already has schedule")) {
@@ -82,6 +95,7 @@ const getErrorMessage = (err) => {
 };
 
 const MinistrySchedule = () => {
+  const location = useLocation();
   const [schedules, setSchedules] = useState([]);
   const [courses, setCourses] = useState([]);
   const [semesters, setSemesters] = useState([]);
@@ -91,7 +105,7 @@ const MinistrySchedule = () => {
   const [page, setPage] = useState(1);
   const [formData, setFormData] = useState(EMPTY_FORM);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       const [resSchedules, resCourses, resRooms, resSemesters] = await Promise.all([
         schedulesAPI.getAll(),
@@ -103,17 +117,28 @@ const MinistrySchedule = () => {
       setCourses(resCourses.data);
       setRooms(resRooms.data);
       setSemesters(resSemesters.data);
+      const courseIdFromState = location.state?.courseId;
+      const semesterIdFromState = location.state?.semesterId;
       setSelectedSemesterId((current) =>
-        current || resSemesters.data.find((s) => s.is_active)?.semester_id || "",
+        current ||
+        semesterIdFromState ||
+        resSemesters.data.find((s) => s.is_active)?.semester_id ||
+        "",
       );
+      if (courseIdFromState) {
+        setFormData((current) => ({
+          ...current,
+          course_id: courseIdFromState,
+        }));
+      }
     } catch (e) {
       toast.error("Không thể tải dữ liệu lịch học");
     }
-  };
+  }, [location.state]);
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [fetchData]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -175,6 +200,12 @@ const MinistrySchedule = () => {
   const filteredSchedules = selectedSemesterId
     ? schedules.filter((s) => s.course?.semester_id === selectedSemesterId)
     : schedules;
+  const scheduledCourseIds = new Set(schedules.map((s) => s.course_id));
+  const schedulableCourses = filteredCourses.filter(
+    (course) =>
+      !scheduledCourseIds.has(course.course_id) ||
+      (repair && course.course_id === formData.course_id),
+  );
   const totalPages = Math.ceil(filteredSchedules.length / PAGE_SIZE);
   const paginated = filteredSchedules.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
   const uniqueCourses = new Set(filteredSchedules.map((s) => s.course_id)).size;
@@ -282,7 +313,7 @@ const MinistrySchedule = () => {
                 required
               >
                 <option value="">Chọn khóa học...</option>
-                {filteredCourses.map((c) => (
+                {schedulableCourses.map((c) => (
                   <option key={c.course_id} value={c.course_id}>
                     {`${c.course_code || c.course_id} - ${c.subject_id} - ${c.teacher_id}`}
                   </option>

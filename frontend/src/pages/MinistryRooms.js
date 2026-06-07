@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { roomsAPI } from "../services/api";
+import { roomsAPI, schedulesAPI } from "../services/api";
 import toast from "react-hot-toast";
 import {
   MdMeetingRoom,
@@ -20,6 +20,9 @@ const getRoomErrorMessage = (err, action = "save") => {
   if (lowerMessage.includes("cannot delete classroom that has schedules")) {
     return "Không thể xóa phòng vì đã có lịch học sử dụng phòng này.";
   }
+  if (lowerMessage.includes("cannot update classroom that has schedule")) {
+    return "Không thể cập nhật sức chứa, loại phòng hoặc trạng thái vì phòng đã được xếp lịch.";
+  }
   if (lowerMessage.includes("unique") || lowerMessage.includes("duplicate")) {
     return "Mã phòng đã tồn tại. Vui lòng kiểm tra lại.";
   }
@@ -29,6 +32,7 @@ const getRoomErrorMessage = (err, action = "save") => {
 
 const MinistryRooms = () => {
   const [rooms, setRooms] = useState([]);
+  const [schedules, setSchedules] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [repair, setRepair] = useState(false);
   const [page, setPage] = useState(1);
@@ -50,8 +54,18 @@ const MinistryRooms = () => {
     }
   };
 
+  const fetchSchedules = async () => {
+    try {
+      const response = await schedulesAPI.getAll();
+      setSchedules(response.data);
+    } catch (e) {
+      toast.error("Khong the tai du lieu lich hoc");
+    }
+  };
+
   useEffect(() => {
     fetchRooms();
+    fetchSchedules();
   }, []);
 
   const handleInputChange = (e) => {
@@ -92,6 +106,7 @@ const MinistryRooms = () => {
       }
       setShowForm(false);
       fetchRooms();
+      fetchSchedules();
     } catch (err) {
       toast.error(getRoomErrorMessage(err));
     }
@@ -102,6 +117,7 @@ const MinistryRooms = () => {
       await roomsAPI.delete(id);
       toast.success("Xóa phòng thành công!");
       fetchRooms();
+      fetchSchedules();
     } catch (err) {
       toast.error(getRoomErrorMessage(err, "delete"));
     }
@@ -109,6 +125,8 @@ const MinistryRooms = () => {
 
   const totalPages = Math.max(1, Math.ceil(rooms.length / PAGE_SIZE));
   const paginatedRooms = rooms.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const scheduledRoomIds = new Set(schedules.map((s) => s.classroom_id));
+  const isScheduledRepair = repair && scheduledRoomIds.has(formData.classroom_id);
   const readyRooms = rooms.filter((r) => r.status === "Ready").length;
   const maintenanceRooms = rooms.filter((r) => r.status !== "Ready").length;
 
@@ -215,7 +233,11 @@ const MinistryRooms = () => {
                     name="capacity"
                     value={formData.capacity}
                     onChange={handleInputChange}
-                    style={S.input}
+                    disabled={isScheduledRepair}
+                    style={{
+                      ...S.input,
+                      ...(isScheduledRepair ? S.inputDisabled : {}),
+                    }}
                     required
                   />
                 </div>
@@ -227,7 +249,11 @@ const MinistryRooms = () => {
                     name="type"
                     value={formData.type}
                     onChange={handleInputChange}
-                    style={S.input}
+                    disabled={isScheduledRepair}
+                    style={{
+                      ...S.input,
+                      ...(isScheduledRepair ? S.inputDisabled : {}),
+                    }}
                     required
                   >
                     <option value="">-- Chọn loại --</option>
@@ -256,7 +282,11 @@ const MinistryRooms = () => {
                     name="status"
                     value={formData.status}
                     onChange={handleInputChange}
-                    style={S.input}
+                    disabled={isScheduledRepair}
+                    style={{
+                      ...S.input,
+                      ...(isScheduledRepair ? S.inputDisabled : {}),
+                    }}
                     required
                   >
                     <option value="">-- Chọn trạng thái --</option>
@@ -265,6 +295,12 @@ const MinistryRooms = () => {
                   </select>
                 </div>
               </div>
+
+              {isScheduledRepair && (
+                <div style={S.lockedNotice}>
+                  Phòng đã được xếp lịch nên không thể đổi sức chứa, loại phòng hoặc trạng thái.
+                </div>
+              )}
 
               {/* FOOTER */}
               <div style={S.modalFooter}>
@@ -531,7 +567,21 @@ const S = {
     borderRadius: "8px",
     fontSize: "14px",
   },
-  inputDisabled: { background: "#f1f5f9", color: "#94a3b8" },
+  inputDisabled: {
+    background: "#f1f5f9",
+    color: "#94a3b8",
+    cursor: "not-allowed",
+  },
+  lockedNotice: {
+    marginTop: "14px",
+    padding: "10px 12px",
+    border: "1px solid #fde68a",
+    borderRadius: "8px",
+    background: "#fffbeb",
+    color: "#92400e",
+    fontSize: "13px",
+    fontWeight: 600,
+  },
   submitBtn: {
     marginTop: "20px",
     padding: "12px 28px",

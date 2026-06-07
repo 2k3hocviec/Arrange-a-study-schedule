@@ -457,6 +457,7 @@ const S = {
   statCard: {
     flex: "1 1 140px",
     background: "#fff",
+    padding: "12px 16px",
     borderRadius: 14,
     padding: "20px",
     display: "flex",
@@ -469,7 +470,7 @@ const S = {
     flex: "1 1 120px",
     background: "#fff",
     borderRadius: 14,
-    padding: "24px 16px",
+    padding: "16px 12px",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",

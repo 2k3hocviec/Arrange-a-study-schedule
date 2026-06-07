@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { enrollmentsAPI, studentsAPI, coursesAPI } from "../services/api";
+import { enrollmentsAPI, studentsAPI, coursesAPI, semestersAPI } from "../services/api";
 import toast from "react-hot-toast";
 import { FiPlus, FiTrash2 } from "react-icons/fi";
 
@@ -9,6 +9,8 @@ const MinistryEnrollments = () => {
   const [enrollments, setEnrollments] = useState([]);
   const [students, setStudents] = useState([]);
   const [courses, setCourses] = useState([]);
+  const [semesters, setSemesters] = useState([]);
+  const [selectedSemesterId, setSelectedSemesterId] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [page, setPage] = useState(1);
 
@@ -44,10 +46,23 @@ const MinistryEnrollments = () => {
     }
   };
 
+  const fetchSemesters = async () => {
+    try {
+      const response = await semestersAPI.getAll();
+      setSemesters(response.data);
+      setSelectedSemesterId((current) =>
+        current || response.data.find((s) => s.is_active)?.semester_id || "",
+      );
+    } catch (e) {
+      toast.error("Không thể tải danh sách kỳ học");
+    }
+  };
+
   useEffect(() => {
     fetchEnrollments();
     fetchStudents();
     fetchCourses();
+    fetchSemesters();
   }, []);
 
   const handleInputChange = (e) => {
@@ -95,8 +110,18 @@ const MinistryEnrollments = () => {
     }
   };
 
-  const totalPages = Math.ceil(enrollments.length / PAGE_SIZE);
-  const paginated = enrollments.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const courseById = new Map(courses.map((course) => [course.course_id, course]));
+  const filteredEnrollments = selectedSemesterId
+    ? enrollments.filter((enroll) => {
+        const course = courseById.get(enroll.course_id);
+        return course?.semester_id === selectedSemesterId;
+      })
+    : enrollments;
+  const filteredCourses = selectedSemesterId
+    ? courses.filter((course) => course.semester_id === selectedSemesterId)
+    : courses;
+  const totalPages = Math.ceil(filteredEnrollments.length / PAGE_SIZE);
+  const paginated = filteredEnrollments.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   return (
     <div style={pageWrapper}>
@@ -122,11 +147,11 @@ const MinistryEnrollments = () => {
           <div>
             <p style={statLabel}>Tổng số lượt đăng ký</p>
 
-            <p style={statNumber}>{enrollments.length}</p>
+            <p style={statNumber}>{filteredEnrollments.length}</p>
 
             <p style={statFootnote}>
-              Hệ thống hiện có {students.length} sinh viên và {courses.length}{" "}
-              khóa học
+              Hệ thống hiện có {students.length} sinh viên và {filteredCourses.length}{" "}
+              khóa học trong bộ lọc
             </p>
           </div>
 
@@ -134,6 +159,27 @@ const MinistryEnrollments = () => {
             <FiPlus size={50} color="rgba(255,255,255,0.25)" />
           </div>
         </div>
+      </div>
+
+      <div style={filterBar}>
+        <label style={filterLabel}>Kỳ học</label>
+        <select
+          value={selectedSemesterId}
+          onChange={(e) => {
+            setSelectedSemesterId(e.target.value);
+            setPage(1);
+            setFormData((current) => ({ ...current, course_id: "" }));
+          }}
+          style={fieldInput}
+        >
+          <option value="">Tất cả kỳ học</option>
+          {semesters.map((semester) => (
+            <option key={semester.semester_id} value={semester.semester_id}>
+              {semester.name} {semester.school_year}
+              {semester.is_active ? " - Hiện hành" : ""}
+            </option>
+          ))}
+        </select>
       </div>
 
       {/* MODAL FORM */}
@@ -182,9 +228,10 @@ const MinistryEnrollments = () => {
                   >
                     <option value="">-- Chọn khóa học --</option>
 
-                    {courses.map((c) => (
+                    {filteredCourses.map((c) => (
                       <option key={c.course_id} value={c.course_id}>
                         {c.course_code || c.course_id}
+                        {c.subject?.name ? ` - ${c.subject.name}` : ""}
                       </option>
                     ))}
                   </select>
@@ -464,6 +511,24 @@ const statBanner = {
   position: "relative",
   overflow: "hidden",
   boxShadow: "0 10px 30px rgba(79,70,229,0.18)",
+};
+
+const filterBar = {
+  display: "grid",
+  gridTemplateColumns: "120px minmax(220px, 360px)",
+  alignItems: "center",
+  gap: "12px",
+  background: "#fff",
+  border: "1px solid #e2e8f0",
+  borderRadius: "12px",
+  padding: "14px 18px",
+  marginBottom: "18px",
+};
+
+const filterLabel = {
+  fontSize: "13px",
+  fontWeight: 700,
+  color: "#475569",
 };
 
 const statBannerInner = {

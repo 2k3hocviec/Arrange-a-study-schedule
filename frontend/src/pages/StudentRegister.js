@@ -1,16 +1,22 @@
 import React, { useState, useEffect, useMemo } from "react";
 import toast from "react-hot-toast";
-import { REGISTRATION_OPEN } from "./studentData";
 import { coursesAPI, enrollmentsAPI, semestersAPI } from "../services/api";
 import ChatBox from "../components/ChatBox";
 
 // ─── helpers ───────────────────────────────────────────────────────────────
+const formatDateOnly = (value) => {
+  if (!value) return "";
+  const [year, month, day] = String(value).split("T")[0].split("-");
+  if (!year || !month || !day) return String(value);
+  return `${day}/${month}/${year}`;
+};
+
 const formatSchedules = (schedules) => {
   if (!Array.isArray(schedules) || schedules.length === 0) return "N/A";
   return schedules
     .map(
       (s) =>
-        `${s.dayOfWeek === 8 ? "Chủ nhật" : `Thứ ${s.dayOfWeek}`} (Tiết ${s.start_slot}-${s.end_slot}) [${s.start_date}=>${s.end_date}]`,
+        `${String(s.dayOfWeek) === "8" ? "Chủ nhật" : `Thứ ${s.dayOfWeek}`} (Tiết ${s.start_slot}-${s.end_slot}) [${formatDateOnly(s.start_date)} - ${formatDateOnly(s.end_date)}]`,
     )
     .join(", ");
 };
@@ -19,61 +25,46 @@ const getRegistrationErrorMessage = (err) => {
   const message = err?.response?.data?.message || err?.message || "";
 
   if (message.includes("has not yet been scheduled")) {
-    return "Kh\u00f4ng th\u1ec3 \u0111\u0103ng k\u00fd v\u00ec h\u1ecdc ph\u1ea7n n\u00e0y ch\u01b0a \u0111\u01b0\u1ee3c x\u1ebfp l\u1ecbch h\u1ecdc.";
+    return "Không thể đăng ký vì học phần này chưa được xếp lịch.";
+  }
+
+  if (message.includes("not in the active semester")) {
+    return "Không thể đăng ký vì học phần này không thuộc học kỳ hiện tại.";
   }
 
   if (message.includes("Conflict with course")) {
-    return "Kh\u00f4ng th\u1ec3 \u0111\u0103ng k\u00fd v\u00ec l\u1ecbch h\u1ecdc b\u1ecb tr\u00f9ng v\u1edbi h\u1ecdc ph\u1ea7n b\u1ea1n \u0111\u00e3 \u0111\u0103ng k\u00fd.";
+    return "Không thể đăng ký vì lịch học của học phần này bị trùng với học phần bạn đã đăng ký.";
   }
 
   if (message.includes("fully booked")) {
-    return "Kh\u00f4ng th\u1ec3 \u0111\u0103ng k\u00fd v\u00ec l\u1edbp h\u1ecdc ph\u1ea7n \u0111\u00e3 h\u1ebft ch\u1ed7.";
+    return "Không thể đăng ký vì lớp học phần đã đủ số lượng sinh viên.";
   }
 
   if (message.includes("already been registered")) {
-    return "B\u1ea1n \u0111\u00e3 \u0111\u0103ng k\u00fd l\u1edbp h\u1ecdc ph\u1ea7n n\u00e0y r\u1ed3i.";
+    return "Bạn đã đăng ký học phần này trước đó.";
   }
 
   if (message.includes("subject has been")) {
-    return "B\u1ea1n \u0111\u00e3 \u0111\u0103ng k\u00fd m\u1ed9t l\u1edbp kh\u00e1c c\u1ee7a c\u00f9ng m\u00f4n h\u1ecdc n\u00e0y.";
+    return "Bạn đã đăng ký một lớp học phần khác của cùng môn học này.";
   }
 
   if (message.includes("Over max 18 credit")) {
-    return "Kh\u00f4ng th\u1ec3 \u0111\u0103ng k\u00fd v\u00ec t\u1ed5ng s\u1ed1 t\u00edn ch\u1ec9 v\u01b0\u1ee3t qu\u00e1 18.";
+    return "Không thể đăng ký vì tổng số tín chỉ vượt quá giới hạn 18 tín chỉ.";
   }
 
   if (message.includes("Student with ID")) {
-    return "Kh\u00f4ng th\u1ec3 \u0111\u0103ng k\u00fd v\u00ec kh\u00f4ng t\u00ecm th\u1ea5y th\u00f4ng tin sinh vi\u00ean.";
+    return "Không tìm thấy thông tin sinh viên.";
   }
 
   if (message.includes("Course with ID")) {
-    return "Kh\u00f4ng th\u1ec3 \u0111\u0103ng k\u00fd v\u00ec kh\u00f4ng t\u00ecm th\u1ea5y l\u1edbp h\u1ecdc ph\u1ea7n.";
+    return "Không tìm thấy thông tin lớp học phần.";
   }
 
   if (message.includes("only access your own enrollment")) {
-    return "B\u1ea1n ch\u1ec9 c\u00f3 th\u1ec3 \u0111\u0103ng k\u00fd h\u1ecdc ph\u1ea7n cho ch\u00ednh t\u00e0i kho\u1ea3n sinh vi\u00ean c\u1ee7a m\u00ecnh.";
+    return "Bạn chỉ được phép đăng ký học phần cho chính tài khoản sinh viên của mình.";
   }
 
-  return "\u0110\u0103ng k\u00fd th\u1ea5t b\u1ea1i. Vui l\u00f2ng ki\u1ec3m tra l\u1ea1i \u0111i\u1ec1u ki\u1ec7n \u0111\u0103ng k\u00fd.";
-};
-
-// ─── countdown helper ───────────────────────────────────────────────────────
-const useCountdown = (targetDate) => {
-  const calc = () => {
-    const diff = new Date(targetDate) - Date.now();
-    if (diff <= 0) return { days: 0, hours: 0, mins: 0 };
-    return {
-      days: Math.floor(diff / 86400000),
-      hours: Math.floor((diff % 86400000) / 3600000),
-      mins: Math.floor((diff % 3600000) / 60000),
-    };
-  };
-  const [time, setTime] = useState(calc);
-  useEffect(() => {
-    const id = setInterval(() => setTime(calc()), 60000);
-    return () => clearInterval(id);
-  });
-  return time;
+  return "Đăng ký học phần không thành công. Vui lòng kiểm tra lại các điều kiện đăng ký.";
 };
 
 // ─── styles ─────────────────────────────────────────────────────────────────
@@ -407,12 +398,7 @@ const StudentRegister = ({
   const [enrollingCourseId, setEnrollingCourseId] = useState(null);
   const [page, setPage] = useState(1);
 
-  // countdown to a mock deadline (replace with real date)
-  const deadline = useMemo(
-    () => new Date(Date.now() + 3 * 86400000 + 14 * 3600000),
-    [],
-  );
-  const { days, hours, mins } = useCountdown(deadline);
+  const isRegistrationOpen = Boolean(activeSemester);
 
   // filter + pagination
   const filteredCourses = useMemo(() => {
@@ -480,8 +466,8 @@ const StudentRegister = ({
   }, [studentInfo, setRegisteredIds]);
 
   const registerCourse = async (course) => {
-    if (!REGISTRATION_OPEN)
-      return toast.error("Hiện chưa trong thời gian mở đăng ký.");
+    if (!isRegistrationOpen)
+      return toast.error("Hiện chưa có kỳ học hiện hành để đăng ký.");
     if (!studentInfo?.student_id)
       return toast.error("Không thể lấy thông tin sinh viên.");
     try {
@@ -509,8 +495,8 @@ const StudentRegister = ({
       setRegisteredIds(registeredIds.filter((id) => id !== course.course_id));
       toast.success(`Đã hủy ${course.subject?.name || "môn học"}`);
       await refreshCourses();
-    } catch {
-      toast.error("Hủy đăng ký thất bại. Vui lòng thử lại.");
+    } catch (err) {
+      toast.error(getRegistrationErrorMessage(err));
     }
   };
 
@@ -545,7 +531,7 @@ const StudentRegister = ({
         >
           <span style={S.heroBadge}>
             <span style={S.heroDot} />
-            Trạng thái đăng ký: {REGISTRATION_OPEN ? "Đang mở" : "Đã đóng"}
+            Trạng thái đăng ký: {isRegistrationOpen ? "Đang mở" : "Đã đóng"}
           </span>
         </div>
       </div>
@@ -713,6 +699,10 @@ const StudentRegister = ({
                             onClick={() => cancelCourse(course)}
                           >
                             Hủy
+                          </button>
+                        ) : !isRegistrationOpen ? (
+                          <button style={S.btnFull} disabled>
+                            Đã đóng
                           </button>
                         ) : isFull ? (
                           <button style={S.btnFull} disabled>
