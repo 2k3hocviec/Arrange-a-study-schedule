@@ -100,9 +100,17 @@ const MinistrySubjects = () => {
     setShowForm(true);
   };
 
-  const handleDeleteSubject = async (id) => {
+  const handleDeleteSubject = async (subject) => {
+    if (
+      !window.confirm(
+        `Bạn có chắc muốn xóa môn học ${subject.subject_id} - ${subject.name}?`,
+      )
+    ) {
+      return;
+    }
+
     try {
-      await subjectsAPI.delete(id);
+      await subjectsAPI.delete(subject.subject_id);
       await fetchSubjects();
       toast.success("Xóa môn học thành công!");
     } catch (err) {
@@ -293,7 +301,7 @@ const MinistrySubjects = () => {
                       <FiEdit2 size={13} /> Sửa
                     </button>
                     <button
-                      onClick={() => handleDeleteSubject(subject.subject_id)}
+                      onClick={() => handleDeleteSubject(subject)}
                       style={deleteBtn}
                     >
                       <FiTrash2 size={13} /> Xóa

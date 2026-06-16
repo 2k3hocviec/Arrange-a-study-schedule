@@ -112,9 +112,13 @@ const MinistryRooms = () => {
     }
   };
 
-  const handleDeleteRoom = async (id) => {
+  const handleDeleteRoom = async (room) => {
+    if (!window.confirm(`Bạn có chắc muốn xóa phòng học ${room.classroom_id}?`)) {
+      return;
+    }
+
     try {
-      await roomsAPI.delete(id);
+      await roomsAPI.delete(room.classroom_id);
       toast.success("Xóa phòng thành công!");
       fetchRooms();
       fetchSchedules();
@@ -378,7 +382,7 @@ const MinistryRooms = () => {
                       </button>
                       <button
                         style={S.deleteBtn}
-                        onClick={() => handleDeleteRoom(room.classroom_id)}
+                        onClick={() => handleDeleteRoom(room)}
                       >
                         <MdDelete size={16} />
                       </button>

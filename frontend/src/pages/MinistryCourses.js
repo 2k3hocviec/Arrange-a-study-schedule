@@ -204,9 +204,17 @@ const MinistryCourses = () => {
     }
   };
 
-  const handleDeleteCourse = async (id) => {
+  const handleDeleteCourse = async (course) => {
+    if (
+      !window.confirm(
+        `Bạn có chắc muốn xóa khóa học ${course.course_code || course.course_id}?`,
+      )
+    ) {
+      return;
+    }
+
     try {
-      await coursesAPI.delete(id);
+      await coursesAPI.delete(course.course_id);
       toast.success("Xóa khóa học thành công!");
       fetchCourses();
       fetchSchedules();
@@ -653,7 +661,7 @@ const MinistryCourses = () => {
                         <FiEdit2 size={13} /> Sửa
                       </button>
                       <button
-                        onClick={() => handleDeleteCourse(course.course_id)}
+                        onClick={() => handleDeleteCourse(course)}
                         style={deleteBtn}
                       >
                         <FiTrash2 size={13} /> Xóa

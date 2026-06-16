@@ -167,9 +167,17 @@ const MinistrySemesters = () => {
     }
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (semester) => {
+    if (
+      !window.confirm(
+        `Bạn có chắc muốn xóa kỳ học ${semester.name} ${semester.school_year}?`,
+      )
+    ) {
+      return;
+    }
+
     try {
-      await semestersAPI.delete(id);
+      await semestersAPI.delete(semester.semester_id);
       toast.success("Đã xóa kỳ học");
       fetchSemesters();
     } catch (err) {
@@ -329,7 +337,7 @@ const MinistrySemesters = () => {
                     <button
                       type="button"
                       style={S.deleteBtn}
-                      onClick={() => handleDelete(semester.semester_id)}
+                      onClick={() => handleDelete(semester)}
                     >
                       <FiTrash2 size={13} /> Xóa
                     </button>
