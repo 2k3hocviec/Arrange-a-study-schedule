@@ -21,12 +21,26 @@ model User {
   @@map("user")
 }
 
+model StudentClass {
+  class_id String @id
+  name     String
+  cohort   String
+  major    String
+  capacity Int?
+
+  students Student[]
+
+  @@map("student_class")
+}
+
 model Student {
   student_id String @id
   name       String
   user_id    Int    @unique
+  class_id   String @default("DEFAULT")
 
   user        User         @relation(fields: [user_id], references: [id])
+  class       StudentClass @relation(fields: [class_id], references: [class_id])
   enrollments Enrollment[]
 
   @@map("student")
@@ -39,10 +53,28 @@ model Teacher {
   degree     String
   expertise  String
 
-  user   User     @relation(fields: [user_id], references: [id])
-  course Course[]
+  user          User                  @relation(fields: [user_id], references: [id])
+  course        Course[]
+  busySchedules TeacherBusySchedule[]
 
   @@map("teacher")
+}
+
+model TeacherBusySchedule {
+  busy_id    String   @id @default(uuid())
+  teacher_id String
+  busy_date  DateTime @db.Date
+  start_slot Int      @default(1)
+  end_slot   Int      @default(10)
+  reason     String?
+  status     String   @default("pending")
+  reviewedBy Int?
+  reject_reason String?
+
+  teacher Teacher @relation(fields: [teacher_id], references: [teacher_id])
+
+  @@unique([teacher_id, busy_date, start_slot, end_slot])
+  @@map("teacher_busy_schedule")
 }
 
 model Subject {

@@ -4,6 +4,7 @@ import { UpdateScheduleDto } from './dto/update-schedule.dto';
 import { CoursesService } from '../courses/courses.service';
 import { ClassroomsService } from '../classrooms/classrooms.service';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { TeacherBusySchedulesService } from '../teacher-busy-schedules/teacher-busy-schedules.service';
 
 const READY_CLASSROOM_STATUS = 'Ready';
 
@@ -13,6 +14,7 @@ export class SchedulesService {
     private readonly prisma: PrismaService,
     private readonly courseService: CoursesService,
     private readonly classroomService: ClassroomsService,
+    private readonly teacherBusySchedulesService: TeacherBusySchedulesService,
   ) {}
 
   private ensureRoomTypeMatches(
@@ -154,6 +156,31 @@ export class SchedulesService {
     });
   }
 
+  private async checkTeacherBusyConflict(
+    dto: CreateScheduleDto | UpdateScheduleDto,
+    course: {
+      teacher_id: string;
+      semester?: { start_date: Date; end_date: Date } | null;
+    },
+  ) {
+    const scheduleStart = dto.start_date
+      ? new Date(dto.start_date)
+      : course.semester?.start_date;
+    const scheduleEnd = dto.end_date
+      ? new Date(dto.end_date)
+      : course.semester?.end_date;
+    const { start_slot, end_slot } = this.normalizeSlots(dto);
+
+    return this.teacherBusySchedulesService.findConflictForSchedule({
+      teacherId: course.teacher_id,
+      dayOfWeek: String(dto.dayOfWeek),
+      startSlot: start_slot,
+      endSlot: end_slot,
+      startDate: scheduleStart,
+      endDate: scheduleEnd,
+    });
+  }
+
   private async ensureCourseHasNoOtherSchedule(
     courseId: string,
     excludeScheduleId?: string,
@@ -249,6 +276,16 @@ export class SchedulesService {
     if (teacherConflict) {
       throw new BadRequestException(
         `Teacher already has schedule on ${createScheduleDto.dayOfWeek} at this time`,
+      );
+    }
+
+    const teacherBusyConflict = await this.checkTeacherBusyConflict(
+      createScheduleDto,
+      course,
+    );
+    if (teacherBusyConflict) {
+      throw new BadRequestException(
+        `Teacher has an approved busy request on ${teacherBusyConflict.busy_date.toISOString().slice(0, 10)} from slot ${teacherBusyConflict.start_slot} to ${teacherBusyConflict.end_slot}`,
       );
     }
 
@@ -358,6 +395,16 @@ export class SchedulesService {
     if (teacherConflict) {
       throw new BadRequestException(
         `Teacher already has schedule on ${updateScheduleDto.dayOfWeek} at this time`,
+      );
+    }
+
+    const teacherBusyConflict = await this.checkTeacherBusyConflict(
+      updateScheduleDto,
+      course,
+    );
+    if (teacherBusyConflict) {
+      throw new BadRequestException(
+        `Teacher has an approved busy request on ${teacherBusyConflict.busy_date.toISOString().slice(0, 10)} from slot ${teacherBusyConflict.start_slot} to ${teacherBusyConflict.end_slot}`,
       );
     }
 

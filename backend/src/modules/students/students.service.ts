@@ -15,6 +15,40 @@ export class StudentsService {
     private readonly userService: UsersService,
   ) {}
 
+  private async ensureClassCanAcceptStudent(
+    classId: string,
+    currentStudentId?: string,
+  ) {
+    if (!classId) {
+      throw new BadRequestException('Student class is required');
+    }
+
+    const studentClass = await this.prisma.studentClass.findUnique({
+      where: { class_id: classId },
+      include: { _count: { select: { students: true } } },
+    });
+
+    if (!studentClass) {
+      throw new BadRequestException('Student class not found');
+    }
+
+    if (studentClass.capacity === null || studentClass.capacity === undefined) {
+      return;
+    }
+
+    const currentStudent = currentStudentId
+      ? await this.prisma.student.findUnique({
+          where: { student_id: currentStudentId },
+          select: { class_id: true },
+        })
+      : null;
+
+    const alreadyInClass = currentStudent?.class_id === classId;
+    if (!alreadyInClass && studentClass._count.students >= studentClass.capacity) {
+      throw new BadRequestException('Student class is full');
+    }
+  }
+
   async create(createStudentDto: CreateStudentDto) {
     const user = await this.userService.findOne(createStudentDto.user_id);
     if (!user) {
@@ -32,6 +66,8 @@ export class StudentsService {
       throw new BadRequestException('This user is not a student');
     }
 
+    await this.ensureClassCanAcceptStudent(createStudentDto.class_id);
+
     return this.prisma.student.create({ data: createStudentDto });
   }
 
@@ -44,12 +80,16 @@ export class StudentsService {
             email: true,
           },
         },
+        class: true,
       },
     });
   }
 
   findOneByStudentID(studentId: string) {
-    return this.prisma.student.findUnique({ where: { student_id: studentId } });
+    return this.prisma.student.findUnique({
+      where: { student_id: studentId },
+      include: { class: true },
+    });
   }
 
   async update(id: string, updateStudentDto: UpdateStudentDto) {
@@ -66,6 +106,8 @@ export class StudentsService {
     if (!student) {
       throw new NotFoundException('Student not found');
     }
+
+    await this.ensureClassCanAcceptStudent(updateStudentDto.class_id, id);
 
     return this.prisma.student.update({
       where: { student_id: id },
@@ -94,6 +136,7 @@ export class StudentsService {
   async findByUserId(userId: number) {
     const student = await this.prisma.student.findUnique({
       where: { user_id: userId },
+      include: { class: true },
     });
     if (!student) {
       throw new NotFoundException('Student not found for this user');

@@ -17,6 +17,8 @@ import { RoleGuard } from './guard/role.guard';
 import { ChatbotModule } from './chatbot/chatbot.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { SemestersModule } from './modules/semesters/semesters.module';
+import { TeacherBusySchedulesModule } from './modules/teacher-busy-schedules/teacher-busy-schedules.module';
+import { StudentClassesModule } from './modules/student-classes/student-classes.module';
 
 @Module({
   imports: [
@@ -34,6 +36,8 @@ import { SemestersModule } from './modules/semesters/semesters.module';
     SchedulesModule,
     EnrollmentsModule,
     SemestersModule,
+    TeacherBusySchedulesModule,
+    StudentClassesModule,
     AuthModule,
     ChatbotModule,
   ],

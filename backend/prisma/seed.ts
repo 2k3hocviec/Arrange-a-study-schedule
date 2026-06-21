@@ -862,6 +862,23 @@ async function main() {
 
   for (const [index, user] of seededStudentUsers.entries()) {
     const profile = studentProfiles[index];
+    await prisma.studentClass.upsert({
+      where: { class_id: 'DEFAULT' },
+      update: {
+        name: 'Lớp mặc định',
+        cohort: 'N/A',
+        major: 'N/A',
+        capacity: null,
+      },
+      create: {
+        class_id: 'DEFAULT',
+        name: 'Lớp mặc định',
+        cohort: 'N/A',
+        major: 'N/A',
+        capacity: null,
+      },
+    });
+
     const existingStudent = await prisma.student.findUnique({
       where: { user_id: user.id },
     });
@@ -869,7 +886,7 @@ async function main() {
     if (existingStudent) {
       await prisma.student.update({
         where: { student_id: existingStudent.student_id },
-        data: { name: profile.name },
+        data: { name: profile.name, class_id: 'DEFAULT' },
       });
       continue;
     }
@@ -879,11 +896,13 @@ async function main() {
       update: {
         user_id: user.id,
         name: profile.name,
+        class_id: 'DEFAULT',
       },
       create: {
         student_id: profile.student_id,
         user_id: user.id,
         name: profile.name,
+        class_id: 'DEFAULT',
       },
     });
   }
