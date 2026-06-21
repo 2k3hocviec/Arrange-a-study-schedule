@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   coursesAPI,
@@ -32,11 +32,11 @@ const getCourseErrorMessage = (err, action = "save") => {
     lowerMessage.includes("p2002") ||
     lowerMessage.includes("course_code")
   ) {
-    return "MÃ£ lá»›p há»c pháº§n Ä‘Ã£ tá»“n táº¡i. Vui lÃ²ng kiá»ƒm tra láº¡i mÃ£ khÃ³a há»c.";
+    return "Mã lớp học phần đã tồn tại. Vui lòng kiểm tra lại mã khóa học.";
   }
 
   if (lowerMessage.includes("required room type")) {
-    return "Vui lÃ²ng chá»n loáº¡i phÃ²ng yÃªu cáº§u.";
+    return "Vui lòng chọn loại phòng yêu cầu.";
   }
 
   if (
@@ -44,48 +44,52 @@ const getCourseErrorMessage = (err, action = "save") => {
     lowerMessage.includes("not subject") ||
     lowerMessage.includes("not semester")
   ) {
-    return "GiÃ¡o viÃªn, mÃ´n há»c hoáº·c ká»³ há»c khÃ´ng tá»“n táº¡i. Vui lÃ²ng kiá»ƒm tra láº¡i.";
+    return "Giáo viên, môn học hoặc kỳ học không tồn tại. Vui lòng kiểm tra lại.";
   }
 
-  if (lowerMessage.includes("teacher department does not match subject major department")) {
+  if (
+    lowerMessage.includes(
+      "teacher department does not match subject major department",
+    )
+  ) {
     return "Giáo viên không thuộc khoa của chuyên ngành môn học. Vui lòng chọn giáo viên phù hợp.";
   }
 
   if (lowerMessage.includes("capacity must be at least")) {
-    return "SÄ© sá»‘ tá»‘i Ä‘a khÃ´ng Ä‘Æ°á»£c nhá» hÆ¡n sá»‘ sinh viÃªn Ä‘Ã£ Ä‘Äƒng kÃ½.";
+    return "Sĩ số tối đa không được nhỏ hơn số sinh viên đã đăng ký.";
   }
 
   if (lowerMessage.includes("cannot update course that has schedule")) {
-    return "KhÃ´ng thá»ƒ cáº­p nháº­t vÃ¬ khÃ³a há»c Ä‘Ã£ Ä‘Æ°á»£c xáº¿p lá»‹ch.";
+    return "Không thể cập nhật vì khóa học đã được xếp lịch.";
   }
 
   if (
     lowerMessage.includes("cannot move course to this semester") ||
     lowerMessage.includes("outside the semester date range")
   ) {
-    return "KhÃ´ng thá»ƒ chuyá»ƒn khÃ³a há»c sang ká»³ nÃ y vÃ¬ Ä‘Ã£ cÃ³ lá»‹ch há»c náº±m ngoÃ i khoáº£ng thá»i gian cá»§a ká»³ má»›i.";
+    return "Không thể chuyển khóa học sang kỳ này vì đã có lịch học nằm ngoài khoảng thời gian của kỳ mới.";
   }
 
   if (lowerMessage.includes("cannot delete course that has schedules")) {
-    return "KhÃ´ng thá»ƒ xÃ³a khÃ³a há»c vÃ¬ Ä‘Ã£ cÃ³ lá»‹ch há»c.";
+    return "Không thể xóa khóa học vì đã có lịch học.";
   }
 
   if (lowerMessage.includes("cannot delete course that has enrollments")) {
-    return "KhÃ´ng thá»ƒ xÃ³a khÃ³a há»c vÃ¬ Ä‘Ã£ cÃ³ sinh viÃªn Ä‘Äƒng kÃ½.";
+    return "Không thể xóa khóa học vì đã có sinh viên đăng ký.";
   }
 
   if (action === "delete") {
-    return "KhÃ´ng thá»ƒ xÃ³a khÃ³a há»c.";
+    return "Không thể xóa khóa học.";
   }
 
-  return "Thao tÃ¡c tháº¥t báº¡i. Vui lÃ²ng kiá»ƒm tra láº¡i dá»¯ liá»‡u.";
+  return "Thao tác thất bại. Vui lòng kiểm tra lại dữ liệu.";
 };
 
 const MinistryCourses = () => {
   const navigate = useNavigate();
   const roomTypeOptions = [
-    { value: "Theory", label: "LÃ½ thuyáº¿t" },
-    { value: "Practice", label: "Thá»±c hÃ nh" },
+    { value: "Theory", label: "Lý thuyết" },
+    { value: "Practice", label: "Thực hành" },
   ];
 
   const [teachers, setTeachers] = useState([]);
@@ -114,7 +118,7 @@ const MinistryCourses = () => {
       setCourses(response.data);
       setPage(1);
     } catch (e) {
-      toast.error("KhÃ´ng thá»ƒ táº£i dá»¯ liá»‡u khÃ³a há»c");
+      toast.error("Không thể tải dữ liệu khóa học");
     }
   };
 
@@ -123,7 +127,7 @@ const MinistryCourses = () => {
       const response = await schedulesAPI.getAll();
       setSchedules(response.data);
     } catch (e) {
-      toast.error("KhÃ´ng thá»ƒ táº£i dá»¯ liá»‡u lá»‹ch há»c");
+      toast.error("Không thể tải dữ liệu lịch học");
     }
   };
 
@@ -132,7 +136,7 @@ const MinistryCourses = () => {
       const response = await teachersAPI.getAllIds();
       setTeachers(response.data);
     } catch (e) {
-      toast.error("KhÃ´ng thá»ƒ táº£i danh sÃ¡ch giÃ¡o viÃªn");
+      toast.error("Không thể tải danh sách giáo viên");
     }
   };
 
@@ -141,7 +145,7 @@ const MinistryCourses = () => {
       const response = await subjectsAPI.getAllIds();
       setSubjects(response.data);
     } catch (e) {
-      toast.error("KhÃ´ng thá»ƒ táº£i danh sÃ¡ch mÃ´n há»c");
+      toast.error("Không thể tải danh sách môn học");
     }
   };
 
@@ -154,7 +158,7 @@ const MinistryCourses = () => {
           current || response.data.find((s) => s.is_active)?.semester_id || "",
       );
     } catch (e) {
-      toast.error("KhÃ´ng thá»ƒ táº£i danh sÃ¡ch ká»³ há»c");
+      toast.error("Không thể tải danh sách kỳ học");
     }
   };
 
@@ -202,7 +206,7 @@ const MinistryCourses = () => {
     e.preventDefault();
     if (repair && scheduledCourseIds.has(formData.course_id)) {
       toast.error(
-        "KhÃ´ng thá»ƒ cáº­p nháº­t vÃ¬ khÃ³a há»c Ä‘Ã£ Ä‘Æ°á»£c xáº¿p lá»‹ch.",
+        "Không thể cập nhật vì khóa học đã được xếp lịch.",
       );
       return;
     }
@@ -210,10 +214,10 @@ const MinistryCourses = () => {
     try {
       if (repair) {
         await coursesAPI.update(formData.course_id, formData);
-        toast.success("Cáº­p nháº­t khÃ³a há»c thÃ nh cÃ´ng!");
+        toast.success("Cập nhật khóa học thành công!");
       } else {
         await coursesAPI.create(formData);
-        toast.success("ThÃªm khÃ³a há»c thÃ nh cÃ´ng!");
+        toast.success("Thêm khóa học thành công!");
       }
       setShowForm(false);
       fetchCourses();
@@ -226,7 +230,7 @@ const MinistryCourses = () => {
   const handleDeleteCourse = async (course) => {
     if (
       !window.confirm(
-        `Báº¡n cÃ³ cháº¯c muá»‘n xÃ³a khÃ³a há»c ${course.course_code || course.course_id}?`,
+        `Bạn có chắc muốn xóa khóa học ${course.course_code || course.course_id}?`,
       )
     ) {
       return;
@@ -234,7 +238,7 @@ const MinistryCourses = () => {
 
     try {
       await coursesAPI.delete(course.course_id);
-      toast.success("XÃ³a khÃ³a há»c thÃ nh cÃ´ng!");
+      toast.success("Xóa khóa học thành công!");
       fetchCourses();
       fetchSchedules();
     } catch (err) {
@@ -313,20 +317,20 @@ const MinistryCourses = () => {
       {/* BREADCRUMB */}
       <div style={breadcrumb}>
         <span style={breadcrumbHome}>Dashboard</span>
-        <span style={breadcrumbSep}>â€º</span>
-        <span style={breadcrumbCurrent}>Quáº£n lÃ½ khÃ³a há»c</span>
+        <span style={breadcrumbSep}>/</span>
+        <span style={breadcrumbCurrent}>Quản lý khóa học</span>
       </div>
 
       {/* PAGE HEADER */}
       <div style={pageHeader}>
         <div style={pageHeaderLeft}>
           <div>
-            <h1 style={pageTitle}>QUáº¢N LÃ KHÃ“A Há»ŒC</h1>
+            <h1 style={pageTitle}>QUẢN LÝ KHÓA HỌC</h1>
           </div>
         </div>
         <button onClick={handleClickCreateCourse} style={addBtn}>
           <FiPlus size={16} />
-          {showForm ? "ÄÃ³ng Form" : "ThÃªm khÃ³a há»c má»›i"}
+          {showForm ? "Đóng Form" : "Thêm khóa học mới"}
         </button>
       </div>
 
@@ -334,19 +338,19 @@ const MinistryCourses = () => {
       <div style={statBanner}>
         <div style={statBannerInner}>
           <div>
-            <p style={statLabel}>Tá»•ng sá»‘ khÃ³a há»c</p>
+            <p style={statLabel}>Tổng số khóa học</p>
             <p style={statNumber}>{courses.length}</p>
             <div style={miniStatRow}>
               <span style={miniStat}>
                 <span style={miniStatDot("#22c55e")} />
                 <span style={miniStatText}>
-                  {scheduledCount} Ä‘Ã£ xáº¿p lá»‹ch
+                  {scheduledCount} đã xếp lịch
                 </span>
               </span>
               <span style={miniStat}>
                 <span style={miniStatDot("#f97316")} />
                 <span style={miniStatText}>
-                  {unscheduledCount} chÆ°a xáº¿p lá»‹ch
+                  {unscheduledCount} chưa xếp lịch
                 </span>
               </span>
             </div>
@@ -364,18 +368,18 @@ const MinistryCourses = () => {
             {/* HEADER */}
             <div style={modalHeader}>
               <h3 style={formTitle}>
-                {repair ? "Cáº­p nháº­t khÃ³a há»c" : "ThÃªm khÃ³a há»c má»›i"}
+                {repair ? "Cập nhật khóa học" : "Thêm khóa học mới"}
               </h3>
 
               <button onClick={() => setShowForm(false)} style={closeBtn}>
-                âœ•
+                ×
               </button>
             </div>
 
             <form onSubmit={handleSubmit}>
               <div style={formGrid}>
                 <div style={fieldGroup}>
-                  <label style={fieldLabel}>MÃ£ mÃ´n há»c</label>
+                  <label style={fieldLabel}>Mã môn học</label>
 
                   <select
                     name="subject_id"
@@ -385,7 +389,7 @@ const MinistryCourses = () => {
                     style={isScheduledRepair ? disabledFieldInput : fieldInput}
                     required
                   >
-                    <option value="">-- Chá»n mÃ´n há»c --</option>
+                    <option value="">-- Chọn môn học --</option>
 
                     {subjects.map((s) => (
                       <option key={s.subject_id} value={s.subject_id}>
@@ -396,7 +400,7 @@ const MinistryCourses = () => {
                 </div>
 
                 <div style={fieldGroup}>
-                  <label style={fieldLabel}>MÃ£ giÃ¡o viÃªn</label>
+                  <label style={fieldLabel}>Mã giáo viên</label>
 
                   <select
                     name="teacher_id"
@@ -406,7 +410,7 @@ const MinistryCourses = () => {
                     style={isScheduledRepair ? disabledFieldInput : fieldInput}
                     required
                   >
-                    <option value="">-- Chá»n giÃ¡o viÃªn --</option>
+                    <option value="">-- Chọn giáo viên --</option>
 
                     {availableTeachers.map((t) => (
                       <option key={t.teacher_id} value={t.teacher_id}>
@@ -417,7 +421,7 @@ const MinistryCourses = () => {
                 </div>
 
                 <div style={fieldGroup}>
-                  <label style={fieldLabel}>Ká»³ há»c</label>
+                  <label style={fieldLabel}>Kỳ học</label>
 
                   <select
                     name="semester_id"
@@ -427,7 +431,7 @@ const MinistryCourses = () => {
                     style={isScheduledRepair ? disabledFieldInput : fieldInput}
                     required
                   >
-                    <option value="">-- Chá»n ká»³ há»c --</option>
+                    <option value="">-- Chọn kỳ học --</option>
 
                     {semesters.map((semester) => (
                       <option
@@ -435,14 +439,14 @@ const MinistryCourses = () => {
                         value={semester.semester_id}
                       >
                         {semester.name} {semester.school_year}
-                        {semester.is_active ? " - Hiá»‡n hÃ nh" : ""}
+                        {semester.is_active ? " - Hiện hành" : ""}
                       </option>
                     ))}
                   </select>
                 </div>
 
                 <div style={fieldGroup}>
-                  <label style={fieldLabel}>Sá»‘ chá»— tá»‘i Ä‘a</label>
+                  <label style={fieldLabel}>Số chỗ tối đa</label>
 
                   <input
                     type="number"
@@ -451,14 +455,14 @@ const MinistryCourses = () => {
                     onChange={handleInputChange}
                     disabled={isScheduledRepair}
                     style={isScheduledRepair ? disabledFieldInput : fieldInput}
-                    placeholder="Nháº­p sá»‘ lÆ°á»£ng sinh viÃªn tá»‘i Ä‘a"
+                    placeholder="Nhập số lượng sinh viên tối đa"
                     min="1"
                     required
                   />
                 </div>
 
                 <div style={fieldGroup}>
-                  <label style={fieldLabel}>Loáº¡i phÃ²ng yÃªu cáº§u</label>
+                  <label style={fieldLabel}>Loại phòng yêu cầu</label>
 
                   <select
                     name="required_room_type"
@@ -477,7 +481,7 @@ const MinistryCourses = () => {
                 </div>
 
                 <div style={fieldGroup}>
-                  <label style={fieldLabel}>Chá»— cÃ²n láº¡i</label>
+                  <label style={fieldLabel}>Chỗ còn lại</label>
 
                   <input
                     type="text"
@@ -501,8 +505,7 @@ const MinistryCourses = () => {
 
               {isScheduledRepair && (
                 <div style={lockedNotice}>
-                  KhÃ³a há»c Ä‘Ã£ Ä‘Æ°á»£c xáº¿p lá»‹ch nÃªn khÃ´ng thá»ƒ
-                  chá»‰nh sá»­a thÃ´ng tin.
+                  Khóa học đã được xếp lịch nên không thể chỉnh sửa thông tin.
                 </div>
               )}
 
@@ -513,7 +516,7 @@ const MinistryCourses = () => {
                   onClick={() => setShowForm(false)}
                   style={cancelBtn}
                 >
-                  Há»§y
+                  Hủy
                 </button>
 
                 <button
@@ -525,7 +528,7 @@ const MinistryCourses = () => {
                     ...(isScheduledRepair ? disabledSubmitBtn : {}),
                   }}
                 >
-                  {repair ? "Cáº­p nháº­t dá»¯ liá»‡u" : "LÆ°u khÃ³a há»c"}
+                  {repair ? "Cập nhật dữ liệu" : "Lưu khóa học"}
                 </button>
               </div>
             </form>
@@ -536,7 +539,7 @@ const MinistryCourses = () => {
       {/* TABLE SECTION */}
       <div style={tableCard}>
         <div style={tableHeader}>
-          <h3 style={tableTitle}>Danh sÃ¡ch khÃ³a há»c hiá»‡n táº¡i</h3>
+          <h3 style={tableTitle}>Danh sách khóa học hiện tại</h3>
           <div style={filterBar}>
             <div style={searchWrap}>
               <FiSearch size={15} color="#94a3b8" />
@@ -546,7 +549,7 @@ const MinistryCourses = () => {
                   setKeyword(e.target.value);
                   setPage(1);
                 }}
-                placeholder="TÃ¬m mÃ£ lá»›p, mÃ´n há»c, giáº£ng viÃªn..."
+                placeholder="Tìm mã lớp, môn học, giảng viên..."
                 style={searchInput}
               />
             </div>
@@ -558,11 +561,11 @@ const MinistryCourses = () => {
               }}
               style={filterSelect}
             >
-              <option value="">Táº¥t cáº£ ká»³ há»c</option>
+              <option value="">Tất cả kỳ học</option>
               {semesters.map((semester) => (
                 <option key={semester.semester_id} value={semester.semester_id}>
                   {semester.name} {semester.school_year}
-                  {semester.is_active ? " - Hiá»‡n hÃ nh" : ""}
+                  {semester.is_active ? " - Hiện hành" : ""}
                 </option>
               ))}
             </select>
@@ -574,11 +577,11 @@ const MinistryCourses = () => {
               }}
               style={filterSelect}
             >
-              <option value="all">Táº¥t cáº£ tráº¡ng thÃ¡i</option>
-              <option value="unscheduled">ChÆ°a xáº¿p lá»‹ch</option>
-              <option value="scheduled">ÄÃ£ xáº¿p lá»‹ch</option>
-              <option value="available">CÃ²n chá»—</option>
-              <option value="full">Háº¿t chá»—</option>
+              <option value="all">Tất cả trạng thái</option>
+              <option value="unscheduled">Chưa xếp lịch</option>
+              <option value="scheduled">Đã xếp lịch</option>
+              <option value="available">Còn chỗ</option>
+              <option value="full">Hết chỗ</option>
             </select>
           </div>
         </div>
@@ -588,23 +591,22 @@ const MinistryCourses = () => {
             <thead>
               <tr style={theadRow}>
                 <th style={th}>STT</th>
-                <th style={th}>LOáº I PHÃ’NG</th>
-                <th style={th}>MÃƒ CODE</th>
-                <th style={th}>TÃŠN MÃ”N Há»ŒC</th>
-                <th style={th}>Ká»² Há»ŒC</th>
-                <th style={th}>Lá»ŠCH</th>
-                <th style={th}>GIÃO VIÃŠN</th>
-                <th style={th}>Tá»I ÄA</th>
-                <th style={th}>CÃ’N Láº I</th>
-                <th style={th}>THAO TÃC</th>
+                <th style={th}>LOẠI PHÒNG</th>
+                <th style={th}>MÃ CODE</th>
+                <th style={th}>TÊN MÔN HỌC</th>
+                <th style={th}>KỲ HỌC</th>
+                <th style={th}>LỊCH</th>
+                <th style={th}>GIÁO VIÊN</th>
+                <th style={th}>TỐI ĐA</th>
+                <th style={th}>CÒN LẠI</th>
+                <th style={th}>THAO TÁC</th>
               </tr>
             </thead>
             <tbody>
               {pagedCourses.length === 0 && (
                 <tr>
                   <td colSpan={10} style={emptyCell}>
-                    KhÃ´ng cÃ³ khÃ³a há»c phÃ¹ há»£p vá»›i bá»™ lá»c hiá»‡n
-                    táº¡i.
+                    Không có khóa học phù hợp với bộ lọc hiện tại.
                   </td>
                 </tr>
               )}
@@ -661,8 +663,8 @@ const MinistryCourses = () => {
                         }}
                       >
                         {hasSchedule
-                          ? "ÄÃ£ xáº¿p lá»‹ch"
-                          : "ChÆ°a xáº¿p lá»‹ch"}
+                          ? "Đã xếp lịch"
+                          : "Chưa xếp lịch"}
                       </span>
                     </td>
                     <td style={td}>
@@ -697,20 +699,20 @@ const MinistryCourses = () => {
                           }
                           style={scheduleBtn}
                         >
-                          <FiCalendar size={13} /> Xáº¿p lá»‹ch
+                          <FiCalendar size={13} /> Xếp lịch
                         </button>
                       )}
                       <button
                         onClick={() => handleOpenFormUpdate(course)}
                         style={editBtn}
                       >
-                        <FiEdit2 size={13} /> Sá»­a
+                        <FiEdit2 size={13} /> Sửa
                       </button>
                       <button
                         onClick={() => handleDeleteCourse(course)}
                         style={deleteBtn}
                       >
-                        <FiTrash2 size={13} /> XÃ³a
+                        <FiTrash2 size={13} /> Xóa
                       </button>
                     </td>
                   </tr>
@@ -723,9 +725,9 @@ const MinistryCourses = () => {
         {filteredCourses.length > 0 && (
           <div style={tableFooter}>
             <span style={{ color: "#94a3b8", fontSize: "13px" }}>
-              Hiá»ƒn thá»‹ {(safePage - 1) * PAGE_SIZE + 1}-
-              {Math.min(safePage * PAGE_SIZE, filteredCourses.length)} trÃªn{" "}
-              {filteredCourses.length} khÃ³a há»c
+              Hiển thị {(safePage - 1) * PAGE_SIZE + 1}-
+              {Math.min(safePage * PAGE_SIZE, filteredCourses.length)} trên{" "}
+              {filteredCourses.length} khóa học
             </span>
             <div style={paginationControls}>
               <button
@@ -736,7 +738,7 @@ const MinistryCourses = () => {
                 disabled={safePage === 1}
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
               >
-                â€¹
+                ‹
               </button>
               {Array.from({ length: totalPages }, (_, index) => {
                 const pageNumber = index + 1;
@@ -761,7 +763,7 @@ const MinistryCourses = () => {
                 disabled={safePage === totalPages}
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               >
-                â€º
+                ›
               </button>
             </div>
           </div>
@@ -770,8 +772,7 @@ const MinistryCourses = () => {
         {false && courses.length > 0 && (
           <div style={tableFooter}>
             <span style={{ color: "#94a3b8", fontSize: "13px" }}>
-              Hiá»ƒn thá»‹ 1â€“{courses.length} trÃªn {courses.length} khÃ³a
-              há»c
+              Hiển thị 1-{courses.length} trên {courses.length} khóa học
             </span>
           </div>
         )}
@@ -780,7 +781,7 @@ const MinistryCourses = () => {
   );
 };
 
-// â”€â”€â”€ STYLES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// STYLES
 
 const pageWrapper = {
   padding: "28px 32px",

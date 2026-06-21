@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { teachersAPI } from "../services/api";
+import { teacherBusySchedulesAPI, teachersAPI } from "../services/api";
 import toast from "react-hot-toast";
 import "../styles/TeacherSchedule.css";
 import {
@@ -62,9 +62,31 @@ const getWeekStart = (date) => {
 };
 
 const fmtDate = (d) => d?.toLocaleDateString("vi-VN");
+const dateKey = (value) => {
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "";
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+const getDateForDayIndex = (start, dayIndex) => {
+  const d = new Date(start);
+  d.setDate(d.getDate() + dayIndex);
+  return d;
+};
+
+const statusText = (status) => {
+  if (status === "approved") return "Đã duyệt";
+  if (status === "pending") return "Chờ duyệt";
+  if (status === "rejected") return "Từ chối";
+  return status || "-";
+};
 // COMPONENT ─────────────────────────────────────────────────
 const TeacherSchedule = ({ teacherInfo }) => {
   const [scheduleData, setScheduleData] = useState([]);
+  const [busyData, setBusyData] = useState([]);
   const [selectedClass, setSelectedClass] = useState(null);
   const [weekStart, setWeekStart] = useState(null);
 
@@ -97,13 +119,16 @@ const TeacherSchedule = ({ teacherInfo }) => {
 
   useEffect(() => {
     if (!teacherInfo?.teacher_id) return;
-    teachersAPI
-      .getSchedule(teacherInfo.teacher_id)
-      .then((res) => {
+    Promise.all([
+      teachersAPI.getSchedule(teacherInfo.teacher_id),
+      teacherBusySchedulesAPI.getMine(),
+    ])
+      .then(([scheduleRes, busyRes]) => {
         const formatted = [];
-        res.data?.course?.forEach((c) => {
+        scheduleRes.data?.course?.forEach((c) => {
           c.schedule?.forEach((sch) => {
             formatted.push({
+              type: "class",
               id: sch.schedule_id,
               day: sch.dayOfWeek,
               start_slot: sch.start_slot,
@@ -119,6 +144,20 @@ const TeacherSchedule = ({ teacherInfo }) => {
           });
         });
         setScheduleData(formatted);
+        setBusyData(
+          (busyRes.data || [])
+            .filter((item) => item.status === "pending" || item.status === "approved")
+            .map((item) => ({
+              type: "busy",
+              id: item.busy_id,
+              busy_date: item.busy_date,
+              busyDateKey: dateKey(item.busy_date),
+              start_slot: item.start_slot,
+              end_slot: item.end_slot,
+              reason: item.reason,
+              status: item.status,
+            })),
+        );
         setWeekStart(getWeekStart(new Date()));
       })
       .catch(() => toast.error("Không thể tải lịch giảng dạy!"));
@@ -128,14 +167,25 @@ const TeacherSchedule = ({ teacherInfo }) => {
     ? new Date(weekStart.getTime() + 6 * 86400000)
     : null;
 
-  const getSlotItem = (day, slot) =>
-    scheduleData.find(
+  const getSlotItem = (day, slot, dayIndex) => {
+    const classItem = scheduleData.find(
       (c) =>
         c.day === day &&
         c.start_slot <= slot &&
         c.end_slot >= slot &&
         isInWeek(c),
     );
+    if (classItem) return classItem;
+
+    if (!weekStart) return null;
+    const currentDateKey = dateKey(getDateForDayIndex(weekStart, dayIndex));
+    return busyData.find(
+      (item) =>
+        item.busyDateKey === currentDateKey &&
+        item.start_slot <= slot &&
+        item.end_slot >= slot,
+    );
+  };
 
   const todayDow = new Date().getDay();
   const todayEnum = todayDow === 0 ? "8" : String(todayDow + 1);
@@ -232,12 +282,34 @@ const TeacherSchedule = ({ teacherInfo }) => {
                     <span className="teacher-schedule__slot-time">{SLOT_TIMES[slot]}</span>
                   </td>
                   {DAY_ENUMS.map((de, idx) => {
-                    const item = getSlotItem(de, slot);
+                    const item = getSlotItem(de, slot, idx);
                     if (item) {
                       if (item.start_slot !== slot) {
                         return <td key={idx} className="teacher-schedule__td-empty" />;
                       }
                       const span = item.end_slot - item.start_slot + 1;
+                      if (item.type === "busy") {
+                        const approved = item.status === "approved";
+                        return (
+                          <td
+                            key={idx}
+                            className="teacher-schedule__td-class"
+                            onClick={() => setSelectedClass(item)}
+                          >
+                            <div
+                              className={`teacher-schedule__busy-block${approved ? " teacher-schedule__busy-block--approved" : ""}`}
+                              style={{ height: span * SLOT_ROW_HEIGHT - 8 }}
+                            >
+                              <div className="teacher-schedule__busy-title">
+                                {approved ? "Bận" : "Bận - chờ duyệt"}
+                              </div>
+                              <div className="teacher-schedule__busy-info">
+                                Tiết {item.start_slot}-{item.end_slot}
+                              </div>
+                            </div>
+                          </td>
+                        );
+                      }
                       const c = pal(paletteMap[item.courseId]);
                       return (
                         <td
@@ -275,7 +347,7 @@ const TeacherSchedule = ({ teacherInfo }) => {
       </div>
 
       {/* ── Legend ── */}
-      {scheduleData.length > 0 && (
+      {(scheduleData.length > 0 || busyData.length > 0) && (
         <div className="teacher-schedule__legend">
           {[...new Map(scheduleData.map((s) => [s.courseId, s])).values()].map(
             (s) => {
@@ -290,10 +362,16 @@ const TeacherSchedule = ({ teacherInfo }) => {
               );
             },
           )}
+          {busyData.length > 0 && (
+            <div className="teacher-schedule__legend-item">
+              <span className="teacher-schedule__legend-dot teacher-schedule__legend-dot--busy" />
+              <span className="teacher-schedule__legend-text">Lịch bận</span>
+            </div>
+          )}
         </div>
       )}
 
-      {scheduleData.length === 0 && (
+      {scheduleData.length === 0 && busyData.length === 0 && (
         <div className="teacher-schedule__empty">
           <FaCalendarAlt
             size={40}
@@ -320,7 +398,19 @@ const TeacherSchedule = ({ teacherInfo }) => {
               </button>
             </div>
             <div className="teacher-schedule__modal-body">
-              {[
+              {(selectedClass.type === "busy"
+                ? [
+                    [<FaCalendarAlt />, "Loại lịch", "Lịch bận", "#b91c1c"],
+                    [
+                      <FaClock />,
+                      "Thời gian",
+                      `${new Date(selectedClass.busy_date).toLocaleDateString("vi-VN")}, Tiết ${selectedClass.start_slot}-${selectedClass.end_slot}`,
+                      null,
+                    ],
+                    [<FaLayerGroup />, "Trạng thái", statusText(selectedClass.status), null],
+                    [<FaBook />, "Lý do", selectedClass.reason || "-", null],
+                  ]
+                : [
                 [
                   <FaBook />,
                   "Tên môn học",
@@ -354,7 +444,7 @@ const TeacherSchedule = ({ teacherInfo }) => {
                   `${selectedClass.credits} tín chỉ`,
                   null,
                 ],
-              ].map(([icon, label, val, vc], i) => (
+              ]).map(([icon, label, val, vc], i) => (
                 <div key={i} className="teacher-schedule__modal-row">
                   <span className="teacher-schedule__modal-icon">
                     {icon}

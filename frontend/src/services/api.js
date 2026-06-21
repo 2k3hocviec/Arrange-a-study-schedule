@@ -188,10 +188,10 @@ export const roomsAPI = {
 
 export const studentClassesAPI = {
   getAll: () => api.get("/student-classes"),
-  create: ({ class_id, name, cohort, major, department_id, capacity }) =>
-      api.post("/student-classes", { class_id, name, cohort, major, department_id, capacity }),
-  update: (class_id, { name, cohort, major, department_id, capacity }) =>
-      api.patch(`/student-classes/${class_id}`, { name, cohort, major, department_id, capacity }),
+  create: ({ class_id, name, cohort, major_id, capacity }) =>
+      api.post("/student-classes", { class_id, name, cohort, major_id, capacity }),
+  update: (class_id, { name, cohort, major_id, capacity }) =>
+      api.patch(`/student-classes/${class_id}`, { name, cohort, major_id, capacity }),
   delete: (class_id) => api.delete(`/student-classes/${class_id}`),
 };
 
@@ -241,11 +241,11 @@ export const teacherBusySchedulesAPI = {
 
 export const studentsAPI = {
   getAll: () => api.get("/students"),
-  create: ({ user_id, student_id, name, class_id, major_id }) =>
-      api.post("/students", { student_id, name, user_id, class_id, major_id }),
+  create: ({ user_id, student_id, name, class_id }) =>
+      api.post("/students", { student_id, name, user_id, class_id }),
   delete: (student_id) => api.delete(`/students/${student_id}`),
-  update: (student_id, { user_id, name, class_id, major_id }) =>
-      api.patch(`/students/${student_id}`, { user_id, name, class_id, major_id }),
+  update: (student_id, { user_id, name, class_id }) =>
+      api.patch(`/students/${student_id}`, { user_id, name, class_id }),
   getByUserId: (user_id) => api.get(`/students/by-user/${user_id}`),
   getMe: () => api.get("/students/me"),
 };

@@ -1,14 +1,13 @@
-﻿import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { PiStudentDuotone } from "react-icons/pi";
-import { departmentsAPI, studentClassesAPI } from "../services/api";
+import { majorsAPI, studentClassesAPI } from "../services/api";
 
 const EMPTY_FORM = {
   class_id: "",
   name: "",
   cohort: "",
-  major: "",
-  department_id: "",
+  major_id: "",
   capacity: "",
 };
 
@@ -19,24 +18,22 @@ const getErrorMessage = (err, action = "save") => {
     : String(rawMessage);
   const lower = message.toLowerCase();
 
-  if (lower.includes("already exists")) {
-    return "MÃ£ lá»›p Ä‘Ã£ tá»“n táº¡i.";
-  }
+  if (lower.includes("already exists")) return "Mã lớp đã tồn tại.";
   if (lower.includes("has students")) {
-    return "KhÃ´ng thá»ƒ xÃ³a lá»›p Ä‘ang cÃ³ sinh viÃªn.";
+    return "Không thể xóa lớp đang có sinh viên.";
   }
   if (lower.includes("capacity")) {
-    return "SÄ© sá»‘ tá»‘i Ä‘a khÃ´ng há»£p lá»‡ hoáº·c nhá» hÆ¡n sá»‘ sinh viÃªn hiá»‡n cÃ³.";
+    return "Sĩ số tối đa không hợp lệ hoặc nhỏ hơn số sinh viên hiện có.";
   }
 
   return action === "delete"
-    ? "KhÃ´ng thá»ƒ xÃ³a lá»›p há»c."
-    : "KhÃ´ng thá»ƒ lÆ°u lá»›p há»c. Vui lÃ²ng kiá»ƒm tra dá»¯ liá»‡u.";
+    ? "Không thể xóa lớp học."
+    : "Không thể lưu lớp học. Vui lòng kiểm tra dữ liệu.";
 };
 
 const MinistryStudentClasses = () => {
   const [classes, setClasses] = useState([]);
-  const [departments, setDepartments] = useState([]);
+  const [majors, setMajors] = useState([]);
   const [formData, setFormData] = useState(EMPTY_FORM);
   const [editingId, setEditingId] = useState(null);
   const [showForm, setShowForm] = useState(false);
@@ -46,22 +43,22 @@ const MinistryStudentClasses = () => {
       const res = await studentClassesAPI.getAll();
       setClasses(res.data || []);
     } catch {
-      toast.error("KhÃ´ng thá»ƒ táº£i danh sÃ¡ch lá»›p há»c.");
+      toast.error("Không thể tải danh sách lớp học.");
     }
   };
 
-  const fetchDepartments = async () => {
+  const fetchMajors = async () => {
     try {
-      const res = await departmentsAPI.getAll();
-      setDepartments(res.data || []);
+      const res = await majorsAPI.getAll();
+      setMajors(res.data || []);
     } catch {
-      toast.error("Khong the tai danh sach khoa.");
+      toast.error("Không thể tải danh sách chuyên ngành.");
     }
   };
 
   useEffect(() => {
     fetchClasses();
-    fetchDepartments();
+    fetchMajors();
   }, []);
 
   const resetForm = () => {
@@ -81,8 +78,7 @@ const MinistryStudentClasses = () => {
       class_id: item.class_id,
       name: item.name,
       cohort: item.cohort,
-      major: item.major,
-      department_id: item.department_id || "",
+      major_id: item.major_id || "",
       capacity: item.capacity ?? "",
     });
     setEditingId(item.class_id);
@@ -100,10 +96,9 @@ const MinistryStudentClasses = () => {
       !formData.class_id ||
       !formData.name ||
       !formData.cohort ||
-      !formData.major ||
-      !formData.department_id
+      !formData.major_id
     ) {
-      toast.error("Vui lÃ²ng nháº­p Ä‘áº§y Ä‘á»§ mÃ£ lá»›p, tÃªn lá»›p, khÃ³a vÃ  ngÃ nh.");
+      toast.error("Vui lòng nhập đầy đủ mã lớp, tên lớp, khóa và chuyên ngành.");
       return;
     }
 
@@ -115,10 +110,10 @@ const MinistryStudentClasses = () => {
     try {
       if (editingId) {
         await studentClassesAPI.update(editingId, payload);
-        toast.success("Cáº­p nháº­t lá»›p há»c thÃ nh cÃ´ng.");
+        toast.success("Cập nhật lớp học thành công.");
       } else {
         await studentClassesAPI.create(payload);
-        toast.success("Táº¡o lá»›p há»c thÃ nh cÃ´ng.");
+        toast.success("Tạo lớp học thành công.");
       }
       resetForm();
       fetchClasses();
@@ -128,14 +123,16 @@ const MinistryStudentClasses = () => {
   };
 
   const handleDelete = async (classId) => {
-    if (!window.confirm(`Báº¡n cÃ³ cháº¯c muá»‘n xÃ³a lá»›p ${classId}?`)) return;
+    if (!window.confirm(`Bạn có chắc muốn xóa lớp ${classId}?`)) return;
 
     try {
       await studentClassesAPI.delete(classId);
-      toast.success("XÃ³a lá»›p há»c thÃ nh cÃ´ng.");
+      toast.success("Xóa lớp học thành công.");
       fetchClasses();
     } catch (err) {
-      toast.error(getErrorMessage(err, "delete"), { id: "student-class-error" });
+      toast.error(getErrorMessage(err, "delete"), {
+        id: "student-class-error",
+      });
     }
   };
 
@@ -144,10 +141,10 @@ const MinistryStudentClasses = () => {
       <div style={styles.headerRow}>
         <h2 style={styles.title}>
           <PiStudentDuotone style={{ marginRight: 10 }} />
-          QUáº¢N LÃ Lá»šP Há»ŒC
+          QUẢN LÝ LỚP
         </h2>
         <button style={styles.addBtn} onClick={openCreate}>
-          + ThÃªm lá»›p há»c
+          + Thêm lớp
         </button>
       </div>
 
@@ -155,33 +152,32 @@ const MinistryStudentClasses = () => {
         <div style={styles.modalOverlay}>
           <div style={styles.modalContent}>
             <button style={styles.closeBtn} onClick={resetForm}>
-              Ã—
+              ×
             </button>
             <h3 style={styles.formTitle}>
-              {editingId ? "Cáº­p nháº­t lá»›p há»c" : "Táº¡o lá»›p há»c má»›i"}
+              {editingId ? "Cập nhật lớp học" : "Tạo lớp học mới"}
             </h3>
-            <form onSubmit={handleSubmit}>              <div style={styles.fieldGroup}>
-                <label style={styles.label}>Khoa</label>
+            <form onSubmit={handleSubmit}>
+              <div style={styles.fieldGroup}>
+                <label style={styles.label}>Chuyên ngành</label>
                 <select
-                  name="department_id"
-                  value={formData.department_id}
+                  name="major_id"
+                  value={formData.major_id}
                   onChange={handleChange}
                   style={styles.input}
                   required
                 >
-                  <option value="">-- Chon khoa --</option>
-                  {departments.map((department) => (
-                    <option
-                      key={department.department_id}
-                      value={department.department_id}
-                    >
-                      {department.department_id} - {department.name}
+                  <option value="">-- Chọn chuyên ngành --</option>
+                  {majors.map((major) => (
+                    <option key={major.major_id} value={major.major_id}>
+                      {major.major_id} - {major.name}
                     </option>
                   ))}
                 </select>
               </div>
+
               <div style={styles.fieldGroup}>
-                <label style={styles.label}>MÃ£ lá»›p</label>
+                <label style={styles.label}>Mã lớp</label>
                 <input
                   name="class_id"
                   value={formData.class_id}
@@ -194,8 +190,9 @@ const MinistryStudentClasses = () => {
                   required
                 />
               </div>
+
               <div style={styles.fieldGroup}>
-                <label style={styles.label}>TÃªn lá»›p</label>
+                <label style={styles.label}>Tên lớp</label>
                 <input
                   name="name"
                   value={formData.name}
@@ -204,29 +201,21 @@ const MinistryStudentClasses = () => {
                   required
                 />
               </div>
+
               <div style={styles.fieldGroup}>
-                <label style={styles.label}>KhÃ³a</label>
+                <label style={styles.label}>Khóa</label>
                 <input
                   name="cohort"
                   value={formData.cohort}
                   onChange={handleChange}
                   style={styles.input}
-                  placeholder="VÃ­ dá»¥: K23"
+                  placeholder="Ví dụ: K23"
                   required
                 />
               </div>
+
               <div style={styles.fieldGroup}>
-                <label style={styles.label}>NgÃ nh</label>
-                <input
-                  name="major"
-                  value={formData.major}
-                  onChange={handleChange}
-                  style={styles.input}
-                  required
-                />
-              </div>
-              <div style={styles.fieldGroup}>
-                <label style={styles.label}>SÄ© sá»‘ tá»‘i Ä‘a</label>
+                <label style={styles.label}>Sĩ số tối đa</label>
                 <input
                   type="number"
                   name="capacity"
@@ -234,11 +223,12 @@ const MinistryStudentClasses = () => {
                   value={formData.capacity}
                   onChange={handleChange}
                   style={styles.input}
-                  placeholder="Bá» trá»‘ng náº¿u khÃ´ng giá»›i háº¡n"
+                  placeholder="Bỏ trống nếu không giới hạn"
                 />
               </div>
+
               <button style={styles.submitBtn} type="submit">
-                {editingId ? "Cáº­p nháº­t" : "Táº¡o lá»›p"}
+                {editingId ? "Cập nhật" : "Tạo lớp"}
               </button>
             </form>
           </div>
@@ -249,20 +239,20 @@ const MinistryStudentClasses = () => {
         <table style={styles.table}>
           <thead>
             <tr>
-              <th style={styles.th}>MÃƒ Lá»šP</th>
-              <th style={styles.th}>TÃŠN Lá»šP</th>
-              <th style={styles.th}>KHÃ“A</th>
-              <th style={styles.th}>NGÃ€NH</th>
+              <th style={styles.th}>MÃ LỚP</th>
+              <th style={styles.th}>TÊN LỚP</th>
+              <th style={styles.th}>KHÓA</th>
+              <th style={styles.th}>CHUYÊN NGÀNH</th>
               <th style={styles.th}>KHOA</th>
-              <th style={styles.th}>SÄ¨ Sá»</th>
-              <th style={styles.th}>THAO TÃC</th>
+              <th style={styles.th}>SĨ SỐ</th>
+              <th style={styles.th}>THAO TÁC</th>
             </tr>
           </thead>
           <tbody>
             {classes.length === 0 ? (
               <tr>
                 <td colSpan={7} style={styles.emptyCell}>
-                  ChÆ°a cÃ³ lá»›p há»c nÃ o
+                  Chưa có lớp học nào
                 </td>
               </tr>
             ) : (
@@ -270,29 +260,42 @@ const MinistryStudentClasses = () => {
                 const studentCount = item._count?.students || 0;
                 return (
                   <tr key={item.class_id} style={styles.tbodyRow}>
-                    <td style={{ ...styles.td, color: "#4f63d2", fontWeight: 700 }}>
+                    <td
+                      style={{
+                        ...styles.td,
+                        color: "#4f63d2",
+                        fontWeight: 700,
+                      }}
+                    >
                       {item.class_id}
                     </td>
                     <td style={styles.td}>{item.name}</td>
                     <td style={styles.td}>{item.cohort}</td>
-                    <td style={styles.td}>{item.major}</td>
                     <td style={styles.td}>
-                      {item.department
-                        ? `${item.department.department_id} - ${item.department.name}`
-                        : item.department_id || "-"}
+                      {item.major
+                        ? `${item.major.major_id} - ${item.major.name}`
+                        : item.major_id || "-"}
                     </td>
                     <td style={styles.td}>
-                      {studentCount}/{item.capacity ?? "âˆž"}
+                      {item.major?.department
+                        ? `${item.major.department.department_id} - ${item.major.department.name}`
+                        : "-"}
                     </td>
                     <td style={styles.td}>
-                      <button style={styles.editBtn} onClick={() => openEdit(item)}>
-                        Sá»­a
+                      {studentCount}/{item.capacity ?? "∞"}
+                    </td>
+                    <td style={styles.td}>
+                      <button
+                        style={styles.editBtn}
+                        onClick={() => openEdit(item)}
+                      >
+                        Sửa
                       </button>
                       <button
                         style={styles.deleteBtn}
                         onClick={() => handleDelete(item.class_id)}
                       >
-                        XÃ³a
+                        Xóa
                       </button>
                     </td>
                   </tr>
@@ -441,4 +444,3 @@ const styles = {
 };
 
 export default MinistryStudentClasses;
-
