@@ -101,14 +101,22 @@ export class EnrollmentsService {
       );
     }
 
-    const studentDepartmentId = student.class?.department_id;
-    const subjectDepartmentId = course.subject?.department_id;
-    if (
-      !course.subject?.is_general &&
-      studentDepartmentId !== subjectDepartmentId
-    ) {
+    const studentMajorId = student.major_id;
+    const studentDepartmentId = student.major?.department_id;
+    const subjectMajorId = course.subject?.major_id;
+    const subjectDepartmentId = course.subject?.major?.department_id;
+    const allowPublic =
+      !course.subject?.allow_same_major &&
+      !course.subject?.allow_same_department;
+    const allowByMajor =
+      course.subject?.allow_same_major && studentMajorId === subjectMajorId;
+    const allowByDepartment =
+      course.subject?.allow_same_department &&
+      studentDepartmentId === subjectDepartmentId;
+
+    if (!allowPublic && !allowByMajor && !allowByDepartment) {
       throw new BadRequestException(
-        'Subject is not available for this student department',
+        'Subject is not available for this student major or department',
       );
     }
 

@@ -29,7 +29,7 @@ export class DepartmentsService {
           select: {
             studentClasses: true,
             teachers: true,
-            subjects: true,
+            majors: true,
           },
         },
       },
@@ -45,7 +45,7 @@ export class DepartmentsService {
           select: {
             studentClasses: true,
             teachers: true,
-            subjects: true,
+            majors: true,
           },
         },
       },
@@ -91,7 +91,7 @@ export class DepartmentsService {
     const hasRelations =
       department._count.studentClasses > 0 ||
       department._count.teachers > 0 ||
-      department._count.subjects > 0;
+      department._count.majors > 0;
 
     if (hasRelations) {
       throw new BadRequestException('Cannot delete department that is in use');

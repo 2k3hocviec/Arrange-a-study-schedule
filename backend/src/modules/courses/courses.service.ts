@@ -70,11 +70,11 @@ export class CoursesService {
 
   private ensureTeacherCanTeachSubject(
     teacher: { department_id?: string | null },
-    subject: { department_id?: string | null },
+    subject: { major?: { department_id?: string | null } | null },
   ) {
-    if (teacher.department_id !== subject.department_id) {
+    if (teacher.department_id !== subject.major?.department_id) {
       throw new BadRequestException(
-        'Teacher department does not match subject department',
+        'Teacher department does not match subject major department',
       );
     }
   }
@@ -166,7 +166,11 @@ export class CoursesService {
 
   findAll() {
     return this.prisma.course.findMany({
-      include: { subject: true, teacher: true, semester: true },
+      include: {
+        subject: { include: { major: { include: { department: true } } } },
+        teacher: true,
+        semester: true,
+      },
     });
   }
 
@@ -284,7 +288,10 @@ export class CoursesService {
   async findOneByCourseIDWithSubject(courseId: string) {
     return this.prisma.course.findUnique({
       where: { course_id: courseId },
-      include: { subject: true, semester: true },
+      include: {
+        subject: { include: { major: { include: { department: true } } } },
+        semester: true,
+      },
     });
   }
 
@@ -325,8 +332,16 @@ export class CoursesService {
             subject_id: true,
             name: true,
             credits: true,
-            department_id: true,
-            is_general: true,
+            major_id: true,
+            allow_same_major: true,
+            allow_same_department: true,
+            major: {
+              select: {
+                major_id: true,
+                name: true,
+                department_id: true,
+              },
+            },
           },
         },
         teacher: {

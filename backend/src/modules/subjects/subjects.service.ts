@@ -2,13 +2,13 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateSubjectDto } from './dto/create-subject.dto';
 import { UpdateSubjectDto } from './dto/update-subject.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { DepartmentsService } from '../departments/departments.service';
+import { MajorsService } from '../majors/majors.service';
 
 @Injectable()
 export class SubjectsService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly departmentsService: DepartmentsService,
+    private readonly majorsService: MajorsService,
   ) {}
 
   async create(createSubjectDto: CreateSubjectDto) {
@@ -18,14 +18,14 @@ export class SubjectsService {
       throw new BadRequestException('Subject_ID already exists');
     }
 
-    await this.departmentsService.ensureExists(createSubjectDto.department_id);
+    await this.majorsService.ensureExists(createSubjectDto.major_id);
 
     return this.prisma.subject.create({ data: createSubjectDto });
   }
 
   async findAll() {
     return this.prisma.subject.findMany({
-      include: { department: true },
+      include: { major: { include: { department: true } } },
       orderBy: { subject_id: 'asc' },
     });
   }
@@ -33,7 +33,7 @@ export class SubjectsService {
   async findOne(id: string) {
     return this.prisma.subject.findUnique({
       where: { subject_id: id },
-      include: { department: true },
+      include: { major: { include: { department: true } } },
     });
   }
 
@@ -44,10 +44,8 @@ export class SubjectsService {
       throw new BadRequestException('Subject does not exists');
     }
 
-    if (updateSubjectDto.department_id) {
-      await this.departmentsService.ensureExists(
-        updateSubjectDto.department_id,
-      );
+    if (updateSubjectDto.major_id) {
+      await this.majorsService.ensureExists(updateSubjectDto.major_id);
     }
 
     return this.prisma.subject.update({
@@ -73,8 +71,16 @@ export class SubjectsService {
       select: {
         subject_id: true,
         name: true,
-        department_id: true,
-        is_general: true,
+        major_id: true,
+        allow_same_major: true,
+        allow_same_department: true,
+        major: {
+          select: {
+            major_id: true,
+            name: true,
+            department_id: true,
+          },
+        },
       },
     });
   }

@@ -837,6 +837,21 @@ async function main() {
     },
   });
 
+  await prisma.major.upsert({
+    where: { major_id: 'DEFAULT' },
+    update: {
+      name: 'Chuyen nganh mac dinh',
+      department_id: 'DEFAULT',
+      description: 'Chuyen nganh mac dinh cho du lieu cu',
+    },
+    create: {
+      major_id: 'DEFAULT',
+      name: 'Chuyen nganh mac dinh',
+      department_id: 'DEFAULT',
+      description: 'Chuyen nganh mac dinh cho du lieu cu',
+    },
+  });
+
   for (const [index, user] of seededTeacherUsers.entries()) {
     const profile = teacherProfiles[index];
     const existingTeacher = await prisma.teacher.findUnique({
@@ -904,7 +919,7 @@ async function main() {
     if (existingStudent) {
       await prisma.student.update({
         where: { student_id: existingStudent.student_id },
-        data: { name: profile.name, class_id: 'DEFAULT' },
+        data: { name: profile.name, class_id: 'DEFAULT', major_id: 'DEFAULT' },
       });
       continue;
     }
@@ -915,12 +930,14 @@ async function main() {
         user_id: user.id,
         name: profile.name,
         class_id: 'DEFAULT',
+        major_id: 'DEFAULT',
       },
       create: {
         student_id: profile.student_id,
         user_id: user.id,
         name: profile.name,
         class_id: 'DEFAULT',
+        major_id: 'DEFAULT',
       },
     });
   }
@@ -944,13 +961,15 @@ async function main() {
       update: {
         name: subject.name,
         credits: subject.credits,
-        department_id: 'DEFAULT',
-        is_general: false,
+        major_id: 'DEFAULT',
+        allow_same_major: false,
+        allow_same_department: false,
       },
       create: {
         ...subject,
-        department_id: 'DEFAULT',
-        is_general: false,
+        major_id: 'DEFAULT',
+        allow_same_major: false,
+        allow_same_department: false,
       },
     });
   }

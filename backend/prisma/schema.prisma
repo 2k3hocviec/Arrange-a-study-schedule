@@ -28,9 +28,22 @@ model Department {
 
   studentClasses StudentClass[]
   teachers       Teacher[]
-  subjects       Subject[]
+  majors         Major[]
 
   @@map("department")
+}
+
+model Major {
+  major_id      String  @id
+  name          String
+  department_id String
+  description   String?
+
+  department Department @relation(fields: [department_id], references: [department_id])
+  students   Student[]
+  subjects   Subject[]
+
+  @@map("major")
 }
 
 model StudentClass {
@@ -52,9 +65,11 @@ model Student {
   name       String
   user_id    Int    @unique
   class_id   String @default("DEFAULT")
+  major_id   String @default("DEFAULT")
 
   user        User         @relation(fields: [user_id], references: [id])
   class       StudentClass @relation(fields: [class_id], references: [class_id])
+  major       Major        @relation(fields: [major_id], references: [major_id])
   enrollments Enrollment[]
 
   @@map("student")
@@ -94,14 +109,15 @@ model TeacherBusySchedule {
 }
 
 model Subject {
-  subject_id    String  @id
-  name          String
-  credits       Int
-  department_id String  @default("DEFAULT")
-  is_general    Boolean @default(false)
+  subject_id            String  @id
+  name                  String
+  credits               Int
+  major_id              String  @default("DEFAULT")
+  allow_same_major      Boolean @default(false)
+  allow_same_department Boolean @default(false)
 
-  department Department @relation(fields: [department_id], references: [department_id])
-  course     Course[]
+  major  Major    @relation(fields: [major_id], references: [major_id])
+  course Course[]
 
   @@map("subject")
 }

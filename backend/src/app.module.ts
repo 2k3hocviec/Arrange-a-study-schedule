@@ -20,6 +20,7 @@ import { SemestersModule } from './modules/semesters/semesters.module';
 import { TeacherBusySchedulesModule } from './modules/teacher-busy-schedules/teacher-busy-schedules.module';
 import { StudentClassesModule } from './modules/student-classes/student-classes.module';
 import { DepartmentsModule } from './modules/departments/departments.module';
+import { MajorsModule } from './modules/majors/majors.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { DepartmentsModule } from './modules/departments/departments.module';
     TeacherBusySchedulesModule,
     StudentClassesModule,
     DepartmentsModule,
+    MajorsModule,
     AuthModule,
     ChatbotModule,
   ],
