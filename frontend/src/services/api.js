@@ -158,14 +158,23 @@ export const departmentsAPI = {
   delete: (department_id) => api.delete(`/departments/${department_id}`),
 };
 
+export const majorsAPI = {
+  getAll: () => api.get("/majors"),
+  create: ({ major_id, name, department_id, description }) =>
+      api.post("/majors", { major_id, name, department_id, description }),
+  update: (major_id, { name, department_id, description }) =>
+      api.patch(`/majors/${major_id}`, { name, department_id, description }),
+  delete: (major_id) => api.delete(`/majors/${major_id}`),
+};
+
 export const subjectsAPI = {
   getAllIds: () => api.get("/subjects/allid"),
   getAll: () => api.get("/subjects"),
-  create: ({ subject_id, name, credits, department_id, is_general }) =>
-      api.post("/subjects", { subject_id, name, credits, department_id, is_general }),
+  create: ({ subject_id, name, credits, major_id, allow_same_major, allow_same_department }) =>
+      api.post("/subjects", { subject_id, name, credits, major_id, allow_same_major, allow_same_department }),
   delete: (id) => api.delete(`/subjects/${id}`),
-  update: (id, { name, credits, department_id, is_general }) =>
-      api.patch(`/subjects/${id}`, { name, credits, department_id, is_general }),
+  update: (id, { name, credits, major_id, allow_same_major, allow_same_department }) =>
+      api.patch(`/subjects/${id}`, { name, credits, major_id, allow_same_major, allow_same_department }),
 };
 
 export const roomsAPI = {
@@ -232,11 +241,11 @@ export const teacherBusySchedulesAPI = {
 
 export const studentsAPI = {
   getAll: () => api.get("/students"),
-  create: ({ user_id, student_id, name, class_id }) =>
-      api.post("/students", { student_id, name, user_id, class_id }),
+  create: ({ user_id, student_id, name, class_id, major_id }) =>
+      api.post("/students", { student_id, name, user_id, class_id, major_id }),
   delete: (student_id) => api.delete(`/students/${student_id}`),
-  update: (student_id, { user_id, name, class_id }) =>
-      api.patch(`/students/${student_id}`, { user_id, name, class_id }),
+  update: (student_id, { user_id, name, class_id, major_id }) =>
+      api.patch(`/students/${student_id}`, { user_id, name, class_id, major_id }),
   getByUserId: (user_id) => api.get(`/students/by-user/${user_id}`),
   getMe: () => api.get("/students/me"),
 };

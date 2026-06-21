@@ -1,5 +1,5 @@
 ﻿import React, { useEffect, useState } from "react";
-import { departmentsAPI, subjectsAPI } from "../services/api";
+import { majorsAPI, subjectsAPI } from "../services/api";
 import toast from "react-hot-toast";
 import { MdMenuBook } from "react-icons/md";
 import { FiPlus, FiEdit2, FiTrash2 } from "react-icons/fi";
@@ -25,7 +25,7 @@ const getSubjectErrorMessage = (err, action = "save") => {
 
 const MinistrySubjects = () => {
   const [subjects, setSubjects] = useState([]);
-  const [departments, setDepartments] = useState([]);
+  const [majors, setMajors] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [repair, setRepair] = useState(false);
   const [page, setPage] = useState(1);
@@ -33,8 +33,9 @@ const MinistrySubjects = () => {
     subject_id: "",
     name: "",
     credits: 0,
-    department_id: "",
-    is_general: false,
+    major_id: "",
+    allow_same_major: false,
+    allow_same_department: false,
   });
 
   const fetchSubjects = async () => {
@@ -46,18 +47,18 @@ const MinistrySubjects = () => {
     }
   };
 
-  const fetchDepartments = async () => {
+  const fetchMajors = async () => {
     try {
-      const response = await departmentsAPI.getAll();
-      setDepartments(response.data || []);
+      const response = await majorsAPI.getAll();
+      setMajors(response.data || []);
     } catch (e) {
-      toast.error("Khong the tai danh sach khoa");
+      toast.error("Không thể tải danh sách chuyên ngành");
     }
   };
 
   useEffect(() => {
     fetchSubjects();
-    fetchDepartments();
+    fetchMajors();
   }, []);
 
   const handleInputChange = (e) => {
@@ -78,8 +79,9 @@ const MinistrySubjects = () => {
       subject_id: "",
       name: "",
       credits: 0,
-      department_id: "",
-      is_general: false,
+      major_id: "",
+      allow_same_major: false,
+      allow_same_department: false,
     });
     setRepair(false);
     setShowForm(!showForm);
@@ -91,7 +93,7 @@ const MinistrySubjects = () => {
       !formData.subject_id ||
       !formData.name ||
       formData.credits === 0 ||
-      !formData.department_id
+      !formData.major_id
     ) {
       toast.error("Vui lÃ²ng Ä‘iá»n Ä‘áº§y Ä‘á»§ thÃ´ng tin.");
       return;
@@ -102,8 +104,9 @@ const MinistrySubjects = () => {
         subject_id: "",
         name: "",
         credits: 0,
-        department_id: "",
-        is_general: false,
+        major_id: "",
+        allow_same_major: false,
+        allow_same_department: false,
       });
       setShowForm(false);
       await fetchSubjects();
@@ -119,7 +122,7 @@ const MinistrySubjects = () => {
       !formData.subject_id ||
       !formData.name ||
       formData.credits === 0 ||
-      !formData.department_id
+      !formData.major_id
     ) {
       toast.error("Vui lÃ²ng Ä‘iá»n Ä‘áº§y Ä‘á»§ thÃ´ng tin.");
       return;
@@ -130,8 +133,9 @@ const MinistrySubjects = () => {
         subject_id: "",
         name: "",
         credits: 0,
-        department_id: "",
-        is_general: false,
+        major_id: "",
+        allow_same_major: false,
+        allow_same_department: false,
       });
       setShowForm(false);
       setRepair(false);
@@ -273,21 +277,21 @@ const MinistrySubjects = () => {
                     />
                   </div>
                   <div style={fieldGroup}>
-                    <label style={fieldLabel}>Khoa</label>
+                    <label style={fieldLabel}>Chuyên ngành</label>
                     <select
-                      name="department_id"
-                      value={formData.department_id || ""}
+                      name="major_id"
+                      value={formData.major_id || ""}
                       onChange={handleInputChange}
                       required
                       style={fieldInput}
                     >
-                      <option value="">-- Chon khoa --</option>
-                      {departments.map((department) => (
+                      <option value="">-- Chọn chuyên ngành --</option>
+                      {majors.map((major) => (
                         <option
-                          key={department.department_id}
-                          value={department.department_id}
+                          key={major.major_id}
+                          value={major.major_id}
                         >
-                          {department.department_id} - {department.name}
+                          {major.major_id} - {major.name}
                         </option>
                       ))}
                     </select>
@@ -304,11 +308,29 @@ const MinistrySubjects = () => {
                   >
                     <input
                       type="checkbox"
-                      name="is_general"
-                      checked={!!formData.is_general}
+                      name="allow_same_major"
+                      checked={!!formData.allow_same_major}
                       onChange={handleInputChange}
                     />
-                    Mon chung cho sinh vien khac khoa
+                    Cho phép cùng chuyên ngành đăng ký
+                  </label>
+
+                  <label
+                    style={{
+                      ...fieldGroup,
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 8,
+                      marginTop: 26,
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      name="allow_same_department"
+                      checked={!!formData.allow_same_department}
+                      onChange={handleInputChange}
+                    />
+                    Cho phép cùng khoa đăng ký
                   </label>
                 </div>
 
@@ -360,8 +382,10 @@ const MinistrySubjects = () => {
                 <th style={th}>MÃƒ MÃ”N</th>
                 <th style={th}>TÃŠN MÃ”N Há»ŒC</th>
                 <th style={th}>Sá» TÃN CHá»ˆ</th>
+                <th style={th}>CHUYÊN NGÀNH</th>
                 <th style={th}>KHOA</th>
-                <th style={th}>MON CHUNG</th>
+                <th style={th}>CÙNG NGÀNH</th>
+                <th style={th}>CÙNG KHOA</th>
                 <th style={th}>THAO TÃC</th>
               </tr>
             </thead>
@@ -382,11 +406,19 @@ const MinistrySubjects = () => {
                     <span style={creditBadge}>{subject.credits}</span>
                   </td>
                   <td style={td}>
-                    {subject.department
-                      ? `${subject.department.department_id} - ${subject.department.name}`
-                      : subject.department_id || "-"}
+                    {subject.major
+                      ? `${subject.major.major_id} - ${subject.major.name}`
+                      : subject.major_id || "-"}
                   </td>
-                  <td style={td}>{subject.is_general ? "Co" : "Khong"}</td>
+                  <td style={td}>
+                    {subject.major?.department
+                      ? `${subject.major.department.department_id} - ${subject.major.department.name}`
+                      : "-"}
+                  </td>
+                  <td style={td}>{subject.allow_same_major ? "Có" : "Không"}</td>
+                  <td style={td}>
+                    {subject.allow_same_department ? "Có" : "Không"}
+                  </td>
                   <td style={{ ...td, whiteSpace: "nowrap" }}>
                     <button
                       onClick={() => handleOpenFormUpdateSubject(subject)}

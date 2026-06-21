@@ -1,44 +1,59 @@
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { MdSubject } from "react-icons/md";
-import { departmentsAPI } from "../services/api";
+import { departmentsAPI, majorsAPI } from "../services/api";
 
 const EMPTY_FORM = {
-  department_id: "",
+  major_id: "",
   name: "",
+  department_id: "",
   description: "",
 };
 
-const getDepartmentErrorMessage = (err, action = "save") => {
+const getMajorErrorMessage = (err, action = "save") => {
   const rawMessage = err?.response?.data?.message || err?.message || "";
   const message = Array.isArray(rawMessage)
     ? rawMessage.join(" ")
     : String(rawMessage);
   const lower = message.toLowerCase();
 
-  if (lower.includes("already exists")) return "Ma khoa da ton tai.";
-  if (lower.includes("in use")) return "Khong the xoa khoa dang duoc su dung.";
+  if (lower.includes("already exists")) return "Mã chuyên ngành đã tồn tại.";
+  if (lower.includes("department not found")) return "Khoa không tồn tại.";
+  if (lower.includes("in use")) {
+    return "Không thể xóa chuyên ngành đang có sinh viên hoặc môn học.";
+  }
   return action === "delete"
-    ? "Khong the xoa khoa."
-    : "Khong the luu khoa. Vui long kiem tra du lieu.";
+    ? "Không thể xóa chuyên ngành."
+    : "Không thể lưu chuyên ngành. Vui lòng kiểm tra dữ liệu.";
 };
 
-const MinistryDepartments = () => {
+const MinistryMajors = () => {
+  const [majors, setMajors] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [formData, setFormData] = useState(EMPTY_FORM);
   const [editingId, setEditingId] = useState(null);
   const [showForm, setShowForm] = useState(false);
+
+  const fetchMajors = async () => {
+    try {
+      const res = await majorsAPI.getAll();
+      setMajors(res.data || []);
+    } catch {
+      toast.error("Không thể tải danh sách chuyên ngành.");
+    }
+  };
 
   const fetchDepartments = async () => {
     try {
       const res = await departmentsAPI.getAll();
       setDepartments(res.data || []);
     } catch {
-      toast.error("Khong the tai danh sach khoa.");
+      toast.error("Không thể tải danh sách khoa.");
     }
   };
 
   useEffect(() => {
+    fetchMajors();
     fetchDepartments();
   }, []);
 
@@ -54,13 +69,14 @@ const MinistryDepartments = () => {
     setShowForm(true);
   };
 
-  const openEdit = (department) => {
+  const openEdit = (major) => {
     setFormData({
-      department_id: department.department_id,
-      name: department.name,
-      description: department.description || "",
+      major_id: major.major_id,
+      name: major.name,
+      department_id: major.department_id,
+      description: major.description || "",
     });
-    setEditingId(department.department_id);
+    setEditingId(major.major_id);
     setShowForm(true);
   };
 
@@ -71,37 +87,35 @@ const MinistryDepartments = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.department_id || !formData.name) {
-      toast.error("Vui long nhap ma khoa va ten khoa.");
+    if (!formData.major_id || !formData.name || !formData.department_id) {
+      toast.error("Vui lòng nhập mã, tên chuyên ngành và khoa.");
       return;
     }
 
     try {
       if (editingId) {
-        await departmentsAPI.update(editingId, formData);
-        toast.success("Cap nhat khoa thanh cong.");
+        await majorsAPI.update(editingId, formData);
+        toast.success("Cập nhật chuyên ngành thành công.");
       } else {
-        await departmentsAPI.create(formData);
-        toast.success("Tao khoa thanh cong.");
+        await majorsAPI.create(formData);
+        toast.success("Tạo chuyên ngành thành công.");
       }
       resetForm();
-      fetchDepartments();
+      fetchMajors();
     } catch (err) {
-      toast.error(getDepartmentErrorMessage(err), { id: "department-error" });
+      toast.error(getMajorErrorMessage(err), { id: "major-error" });
     }
   };
 
-  const handleDelete = async (departmentId) => {
-    if (!window.confirm(`Ban co chac muon xoa khoa ${departmentId}?`)) return;
+  const handleDelete = async (majorId) => {
+    if (!window.confirm(`Bạn có chắc muốn xóa chuyên ngành ${majorId}?`)) return;
 
     try {
-      await departmentsAPI.delete(departmentId);
-      toast.success("Xoa khoa thanh cong.");
-      fetchDepartments();
+      await majorsAPI.delete(majorId);
+      toast.success("Xóa chuyên ngành thành công.");
+      fetchMajors();
     } catch (err) {
-      toast.error(getDepartmentErrorMessage(err, "delete"), {
-        id: "department-error",
-      });
+      toast.error(getMajorErrorMessage(err, "delete"), { id: "major-error" });
     }
   };
 
@@ -110,10 +124,10 @@ const MinistryDepartments = () => {
       <div style={styles.headerRow}>
         <h2 style={styles.title}>
           <MdSubject style={{ marginRight: 10 }} />
-          QUAN LY KHOA
+          QUẢN LÝ CHUYÊN NGÀNH
         </h2>
         <button style={styles.addBtn} onClick={openCreate}>
-          + Them khoa
+          + Thêm chuyên ngành
         </button>
       </div>
 
@@ -124,14 +138,14 @@ const MinistryDepartments = () => {
               x
             </button>
             <h3 style={styles.formTitle}>
-              {editingId ? "Cap nhat khoa" : "Tao khoa moi"}
+              {editingId ? "Cập nhật chuyên ngành" : "Tạo chuyên ngành mới"}
             </h3>
             <form onSubmit={handleSubmit}>
               <div style={styles.fieldGroup}>
-                <label style={styles.label}>Ma khoa</label>
+                <label style={styles.label}>Mã chuyên ngành</label>
                 <input
-                  name="department_id"
-                  value={formData.department_id}
+                  name="major_id"
+                  value={formData.major_id}
                   onChange={handleChange}
                   disabled={!!editingId}
                   style={{
@@ -142,7 +156,7 @@ const MinistryDepartments = () => {
                 />
               </div>
               <div style={styles.fieldGroup}>
-                <label style={styles.label}>Ten khoa</label>
+                <label style={styles.label}>Tên chuyên ngành</label>
                 <input
                   name="name"
                   value={formData.name}
@@ -152,7 +166,27 @@ const MinistryDepartments = () => {
                 />
               </div>
               <div style={styles.fieldGroup}>
-                <label style={styles.label}>Mo ta</label>
+                <label style={styles.label}>Khoa</label>
+                <select
+                  name="department_id"
+                  value={formData.department_id}
+                  onChange={handleChange}
+                  style={styles.input}
+                  required
+                >
+                  <option value="">-- Chọn khoa --</option>
+                  {departments.map((department) => (
+                    <option
+                      key={department.department_id}
+                      value={department.department_id}
+                    >
+                      {department.department_id} - {department.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div style={styles.fieldGroup}>
+                <label style={styles.label}>Mô tả</label>
                 <textarea
                   name="description"
                   value={formData.description}
@@ -161,7 +195,7 @@ const MinistryDepartments = () => {
                 />
               </div>
               <button style={styles.submitBtn} type="submit">
-                {editingId ? "Cap nhat" : "Tao khoa"}
+                {editingId ? "Cập nhật" : "Tạo chuyên ngành"}
               </button>
             </form>
           </div>
@@ -172,42 +206,44 @@ const MinistryDepartments = () => {
         <table style={styles.table}>
           <thead>
             <tr>
-              <th style={styles.th}>MA KHOA</th>
-              <th style={styles.th}>TEN KHOA</th>
-              <th style={styles.th}>MO TA</th>
-              <th style={styles.th}>LOP</th>
-              <th style={styles.th}>GIAO VIEN</th>
-              <th style={styles.th}>CHUYEN NGANH</th>
-              <th style={styles.th}>THAO TAC</th>
+              <th style={styles.th}>MÃ</th>
+              <th style={styles.th}>TÊN CHUYÊN NGÀNH</th>
+              <th style={styles.th}>KHOA</th>
+              <th style={styles.th}>SINH VIÊN</th>
+              <th style={styles.th}>MÔN HỌC</th>
+              <th style={styles.th}>THAO TÁC</th>
             </tr>
           </thead>
           <tbody>
-            {departments.length === 0 ? (
+            {majors.length === 0 ? (
               <tr>
-                <td colSpan={7} style={styles.emptyCell}>
-                  Chua co khoa nao
+                <td colSpan={6} style={styles.emptyCell}>
+                  Chưa có chuyên ngành nào
                 </td>
               </tr>
             ) : (
-              departments.map((item) => (
-                <tr key={item.department_id} style={styles.tbodyRow}>
+              majors.map((major) => (
+                <tr key={major.major_id} style={styles.tbodyRow}>
                   <td style={{ ...styles.td, color: "#4f63d2", fontWeight: 700 }}>
-                    {item.department_id}
+                    {major.major_id}
                   </td>
-                  <td style={styles.td}>{item.name}</td>
-                  <td style={styles.td}>{item.description || "-"}</td>
-                  <td style={styles.td}>{item._count?.studentClasses || 0}</td>
-                  <td style={styles.td}>{item._count?.teachers || 0}</td>
-                  <td style={styles.td}>{item._count?.majors || 0}</td>
+                  <td style={styles.td}>{major.name}</td>
                   <td style={styles.td}>
-                    <button style={styles.editBtn} onClick={() => openEdit(item)}>
-                      Sua
+                    {major.department
+                      ? `${major.department.department_id} - ${major.department.name}`
+                      : major.department_id}
+                  </td>
+                  <td style={styles.td}>{major._count?.students || 0}</td>
+                  <td style={styles.td}>{major._count?.subjects || 0}</td>
+                  <td style={styles.td}>
+                    <button style={styles.editBtn} onClick={() => openEdit(major)}>
+                      Sửa
                     </button>
                     <button
                       style={styles.deleteBtn}
-                      onClick={() => handleDelete(item.department_id)}
+                      onClick={() => handleDelete(major.major_id)}
                     >
-                      Xoa
+                      Xóa
                     </button>
                   </td>
                 </tr>
@@ -330,4 +366,4 @@ const styles = {
   },
 };
 
-export default MinistryDepartments;
+export default MinistryMajors;

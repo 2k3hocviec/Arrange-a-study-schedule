@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { studentClassesAPI, studentsAPI, usersAPI } from "../services/api";
+import { majorsAPI, studentClassesAPI, studentsAPI, usersAPI } from "../services/api";
 import toast from "react-hot-toast";
 import { PiStudentDuotone } from "react-icons/pi";
 
@@ -23,6 +23,7 @@ const getStudentErrorMessage = (err, action = "save") => {
 const MinistryStudents = () => {
   const [students, setStudents] = useState([]);
   const [studentClasses, setStudentClasses] = useState([]);
+  const [majors, setMajors] = useState([]);
   const [availableUsers, setAvailableUsers] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [repair, setRepair] = useState(false);
@@ -33,6 +34,7 @@ const MinistryStudents = () => {
     student_id: "",
     name: "",
     class_id: "",
+    major_id: "",
   });
 
   const fetchStudents = async () => {
@@ -64,10 +66,21 @@ const MinistryStudents = () => {
     }
   };
 
+  const fetchMajors = async () => {
+    try {
+      const response = await majorsAPI.getAll();
+      setMajors(response.data || []);
+    } catch (e) {
+      console.error(e);
+      toast.error("Không thể tải danh sách chuyên ngành");
+    }
+  };
+
   useEffect(() => {
     fetchStudents();
     fetchAvailableUsers();
     fetchStudentClasses();
+    fetchMajors();
   }, []);
 
   const handleInputChange = (e) => {
@@ -79,7 +92,7 @@ const MinistryStudents = () => {
   };
 
   const handleClickCreate = () => {
-    setFormData({ user_id: "", student_id: "", name: "", class_id: "" });
+    setFormData({ user_id: "", student_id: "", name: "", class_id: "", major_id: "" });
     setRepair(false);
     setShowForm(true);
   };
@@ -90,6 +103,7 @@ const MinistryStudents = () => {
       student_id: student.student_id,
       name: student.name,
       class_id: student.class_id || "",
+      major_id: student.major_id || "",
     });
     setRepair(true);
     setShowForm(true);
@@ -102,7 +116,7 @@ const MinistryStudents = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.user_id || !formData.student_id || !formData.name || !formData.class_id) {
+    if (!formData.user_id || !formData.student_id || !formData.name || !formData.class_id || !formData.major_id) {
       toast.error("Vui lòng điền đầy đủ thông tin.");
       return;
     }
@@ -119,7 +133,7 @@ const MinistryStudents = () => {
 
   const handleSubmitUpdate = async (e) => {
     e.preventDefault();
-    if (!formData.student_id || !formData.name || !formData.class_id) {
+    if (!formData.student_id || !formData.name || !formData.class_id || !formData.major_id) {
       toast.error("Vui lòng điền đầy đủ thông tin.");
       return;
     }
@@ -268,6 +282,24 @@ const MinistryStudents = () => {
                 </select>
               </div>
 
+              <div style={styles.fieldGroup}>
+                <label style={styles.label}>Chuyên ngành</label>
+                <select
+                  name="major_id"
+                  value={formData.major_id}
+                  onChange={handleInputChange}
+                  required
+                  style={styles.input}
+                >
+                  <option value="">-- Chọn chuyên ngành --</option>
+                  {majors.map((major) => (
+                    <option key={major.major_id} value={major.major_id}>
+                      {major.major_id} - {major.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               <button
                 type="submit"
                 style={{
@@ -292,6 +324,7 @@ const MinistryStudents = () => {
               <th style={styles.th}>HỌ TÊN</th>
               <th style={styles.th}>TÀI KHOẢN</th>
               <th style={styles.th}>LỚP HỌC</th>
+              <th style={styles.th}>CHUYÊN NGÀNH</th>
               <th style={styles.th}>KHOA</th>
               <th style={styles.th}>USER ID</th>
               <th style={styles.th}>THAO TÁC</th>
@@ -300,7 +333,7 @@ const MinistryStudents = () => {
           <tbody>
             {paginatedStudents.length === 0 ? (
               <tr>
-                <td colSpan={8} style={styles.emptyCell}>
+                <td colSpan={9} style={styles.emptyCell}>
                   Không có dữ liệu sinh viên
                 </td>
               </tr>
@@ -325,8 +358,13 @@ const MinistryStudents = () => {
                       : student.class_id || "-"}
                   </td>
                   <td style={styles.td}>
-                    {student.class?.department
-                      ? `${student.class.department.department_id} - ${student.class.department.name}`
+                    {student.major
+                      ? `${student.major.major_id} - ${student.major.name}`
+                      : student.major_id || "-"}
+                  </td>
+                  <td style={styles.td}>
+                    {student.major?.department
+                      ? `${student.major.department.department_id} - ${student.major.department.name}`
                       : "-"}
                   </td>
                   <td style={styles.td}>{student.user_id}</td>

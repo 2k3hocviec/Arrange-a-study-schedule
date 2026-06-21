@@ -47,6 +47,10 @@ const getCourseErrorMessage = (err, action = "save") => {
     return "GiÃ¡o viÃªn, mÃ´n há»c hoáº·c ká»³ há»c khÃ´ng tá»“n táº¡i. Vui lÃ²ng kiá»ƒm tra láº¡i.";
   }
 
+  if (lowerMessage.includes("teacher department does not match subject major department")) {
+    return "Giáo viên không thuộc khoa của chuyên ngành môn học. Vui lòng chọn giáo viên phù hợp.";
+  }
+
   if (lowerMessage.includes("capacity must be at least")) {
     return "SÄ© sá»‘ tá»‘i Ä‘a khÃ´ng Ä‘Æ°á»£c nhá» hÆ¡n sá»‘ sinh viÃªn Ä‘Ã£ Ä‘Äƒng kÃ½.";
   }
@@ -244,9 +248,10 @@ const MinistryCourses = () => {
   const selectedSubject = subjects.find(
     (subject) => subject.subject_id === formData.subject_id,
   );
+  const selectedSubjectDepartmentId = selectedSubject?.major?.department_id;
   const availableTeachers = selectedSubject
     ? teachers.filter(
-        (teacher) => teacher.department_id === selectedSubject.department_id,
+        (teacher) => teacher.department_id === selectedSubjectDepartmentId,
       )
     : teachers;
   const filteredCourses = courses

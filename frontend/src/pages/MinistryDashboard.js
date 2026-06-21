@@ -7,6 +7,7 @@ import MinistrySubjectsAndCourses from "./MinistrySubjectsAndCourses";
 import MinistryStudents from "./MinistryStudent";
 import MinistryStudentClasses from "./MinistryStudentClasses";
 import MinistryDepartments from "./MinistryDepartments";
+import MinistryMajors from "./MinistryMajors";
 import MinistryEnrollments from "./MinistryEnrollments";
 import MinistrySemesters from "./MinistrySemesters";
 import MinistryTeacherBusySchedules from "./MinistryTeacherBusySchedules";
@@ -18,6 +19,7 @@ import { FiLogOut } from "react-icons/fi";
 import {
   coursesAPI,
   departmentsAPI,
+  majorsAPI,
   roomsAPI,
   semestersAPI,
   studentsAPI,
@@ -233,6 +235,7 @@ const NAV_ITEMS = [
   { path: "students", label: "Sinh viên", Icon: PiStudentDuotone },
   { path: "student-classes", label: "Lớp học", Icon: PiStudentDuotone },
   { path: "departments", label: "Khoa", Icon: MdSubject },
+  { path: "majors", label: "Chuyên ngành", Icon: MdSubject },
   { path: "teachers", label: "Giảng viên", Icon: GiTeacher },
   { path: "rooms", label: "Phòng học", Icon: MdMeetingRoom },
   { path: "semesters", label: "Kỳ học", Icon: GrSchedule },
@@ -258,6 +261,11 @@ const STAT_ICONS = {
     color: "#9333ea",
     bg: "#f3e8ff",
     svg: <MdDashboard size={22} color="#9333ea" />,
+  },
+  majors: {
+    color: "#7c3aed",
+    bg: "#ede9fe",
+    svg: <MdSubject size={22} color="#7c3aed" />,
   },
   subjects: {
     color: "#6366f1",
@@ -285,6 +293,7 @@ const MinistryDashboard = () => {
   const [students, setStudents] = useState([]);
   const [teachers, setTeachers] = useState([]);
   const [departments, setDepartments] = useState([]);
+  const [majors, setMajors] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [courses, setCourses] = useState([]);
   const [rooms, setRooms] = useState([]);
@@ -298,6 +307,7 @@ const MinistryDashboard = () => {
         studentsRes,
         teachersRes,
         departmentsRes,
+        majorsRes,
         subjectsRes,
         coursesRes,
         roomsRes,
@@ -306,6 +316,7 @@ const MinistryDashboard = () => {
         studentsAPI.getAll(),
         teachersAPI.getAll(),
         departmentsAPI.getAll(),
+        majorsAPI.getAll(),
         subjectsAPI.getAll(),
         coursesAPI.getAll(),
         roomsAPI.getAll(),
@@ -315,6 +326,7 @@ const MinistryDashboard = () => {
       setStudents(studentsRes.data || []);
       setTeachers(teachersRes.data || []);
       setDepartments(departmentsRes.data || []);
+      setMajors(majorsRes.data || []);
       setSubjects(subjectsRes.data || []);
       setCourses(coursesRes.data || []);
       setRooms(roomsRes.data || []);
@@ -367,6 +379,11 @@ const MinistryDashboard = () => {
             key: "departments",
             label: "SỐ LƯỢNG KHOA",
             value: departments.length,
+          },
+          {
+            key: "majors",
+            label: "SỐ LƯỢNG CHUYÊN NGÀNH",
+            value: majors.length,
           },
           {
             key: "subjects",
@@ -611,6 +628,7 @@ const MinistryDashboard = () => {
               element={<MinistryStudentClasses />}
             />
             <Route path="departments" element={<MinistryDepartments />} />
+            <Route path="majors" element={<MinistryMajors />} />
             <Route path="students" element={<MinistryStudents />} />
             <Route path="enrollments" element={<MinistryEnrollments />} />
             <Route path="change-password" element={<ChangePassword />} />
