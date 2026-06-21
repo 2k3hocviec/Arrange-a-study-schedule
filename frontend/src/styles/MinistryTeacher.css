@@ -172,6 +172,32 @@
   overflow: hidden;
 }
 
+.teacher-table-header {
+  border-bottom: 1px solid #eef0f7;
+  display: flex;
+  justify-content: flex-end;
+  padding: 16px;
+}
+
+.teacher-search-wrap {
+  align-items: center;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  display: flex;
+  gap: 8px;
+  min-width: 320px;
+  padding: 0 12px;
+}
+
+.teacher-search-input {
+  border: none;
+  font-size: 14px;
+  outline: none;
+  padding: 10px 0;
+  width: 100%;
+}
+
 .teacher-table {
   border-collapse: collapse;
   width: 100%;

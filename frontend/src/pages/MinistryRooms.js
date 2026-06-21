@@ -9,6 +9,7 @@ import {
   MdCheckCircle,
   MdBuild,
 } from "react-icons/md";
+import { FiSearch } from "react-icons/fi";
 
 const PAGE_SIZE = 5;
 
@@ -36,6 +37,7 @@ const MinistryRooms = () => {
   const [showForm, setShowForm] = useState(false);
   const [repair, setRepair] = useState(false);
   const [page, setPage] = useState(1);
+  const [keyword, setKeyword] = useState("");
 
   const [formData, setFormData] = useState({
     classroom_id: "",
@@ -127,8 +129,24 @@ const MinistryRooms = () => {
     }
   };
 
-  const totalPages = Math.max(1, Math.ceil(rooms.length / PAGE_SIZE));
-  const paginatedRooms = rooms.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const normalizedKeyword = keyword.trim().toLowerCase();
+  const filteredRooms = normalizedKeyword
+    ? rooms.filter((room) =>
+        [
+          room.classroom_id,
+          room.capacity,
+          room.type,
+          room.description,
+          room.status,
+        ]
+          .filter((value) => value !== undefined && value !== null)
+          .join(" ")
+          .toLowerCase()
+          .includes(normalizedKeyword),
+      )
+    : rooms;
+  const totalPages = Math.max(1, Math.ceil(filteredRooms.length / PAGE_SIZE));
+  const paginatedRooms = filteredRooms.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
   const scheduledRoomIds = new Set(schedules.map((s) => s.classroom_id));
   const isScheduledRepair = repair && scheduledRoomIds.has(formData.classroom_id);
   const readyRooms = rooms.filter((r) => r.status === "Ready").length;
@@ -329,6 +347,18 @@ const MinistryRooms = () => {
       <div style={S.tableWrapper}>
         <div style={S.tableHeader}>
           <span style={S.tableTitle}>Danh sách phòng học</span>
+          <div style={S.searchWrap}>
+            <FiSearch size={15} color="#94a3b8" />
+            <input
+              value={keyword}
+              onChange={(e) => {
+                setKeyword(e.target.value);
+                setPage(1);
+              }}
+              placeholder="Tim ma phong, loai, thiet bi, trang thai..."
+              style={S.searchInput}
+            />
+          </div>
         </div>
 
         <div style={{ overflowX: "auto" }}>
@@ -397,7 +427,7 @@ const MinistryRooms = () => {
         <div style={S.tableFooter}>
           <span>
             Hiển thị {(page - 1) * PAGE_SIZE + 1}–
-            {Math.min(page * PAGE_SIZE, rooms.length)} trên {rooms.length} phòng học
+            {Math.min(page * PAGE_SIZE, filteredRooms.length)} trên {filteredRooms.length} phòng học
           </span>
           <div style={S.pageControls}>
             <button
@@ -605,8 +635,33 @@ const S = {
     overflow: "hidden",
     border: "1px solid #e2e8f0",
   },
-  tableHeader: { padding: "20px 24px", borderBottom: "1px solid #f1f5f9" },
+  tableHeader: {
+    padding: "20px 24px",
+    borderBottom: "1px solid #f1f5f9",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: "12px",
+    flexWrap: "wrap",
+  },
   tableTitle: { fontSize: "16px", fontWeight: 700, color: "#1e293b" },
+  searchWrap: {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    border: "1px solid #e2e8f0",
+    borderRadius: 8,
+    padding: "0 12px",
+    minWidth: 320,
+    background: "#fff",
+  },
+  searchInput: {
+    border: "none",
+    outline: "none",
+    padding: "10px 0",
+    fontSize: 14,
+    width: "100%",
+  },
   table: { width: "100%", borderCollapse: "collapse" },
   theadRow: { background: "#f1f5f9" },
   th: {

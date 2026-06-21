@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Routes, Route, Link, useLocation } from "react-router-dom";
 import MinistrySchedule from "./MinistrySchedule";
 import MinistryRooms from "./MinistryRooms";
@@ -22,6 +22,7 @@ import {
   majorsAPI,
   roomsAPI,
   semestersAPI,
+  studentClassesAPI,
   studentsAPI,
   subjectsAPI,
   teachersAPI,
@@ -282,6 +283,11 @@ const STAT_ICONS = {
     bg: "#e0f2fe",
     svg: <MdMeetingRoom size={22} color="#0ea5e9" />,
   },
+  studentClasses: {
+    color: "#0891b2",
+    bg: "#cffafe",
+    svg: <PiStudentDuotone size={22} color="#0891b2" />,
+  },
   activeSemester: {
     color: "#dc2626",
     bg: "#fee2e2",
@@ -297,6 +303,7 @@ const MinistryDashboard = () => {
   const [subjects, setSubjects] = useState([]);
   const [courses, setCourses] = useState([]);
   const [rooms, setRooms] = useState([]);
+  const [studentClasses, setStudentClasses] = useState([]);
   const [activeSemester, setActiveSemester] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
@@ -311,6 +318,7 @@ const MinistryDashboard = () => {
         subjectsRes,
         coursesRes,
         roomsRes,
+        studentClassesRes,
         semestersRes,
       ] = await Promise.all([
         studentsAPI.getAll(),
@@ -320,6 +328,7 @@ const MinistryDashboard = () => {
         subjectsAPI.getAll(),
         coursesAPI.getAll(),
         roomsAPI.getAll(),
+        studentClassesAPI.getAll(),
         semestersAPI.getAll(),
       ]);
 
@@ -330,6 +339,7 @@ const MinistryDashboard = () => {
       setSubjects(subjectsRes.data || []);
       setCourses(coursesRes.data || []);
       setRooms(roomsRes.data || []);
+      setStudentClasses(studentClassesRes.data || []);
       setActiveSemester(
         (semestersRes.data || []).find((semester) => semester.is_active) ||
           null,
@@ -356,10 +366,25 @@ const MinistryDashboard = () => {
             marginBottom: 6,
           }}
         >
-          Chào mừng trở lại, Admin
+          Chào mừng trở lại, Giáo vụ
         </h1>
         <p style={{ color: "#94a3b8", fontSize: 14 }}>
           Dưới đây là tóm tắt các chỉ số cốt lõi của hệ thống.
+        </p>
+        <p
+          style={{
+            color: "#475569",
+            fontSize: 13,
+            fontWeight: 600,
+            marginTop: 8,
+          }}
+        >
+          Kỳ học hiện tại:{" "}
+          <span style={{ color: "#dc2626" }}>
+            {activeSemester
+              ? `${activeSemester.name} ${activeSemester.school_year}`
+              : "Chưa thiết lập"}
+          </span>
         </p>
       </div>
 
@@ -401,12 +426,9 @@ const MinistryDashboard = () => {
             value: rooms.length,
           },
           {
-            key: "activeSemester",
-            label: "KỲ HỌC HIỆN TẠI",
-            value: activeSemester
-              ? `${activeSemester.name} ${activeSemester.school_year}`
-              : "Chưa set",
-            isText: true,
+            key: "studentClasses",
+            label: "SỐ LƯỢNG LỚP SINH VIÊN",
+            value: studentClasses.length,
           },
         ].map((stat) => (
           <div className="edu-stat-card" key={stat.key}>

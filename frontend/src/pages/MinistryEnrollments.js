@@ -6,7 +6,7 @@ import {
   semestersAPI,
 } from "../services/api";
 import toast from "react-hot-toast";
-import { FiPlus } from "react-icons/fi";
+import { FiPlus, FiSearch } from "react-icons/fi";
 
 const PAGE_SIZE = 10;
 
@@ -18,6 +18,7 @@ const MinistryEnrollments = () => {
   const [selectedSemesterId, setSelectedSemesterId] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [page, setPage] = useState(1);
+  const [keyword, setKeyword] = useState("");
 
   const [formData, setFormData] = useState({
     student_id: "",
@@ -119,12 +120,33 @@ const MinistryEnrollments = () => {
   const courseById = new Map(
     courses.map((course) => [course.course_id, course]),
   );
-  const filteredEnrollments = selectedSemesterId
+  const semesterEnrollments = selectedSemesterId
     ? enrollments.filter((enroll) => {
         const course = courseById.get(enroll.course_id);
         return course?.semester_id === selectedSemesterId;
       })
     : enrollments;
+  const normalizedKeyword = keyword.trim().toLowerCase();
+  const filteredEnrollments = normalizedKeyword
+    ? semesterEnrollments.filter((enroll) =>
+        [
+          enroll.enrollment_id,
+          enroll.student_id,
+          enroll.student?.name,
+          enroll.course_id,
+          enroll.course?.course_code,
+          enroll.course?.subject_id,
+          enroll.course?.subject?.name,
+          enroll.course?.teacher_id,
+          enroll.course?.teacher?.name,
+          enroll.createdAt ? new Date(enroll.createdAt).toLocaleDateString("vi-VN") : "",
+        ]
+          .filter((value) => value !== undefined && value !== null)
+          .join(" ")
+          .toLowerCase()
+          .includes(normalizedKeyword),
+      )
+    : semesterEnrollments;
   const filteredCourses = selectedSemesterId
     ? courses.filter((course) => course.semester_id === selectedSemesterId)
     : courses;
@@ -191,6 +213,18 @@ const MinistryEnrollments = () => {
             </option>
           ))}
         </select>
+        <div style={searchWrap}>
+          <FiSearch size={15} color="#94a3b8" />
+          <input
+            value={keyword}
+            onChange={(e) => {
+              setKeyword(e.target.value);
+              setPage(1);
+            }}
+            placeholder="Tim sinh vien, khoa hoc, mon hoc..."
+            style={searchInput}
+          />
+        </div>
       </div>
 
       {/* MODAL FORM */}
@@ -519,7 +553,7 @@ const statBanner = {
 
 const filterBar = {
   display: "grid",
-  gridTemplateColumns: "120px minmax(220px, 360px)",
+  gridTemplateColumns: "120px minmax(220px, 360px) minmax(260px, 1fr)",
   alignItems: "center",
   gap: "12px",
   background: "#fff",
@@ -527,6 +561,24 @@ const filterBar = {
   borderRadius: "12px",
   padding: "14px 18px",
   marginBottom: "18px",
+};
+
+const searchWrap = {
+  display: "flex",
+  alignItems: "center",
+  gap: 8,
+  border: "1px solid #e2e8f0",
+  borderRadius: 8,
+  padding: "0 12px",
+  background: "#fff",
+};
+
+const searchInput = {
+  border: "none",
+  outline: "none",
+  padding: "10px 0",
+  fontSize: 14,
+  width: "100%",
 };
 
 const filterLabel = {

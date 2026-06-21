@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { majorsAPI, subjectsAPI } from "../services/api";
 import toast from "react-hot-toast";
 import { MdMenuBook } from "react-icons/md";
-import { FiPlus, FiEdit2, FiTrash2 } from "react-icons/fi";
+import { FiPlus, FiEdit2, FiTrash2, FiSearch } from "react-icons/fi";
 
 const PAGE_SIZE = 5;
 
@@ -29,6 +29,7 @@ const MinistrySubjects = () => {
   const [showForm, setShowForm] = useState(false);
   const [repair, setRepair] = useState(false);
   const [page, setPage] = useState(1);
+  const [keyword, setKeyword] = useState("");
   const [formData, setFormData] = useState({
     subject_id: "",
     name: "",
@@ -170,8 +171,29 @@ const MinistrySubjects = () => {
     }
   };
 
-  const totalPages = Math.max(1, Math.ceil(subjects.length / PAGE_SIZE));
-  const paginatedSubjects = subjects.slice(
+  const normalizedKeyword = keyword.trim().toLowerCase();
+  const filteredSubjects = normalizedKeyword
+    ? subjects.filter((subject) =>
+        [
+          subject.subject_id,
+          subject.name,
+          subject.credits,
+          subject.major_id,
+          subject.major?.name,
+          subject.major?.department_id,
+          subject.major?.department?.name,
+          subject.allow_same_major ? "same major cung nganh" : "public",
+          subject.allow_same_department ? "same department cung khoa" : "public",
+        ]
+          .filter((value) => value !== undefined && value !== null)
+          .join(" ")
+          .toLowerCase()
+          .includes(normalizedKeyword),
+      )
+    : subjects;
+
+  const totalPages = Math.max(1, Math.ceil(filteredSubjects.length / PAGE_SIZE));
+  const paginatedSubjects = filteredSubjects.slice(
     (page - 1) * PAGE_SIZE,
     page * PAGE_SIZE,
   );
@@ -369,6 +391,18 @@ const MinistrySubjects = () => {
       <div style={tableCard}>
         <div style={tableHeader}>
           <h3 style={tableTitle}>Danh sách môn học hiện tại</h3>
+          <div style={searchWrap}>
+            <FiSearch size={15} color="#94a3b8" />
+            <input
+              value={keyword}
+              onChange={(e) => {
+                setKeyword(e.target.value);
+                setPage(1);
+              }}
+              placeholder="Tim ma mon, ten mon, khoa, chuyen nganh..."
+              style={searchInput}
+            />
+          </div>
         </div>
 
         <div style={{ overflowX: "auto" }}>
@@ -438,12 +472,12 @@ const MinistrySubjects = () => {
           </table>
         </div>
 
-        {subjects.length > 0 && (
+        {filteredSubjects.length > 0 && (
           <div style={tableFooter}>
             <span style={{ color: "#94a3b8", fontSize: "13px" }}>
               Hiển thị {(page - 1) * PAGE_SIZE + 1}-
-              {Math.min(page * PAGE_SIZE, subjects.length)} trên{" "}
-              {subjects.length} môn học
+              {Math.min(page * PAGE_SIZE, filteredSubjects.length)} trên{" "}
+              {filteredSubjects.length} môn học
             </span>
             <div style={pageControls}>
               <button
@@ -614,12 +648,34 @@ const tableCard = {
 const tableHeader = {
   padding: "18px 24px 14px",
   borderBottom: "1px solid #f1f5f9",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  gap: "12px",
+  flexWrap: "wrap",
 };
 const tableTitle = {
   margin: 0,
   fontSize: "15px",
   fontWeight: 700,
   color: "#1e293b",
+};
+const searchWrap = {
+  display: "flex",
+  alignItems: "center",
+  gap: 8,
+  border: "1px solid #e2e8f0",
+  borderRadius: 8,
+  padding: "0 12px",
+  minWidth: 320,
+  background: "#fff",
+};
+const searchInput = {
+  border: "none",
+  outline: "none",
+  padding: "10px 0",
+  fontSize: 14,
+  width: "100%",
 };
 const table = {
   width: "100%",

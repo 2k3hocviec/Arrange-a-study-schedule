@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { MdSubject } from "react-icons/md";
+import { FiSearch } from "react-icons/fi";
 import { departmentsAPI, majorsAPI } from "../services/api";
 
 const EMPTY_FORM = {
@@ -33,6 +34,7 @@ const MinistryMajors = () => {
   const [formData, setFormData] = useState(EMPTY_FORM);
   const [editingId, setEditingId] = useState(null);
   const [showForm, setShowForm] = useState(false);
+  const [keyword, setKeyword] = useState("");
 
   const fetchMajors = async () => {
     try {
@@ -119,6 +121,25 @@ const MinistryMajors = () => {
     }
   };
 
+  const normalizedKeyword = keyword.trim().toLowerCase();
+  const filteredMajors = normalizedKeyword
+    ? majors.filter((major) =>
+        [
+          major.major_id,
+          major.name,
+          major.description,
+          major.department_id,
+          major.department?.name,
+          major._count?.students,
+          major._count?.subjects,
+        ]
+          .filter((value) => value !== undefined && value !== null)
+          .join(" ")
+          .toLowerCase()
+          .includes(normalizedKeyword),
+      )
+    : majors;
+
   return (
     <div style={styles.wrapper}>
       <div style={styles.headerRow}>
@@ -203,6 +224,17 @@ const MinistryMajors = () => {
       )}
 
       <div style={styles.tableWrapper}>
+        <div style={styles.tableHeader}>
+          <div style={styles.searchWrap}>
+            <FiSearch size={15} color="#94a3b8" />
+            <input
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
+              placeholder="Tim ma, ten chuyen nganh, khoa..."
+              style={styles.searchInput}
+            />
+          </div>
+        </div>
         <table style={styles.table}>
           <thead>
             <tr>
@@ -215,14 +247,14 @@ const MinistryMajors = () => {
             </tr>
           </thead>
           <tbody>
-            {majors.length === 0 ? (
+            {filteredMajors.length === 0 ? (
               <tr>
                 <td colSpan={6} style={styles.emptyCell}>
                   Chưa có chuyên ngành nào
                 </td>
               </tr>
             ) : (
-              majors.map((major) => (
+              filteredMajors.map((major) => (
                 <tr key={major.major_id} style={styles.tbodyRow}>
                   <td style={{ ...styles.td, color: "#4f63d2", fontWeight: 700 }}>
                     {major.major_id}
@@ -331,6 +363,29 @@ const styles = {
     borderRadius: 10,
     overflowX: "auto",
     boxShadow: "0 1px 4px rgba(15, 23, 42, 0.08)",
+  },
+  tableHeader: {
+    padding: "16px",
+    borderBottom: "1px solid #eef2f7",
+    display: "flex",
+    justifyContent: "flex-end",
+  },
+  searchWrap: {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    border: "1px solid #e2e8f0",
+    borderRadius: 8,
+    padding: "0 12px",
+    minWidth: 300,
+    background: "#fff",
+  },
+  searchInput: {
+    border: "none",
+    outline: "none",
+    padding: "10px 0",
+    fontSize: 14,
+    width: "100%",
   },
   table: { width: "100%", borderCollapse: "collapse" },
   th: {

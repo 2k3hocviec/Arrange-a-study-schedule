@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { GiTeacher } from "react-icons/gi";
+import { FiSearch } from "react-icons/fi";
 import { departmentsAPI, teachersAPI, usersAPI } from "../services/api";
 import "../styles/MinistryTeacher.css";
 
@@ -42,6 +43,7 @@ const AdminTeachers = () => {
   const [showForm, setShowForm] = useState(false);
   const [repair, setRepair] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [keyword, setKeyword] = useState("");
   const [formData, setFormData] = useState(EMPTY_FORM);
 
   const fetchTeachers = async () => {
@@ -170,8 +172,28 @@ const AdminTeachers = () => {
     }
   };
 
-  const totalPages = Math.max(1, Math.ceil(teachers.length / ROWS_PER_PAGE));
-  const paginatedTeachers = teachers.slice(
+  const normalizedKeyword = keyword.trim().toLowerCase();
+  const filteredTeachers = normalizedKeyword
+    ? teachers.filter((teacher) =>
+        [
+          teacher.teacher_id,
+          teacher.name,
+          teacher.degree,
+          teacher.expertise,
+          teacher.department_id,
+          teacher.department?.name,
+          teacher.user?.email,
+          teacher.user_id,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase()
+          .includes(normalizedKeyword),
+      )
+    : teachers;
+
+  const totalPages = Math.max(1, Math.ceil(filteredTeachers.length / ROWS_PER_PAGE));
+  const paginatedTeachers = filteredTeachers.slice(
     (currentPage - 1) * ROWS_PER_PAGE,
     currentPage * ROWS_PER_PAGE,
   );
@@ -329,6 +351,20 @@ const AdminTeachers = () => {
       )}
 
       <div className="teacher-table-wrapper">
+        <div className="teacher-table-header">
+          <div className="teacher-search-wrap">
+            <FiSearch size={15} color="#94a3b8" />
+            <input
+              className="teacher-search-input"
+              value={keyword}
+              onChange={(e) => {
+                setKeyword(e.target.value);
+                setCurrentPage(1);
+              }}
+              placeholder="Tim ma, ten, email, khoa, chuyen mon..."
+            />
+          </div>
+        </div>
         <table className="teacher-table">
           <thead>
             <tr className="teacher-thead-row">

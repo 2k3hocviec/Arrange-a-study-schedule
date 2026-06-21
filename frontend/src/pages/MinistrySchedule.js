@@ -9,7 +9,7 @@ import {
   MdOutlineCalendarMonth,
   MdMenuBook,
 } from "react-icons/md";
-import { FiRefreshCw } from "react-icons/fi";
+import { FiRefreshCw, FiSearch } from "react-icons/fi";
 
 const PAGE_SIZE = 10;
 
@@ -111,6 +111,7 @@ const MinistrySchedule = () => {
   const [rooms, setRooms] = useState([]);
   const [repair, setRepair] = useState(false);
   const [page, setPage] = useState(1);
+  const [keyword, setKeyword] = useState("");
   const [formData, setFormData] = useState(EMPTY_FORM);
 
   const fetchData = useCallback(async () => {
@@ -205,9 +206,33 @@ const MinistrySchedule = () => {
   const filteredCourses = selectedSemesterId
     ? courses.filter((c) => c.semester_id === selectedSemesterId)
     : courses;
-  const filteredSchedules = selectedSemesterId
+  const semesterSchedules = selectedSemesterId
     ? schedules.filter((s) => s.course?.semester_id === selectedSemesterId)
     : schedules;
+  const normalizedKeyword = keyword.trim().toLowerCase();
+  const filteredSchedules = normalizedKeyword
+    ? semesterSchedules.filter((s) =>
+        [
+          s.schedule_id,
+          s.course_id,
+          s.course?.course_code,
+          s.course?.subject_id,
+          s.course?.subject?.name,
+          s.course?.teacher_id,
+          s.course?.teacher?.name,
+          s.classroom_id,
+          DAY_LABEL[s.dayOfWeek] || s.dayOfWeek,
+          s.start_slot,
+          s.end_slot,
+          s.start_date ? new Date(s.start_date).toLocaleDateString("vi-VN") : "",
+          s.end_date ? new Date(s.end_date).toLocaleDateString("vi-VN") : "",
+        ]
+          .filter((value) => value !== undefined && value !== null)
+          .join(" ")
+          .toLowerCase()
+          .includes(normalizedKeyword),
+      )
+    : semesterSchedules;
   const scheduledCourseIds = new Set(schedules.map((s) => s.course_id));
   const schedulableCourses = filteredCourses.filter(
     (course) =>
@@ -442,6 +467,18 @@ const MinistrySchedule = () => {
               <MdOutlineCalendarMonth size={17} color="#4f46e5" />
             </div>
             <span>Danh sách lịch học hiện tại</span>
+          </div>
+          <div style={S.searchWrap}>
+            <FiSearch size={15} color="#94a3b8" />
+            <input
+              value={keyword}
+              onChange={(e) => {
+                setKeyword(e.target.value);
+                setPage(1);
+              }}
+              placeholder="Tim ma lich, khoa hoc, phong, giang vien..."
+              style={S.searchInput}
+            />
           </div>
         </div>
         <div style={{ overflowX: "auto" }}>
@@ -735,6 +772,11 @@ const S = {
   tableHeader: {
     padding: "16px 22px 14px",
     borderBottom: "1px solid #f1f5f9",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: "12px",
+    flexWrap: "wrap",
   },
   tableCardTitle: {
     display: "flex",
@@ -743,6 +785,23 @@ const S = {
     fontSize: "15px",
     fontWeight: 700,
     color: "#1e293b",
+  },
+  searchWrap: {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    border: "1px solid #e2e8f0",
+    borderRadius: 8,
+    padding: "0 12px",
+    minWidth: 340,
+    background: "#fff",
+  },
+  searchInput: {
+    border: "none",
+    outline: "none",
+    padding: "10px 0",
+    fontSize: 14,
+    width: "100%",
   },
   table: { width: "100%", borderCollapse: "collapse" },
   theadRow: { background: "#f8fafc" },

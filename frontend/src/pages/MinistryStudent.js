@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { studentClassesAPI, studentsAPI, usersAPI } from "../services/api";
 import toast from "react-hot-toast";
 import { PiStudentDuotone } from "react-icons/pi";
+import { FiSearch } from "react-icons/fi";
 
 const ROWS_PER_PAGE = 5;
 
@@ -27,6 +28,7 @@ const MinistryStudents = () => {
   const [showForm, setShowForm] = useState(false);
   const [repair, setRepair] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [keyword, setKeyword] = useState("");
 
   const [formData, setFormData] = useState({
     user_id: "",
@@ -145,9 +147,31 @@ const MinistryStudents = () => {
     }
   };
 
+  const normalizedKeyword = keyword.trim().toLowerCase();
+  const filteredStudents = normalizedKeyword
+    ? students.filter((student) =>
+        [
+          student.student_id,
+          student.name,
+          student.user?.email,
+          student.class_id,
+          student.class?.name,
+          student.class?.major_id,
+          student.class?.major?.name,
+          student.class?.major?.department_id,
+          student.class?.major?.department?.name,
+          student.user_id,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase()
+          .includes(normalizedKeyword),
+      )
+    : students;
+
   // Pagination
-  const totalPages = Math.max(1, Math.ceil(students.length / ROWS_PER_PAGE));
-  const paginatedStudents = students.slice(
+  const totalPages = Math.max(1, Math.ceil(filteredStudents.length / ROWS_PER_PAGE));
+  const paginatedStudents = filteredStudents.slice(
     (currentPage - 1) * ROWS_PER_PAGE,
     currentPage * ROWS_PER_PAGE,
   );
@@ -284,6 +308,20 @@ const MinistryStudents = () => {
 
       {/* Table */}
       <div style={styles.tableWrapper}>
+        <div style={styles.tableHeader}>
+          <div style={styles.searchWrap}>
+            <FiSearch size={15} color="#94a3b8" />
+            <input
+              value={keyword}
+              onChange={(e) => {
+                setKeyword(e.target.value);
+                setCurrentPage(1);
+              }}
+              placeholder="Tim ma, ten, email, lop, chuyen nganh..."
+              style={styles.searchInput}
+            />
+          </div>
+        </div>
         <table style={styles.table}>
           <thead>
             <tr style={styles.theadRow}>
@@ -520,6 +558,29 @@ const styles = {
     border: "1px solid #e4e9f4",
     overflow: "hidden",
     boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+  },
+  tableHeader: {
+    padding: "16px",
+    borderBottom: "1px solid #eef0f7",
+    display: "flex",
+    justifyContent: "flex-end",
+  },
+  searchWrap: {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    border: "1px solid #e2e8f0",
+    borderRadius: 8,
+    padding: "0 12px",
+    minWidth: 280,
+    background: "#fff",
+  },
+  searchInput: {
+    border: "none",
+    outline: "none",
+    padding: "10px 0",
+    fontSize: 14,
+    width: "100%",
   },
   table: { width: "100%", borderCollapse: "collapse" },
   theadRow: { background: "#ffffff" },

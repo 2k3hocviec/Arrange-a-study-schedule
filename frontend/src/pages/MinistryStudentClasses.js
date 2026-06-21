@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { PiStudentDuotone } from "react-icons/pi";
+import { FiSearch } from "react-icons/fi";
 import { majorsAPI, studentClassesAPI } from "../services/api";
 
 const EMPTY_FORM = {
@@ -37,6 +38,7 @@ const MinistryStudentClasses = () => {
   const [formData, setFormData] = useState(EMPTY_FORM);
   const [editingId, setEditingId] = useState(null);
   const [showForm, setShowForm] = useState(false);
+  const [keyword, setKeyword] = useState("");
 
   const fetchClasses = async () => {
     try {
@@ -135,6 +137,25 @@ const MinistryStudentClasses = () => {
       });
     }
   };
+
+  const normalizedKeyword = keyword.trim().toLowerCase();
+  const filteredClasses = normalizedKeyword
+    ? classes.filter((item) =>
+        [
+          item.class_id,
+          item.name,
+          item.cohort,
+          item.major_id,
+          item.major?.name,
+          item.major?.department_id,
+          item.major?.department?.name,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase()
+          .includes(normalizedKeyword),
+      )
+    : classes;
 
   return (
     <div style={styles.wrapper}>
@@ -236,6 +257,17 @@ const MinistryStudentClasses = () => {
       )}
 
       <div style={styles.tableWrapper}>
+        <div style={styles.tableHeader}>
+          <div style={styles.searchWrap}>
+            <FiSearch size={15} color="#94a3b8" />
+            <input
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
+              placeholder="Tim ma lop, ten lop, khoa, chuyen nganh..."
+              style={styles.searchInput}
+            />
+          </div>
+        </div>
         <table style={styles.table}>
           <thead>
             <tr>
@@ -249,14 +281,14 @@ const MinistryStudentClasses = () => {
             </tr>
           </thead>
           <tbody>
-            {classes.length === 0 ? (
+            {filteredClasses.length === 0 ? (
               <tr>
                 <td colSpan={7} style={styles.emptyCell}>
                   Chưa có lớp học nào
                 </td>
               </tr>
             ) : (
-              classes.map((item) => {
+              filteredClasses.map((item) => {
                 const studentCount = item._count?.students || 0;
                 return (
                   <tr key={item.class_id} style={styles.tbodyRow}>
@@ -405,6 +437,29 @@ const styles = {
     border: "1px solid #e4e9f4",
     overflow: "hidden",
     boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+  },
+  tableHeader: {
+    padding: "16px",
+    borderBottom: "1px solid #eef2f7",
+    display: "flex",
+    justifyContent: "flex-end",
+  },
+  searchWrap: {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    border: "1px solid #e2e8f0",
+    borderRadius: 8,
+    padding: "0 12px",
+    minWidth: 300,
+    background: "#fff",
+  },
+  searchInput: {
+    border: "none",
+    outline: "none",
+    padding: "10px 0",
+    fontSize: 14,
+    width: "100%",
   },
   table: { width: "100%", borderCollapse: "collapse" },
   th: {

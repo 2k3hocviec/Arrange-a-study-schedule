@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import { FaCheck, FaTimes } from "react-icons/fa";
+import { FiSearch } from "react-icons/fi";
 import { teacherBusySchedulesAPI } from "../services/api";
 
 const FILTERS = [
@@ -41,6 +42,7 @@ const getErrorMessage = (err) => {
 const MinistryTeacherBusySchedules = () => {
   const [items, setItems] = useState([]);
   const [status, setStatus] = useState("pending");
+  const [keyword, setKeyword] = useState("");
   const [rejectingId, setRejectingId] = useState(null);
   const [rejectReason, setRejectReason] = useState("");
 
@@ -68,11 +70,33 @@ const MinistryTeacherBusySchedules = () => {
   }, [items]);
 
   const displayedItems = useMemo(
-    () =>
-      status === "all"
-        ? items
-        : items.filter((item) => item.status === status),
-    [items, status],
+    () => {
+      const statusItems =
+        status === "all" ? items : items.filter((item) => item.status === status);
+      const normalizedKeyword = keyword.trim().toLowerCase();
+      if (!normalizedKeyword) return statusItems;
+
+      return statusItems.filter((item) =>
+        [
+          item.busy_id,
+          item.teacher_id,
+          item.teacher?.name,
+          item.teacher?.user?.email,
+          item.busy_date ? new Date(item.busy_date).toLocaleDateString("vi-VN") : "",
+          item.start_slot,
+          item.end_slot,
+          item.reason,
+          STATUS_LABEL[item.status],
+          item.status,
+          item.reject_reason,
+        ]
+          .filter((value) => value !== undefined && value !== null)
+          .join(" ")
+          .toLowerCase()
+          .includes(normalizedKeyword),
+      );
+    },
+    [items, status, keyword],
   );
 
   const approve = async (busyId) => {
@@ -129,6 +153,18 @@ const MinistryTeacherBusySchedules = () => {
             <span style={S.filterCount}>{counts[filter.value] || 0}</span>
           </button>
         ))}
+      </div>
+
+      <div style={S.searchRow}>
+        <div style={S.searchWrap}>
+          <FiSearch size={15} color="#94a3b8" />
+          <input
+            value={keyword}
+            onChange={(e) => setKeyword(e.target.value)}
+            placeholder="Tim giao vien, ngay, tiet, ly do, trang thai..."
+            style={S.searchInput}
+          />
+        </div>
       </div>
 
       <div style={S.tableCard}>
@@ -278,6 +314,28 @@ const S = {
     marginLeft: 8,
     fontSize: 12,
     opacity: 0.8,
+  },
+  searchRow: {
+    display: "flex",
+    justifyContent: "flex-end",
+    marginBottom: 16,
+  },
+  searchWrap: {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    border: "1px solid #e2e8f0",
+    borderRadius: 8,
+    padding: "0 12px",
+    minWidth: 360,
+    background: "#fff",
+  },
+  searchInput: {
+    border: "none",
+    outline: "none",
+    padding: "10px 0",
+    fontSize: 14,
+    width: "100%",
   },
   tableCard: {
     background: "#fff",

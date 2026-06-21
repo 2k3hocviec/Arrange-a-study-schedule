@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { MdSubject } from "react-icons/md";
+import { FiSearch } from "react-icons/fi";
 import { departmentsAPI } from "../services/api";
 
 const EMPTY_FORM = {
@@ -28,6 +29,7 @@ const MinistryDepartments = () => {
   const [formData, setFormData] = useState(EMPTY_FORM);
   const [editingId, setEditingId] = useState(null);
   const [showForm, setShowForm] = useState(false);
+  const [keyword, setKeyword] = useState("");
 
   const fetchDepartments = async () => {
     try {
@@ -105,12 +107,30 @@ const MinistryDepartments = () => {
     }
   };
 
+  const normalizedKeyword = keyword.trim().toLowerCase();
+  const filteredDepartments = normalizedKeyword
+    ? departments.filter((item) =>
+        [
+          item.department_id,
+          item.name,
+          item.description,
+          item._count?.studentClasses,
+          item._count?.teachers,
+          item._count?.majors,
+        ]
+          .filter((value) => value !== undefined && value !== null)
+          .join(" ")
+          .toLowerCase()
+          .includes(normalizedKeyword),
+      )
+    : departments;
+
   return (
     <div style={styles.wrapper}>
       <div style={styles.headerRow}>
         <h2 style={styles.title}>
           <MdSubject style={{ marginRight: 10 }} />
-          QUAN LY KHOA
+          QUẢN LÝ KHOA
         </h2>
         <button style={styles.addBtn} onClick={openCreate}>
           + Them khoa
@@ -169,29 +189,42 @@ const MinistryDepartments = () => {
       )}
 
       <div style={styles.tableWrapper}>
+        <div style={styles.tableHeader}>
+          <div style={styles.searchWrap}>
+            <FiSearch size={15} color="#94a3b8" />
+            <input
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
+              placeholder="Tim ma khoa, ten khoa, mo ta..."
+              style={styles.searchInput}
+            />
+          </div>
+        </div>
         <table style={styles.table}>
           <thead>
             <tr>
-              <th style={styles.th}>MA KHOA</th>
-              <th style={styles.th}>TEN KHOA</th>
-              <th style={styles.th}>MO TA</th>
-              <th style={styles.th}>LOP</th>
-              <th style={styles.th}>GIAO VIEN</th>
-              <th style={styles.th}>CHUYEN NGANH</th>
-              <th style={styles.th}>THAO TAC</th>
+              <th style={styles.th}>MÃ KHOA</th>
+              <th style={styles.th}>TÊN KHOA</th>
+              <th style={styles.th}>MÔ TẢ</th>
+              <th style={styles.th}>LỚP</th>
+              <th style={styles.th}>GIÁO VIÊN</th>
+              <th style={styles.th}>CHUYÊN NGÀNH</th>
+              <th style={styles.th}>THAO TÁC</th>
             </tr>
           </thead>
           <tbody>
-            {departments.length === 0 ? (
+            {filteredDepartments.length === 0 ? (
               <tr>
                 <td colSpan={7} style={styles.emptyCell}>
                   Chua co khoa nao
                 </td>
               </tr>
             ) : (
-              departments.map((item) => (
+              filteredDepartments.map((item) => (
                 <tr key={item.department_id} style={styles.tbodyRow}>
-                  <td style={{ ...styles.td, color: "#4f63d2", fontWeight: 700 }}>
+                  <td
+                    style={{ ...styles.td, color: "#4f63d2", fontWeight: 700 }}
+                  >
                     {item.department_id}
                   </td>
                   <td style={styles.td}>{item.name}</td>
@@ -200,7 +233,10 @@ const MinistryDepartments = () => {
                   <td style={styles.td}>{item._count?.teachers || 0}</td>
                   <td style={styles.td}>{item._count?.majors || 0}</td>
                   <td style={styles.td}>
-                    <button style={styles.editBtn} onClick={() => openEdit(item)}>
+                    <button
+                      style={styles.editBtn}
+                      onClick={() => openEdit(item)}
+                    >
                       Sua
                     </button>
                     <button
@@ -295,6 +331,29 @@ const styles = {
     borderRadius: 10,
     overflowX: "auto",
     boxShadow: "0 1px 4px rgba(15, 23, 42, 0.08)",
+  },
+  tableHeader: {
+    padding: "16px",
+    borderBottom: "1px solid #eef2f7",
+    display: "flex",
+    justifyContent: "flex-end",
+  },
+  searchWrap: {
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    border: "1px solid #e2e8f0",
+    borderRadius: 8,
+    padding: "0 12px",
+    minWidth: 280,
+    background: "#fff",
+  },
+  searchInput: {
+    border: "none",
+    outline: "none",
+    padding: "10px 0",
+    fontSize: 14,
+    width: "100%",
   },
   table: { width: "100%", borderCollapse: "collapse" },
   th: {
