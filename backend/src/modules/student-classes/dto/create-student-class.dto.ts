@@ -3,5 +3,6 @@ export class CreateStudentClassDto {
   name!: string;
   cohort!: string;
   major!: string;
+  department_id!: string;
   capacity?: number;
 }

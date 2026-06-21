@@ -6,10 +6,14 @@ import {
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateStudentClassDto } from './dto/create-student-class.dto';
 import { UpdateStudentClassDto } from './dto/update-student-class.dto';
+import { DepartmentsService } from '../departments/departments.service';
 
 @Injectable()
 export class StudentClassesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly departmentsService: DepartmentsService,
+  ) {}
 
   private normalizeCapacity(capacity?: number | string | null) {
     if (capacity === undefined || capacity === null || capacity === '') {
@@ -30,6 +34,10 @@ export class StudentClassesService {
       throw new BadRequestException('Student class already exists');
     }
 
+    await this.departmentsService.ensureExists(
+      createStudentClassDto.department_id,
+    );
+
     return this.prisma.studentClass.create({
       data: {
         ...createStudentClassDto,
@@ -40,7 +48,7 @@ export class StudentClassesService {
 
   findAll() {
     return this.prisma.studentClass.findMany({
-      include: { _count: { select: { students: true } } },
+      include: { department: true, _count: { select: { students: true } } },
       orderBy: { class_id: 'asc' },
     });
   }
@@ -48,7 +56,7 @@ export class StudentClassesService {
   findOne(classId: string) {
     return this.prisma.studentClass.findUnique({
       where: { class_id: classId },
-      include: { _count: { select: { students: true } } },
+      include: { department: true, _count: { select: { students: true } } },
     });
   }
 
@@ -56,6 +64,12 @@ export class StudentClassesService {
     const studentClass = await this.findOne(id);
     if (!studentClass) {
       throw new NotFoundException('Student class not found');
+    }
+
+    if (updateStudentClassDto.department_id) {
+      await this.departmentsService.ensureExists(
+        updateStudentClassDto.department_id,
+      );
     }
 
     const capacity =
@@ -79,6 +93,7 @@ export class StudentClassesService {
         name: updateStudentClassDto.name,
         cohort: updateStudentClassDto.cohort,
         major: updateStudentClassDto.major,
+        department_id: updateStudentClassDto.department_id,
         capacity,
       },
     });

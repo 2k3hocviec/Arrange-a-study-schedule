@@ -7,12 +7,14 @@ import { CreateTeacherDto } from './dto/create-teacher.dto';
 import { UpdateTeacherDto } from './dto/update-teacher.dto';
 import { UsersService } from '../users/users.service';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { DepartmentsService } from '../departments/departments.service';
 
 @Injectable()
 export class TeachersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly userService: UsersService,
+    private readonly departmentsService: DepartmentsService,
   ) {}
 
   async create(createTeacherDto: CreateTeacherDto) {
@@ -30,6 +32,8 @@ export class TeachersService {
       throw new BadRequestException('This Objects does not teacher');
     }
 
+    await this.departmentsService.ensureExists(createTeacherDto.department_id);
+
     return this.prisma.teacher.create({ data: createTeacherDto });
   }
 
@@ -42,12 +46,16 @@ export class TeachersService {
             email: true,
           },
         },
+        department: true,
       },
     });
   }
 
   async findOne(id: string) {
-    return this.prisma.teacher.findUnique({ where: { teacher_id: id } });
+    return this.prisma.teacher.findUnique({
+      where: { teacher_id: id },
+      include: { department: true },
+    });
   }
 
   async update(id: string, updateTeacherDto: UpdateTeacherDto) {
@@ -63,6 +71,10 @@ export class TeachersService {
     const teacher = await this.findOne(id);
     if (!teacher) {
       throw new NotFoundException('Teacher not found');
+    }
+
+    if (updateTeacherDto.department_id) {
+      await this.departmentsService.ensureExists(updateTeacherDto.department_id);
     }
 
     return this.prisma.teacher.update({
@@ -137,6 +149,7 @@ export class TeachersService {
   async findByUserId(userId: number) {
     const teacher = await this.prisma.teacher.findUnique({
       where: { user_id: userId },
+      include: { department: true },
     });
     if (!teacher) {
       throw new NotFoundException('Teacher not found for this user');
@@ -146,7 +159,7 @@ export class TeachersService {
 
   async findAllId() {
     return this.prisma.teacher.findMany({
-      select: { teacher_id: true },
+      select: { teacher_id: true, name: true, department_id: true },
     });
   }
 }

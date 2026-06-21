@@ -80,7 +80,7 @@ export class StudentsService {
             email: true,
           },
         },
-        class: true,
+        class: { include: { department: true } },
       },
     });
   }
@@ -88,7 +88,7 @@ export class StudentsService {
   findOneByStudentID(studentId: string) {
     return this.prisma.student.findUnique({
       where: { student_id: studentId },
-      include: { class: true },
+      include: { class: { include: { department: true } } },
     });
   }
 
@@ -136,7 +136,7 @@ export class StudentsService {
   async findByUserId(userId: number) {
     const student = await this.prisma.student.findUnique({
       where: { user_id: userId },
-      include: { class: true },
+      include: { class: { include: { department: true } } },
     });
     if (!student) {
       throw new NotFoundException('Student not found for this user');

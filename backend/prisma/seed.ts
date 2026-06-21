@@ -824,6 +824,19 @@ async function main() {
     seededStudentUsers.push(seededUser);
   }
 
+  await prisma.department.upsert({
+    where: { department_id: 'DEFAULT' },
+    update: {
+      name: 'Khoa mac dinh',
+      description: 'Khoa mac dinh cho du lieu cu',
+    },
+    create: {
+      department_id: 'DEFAULT',
+      name: 'Khoa mac dinh',
+      description: 'Khoa mac dinh cho du lieu cu',
+    },
+  });
+
   for (const [index, user] of seededTeacherUsers.entries()) {
     const profile = teacherProfiles[index];
     const existingTeacher = await prisma.teacher.findUnique({
@@ -837,6 +850,7 @@ async function main() {
           name: profile.name,
           degree: profile.degree,
           expertise: profile.expertise,
+          department_id: 'DEFAULT',
         },
       });
       continue;
@@ -849,6 +863,7 @@ async function main() {
         name: profile.name,
         degree: profile.degree,
         expertise: profile.expertise,
+        department_id: 'DEFAULT',
       },
       create: {
         teacher_id: profile.teacher_id,
@@ -856,6 +871,7 @@ async function main() {
         name: profile.name,
         degree: profile.degree,
         expertise: profile.expertise,
+        department_id: 'DEFAULT',
       },
     });
   }
@@ -868,6 +884,7 @@ async function main() {
         name: 'Lớp mặc định',
         cohort: 'N/A',
         major: 'N/A',
+        department_id: 'DEFAULT',
         capacity: null,
       },
       create: {
@@ -875,6 +892,7 @@ async function main() {
         name: 'Lớp mặc định',
         cohort: 'N/A',
         major: 'N/A',
+        department_id: 'DEFAULT',
         capacity: null,
       },
     });
@@ -926,8 +944,14 @@ async function main() {
       update: {
         name: subject.name,
         credits: subject.credits,
+        department_id: 'DEFAULT',
+        is_general: false,
       },
-      create: subject,
+      create: {
+        ...subject,
+        department_id: 'DEFAULT',
+        is_general: false,
+      },
     });
   }
 

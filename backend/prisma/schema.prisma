@@ -21,14 +21,28 @@ model User {
   @@map("user")
 }
 
-model StudentClass {
-  class_id String @id
-  name     String
-  cohort   String
-  major    String
-  capacity Int?
+model Department {
+  department_id String  @id
+  name          String
+  description   String?
 
-  students Student[]
+  studentClasses StudentClass[]
+  teachers       Teacher[]
+  subjects       Subject[]
+
+  @@map("department")
+}
+
+model StudentClass {
+  class_id      String @id
+  name          String
+  cohort        String
+  major         String
+  capacity      Int?
+  department_id String @default("DEFAULT")
+
+  department Department @relation(fields: [department_id], references: [department_id])
+  students   Student[]
 
   @@map("student_class")
 }
@@ -47,13 +61,15 @@ model Student {
 }
 
 model Teacher {
-  teacher_id String @id
-  user_id    Int    @unique
-  name       String
-  degree     String
-  expertise  String
+  teacher_id    String @id
+  user_id       Int    @unique
+  name          String
+  degree        String
+  expertise     String
+  department_id String @default("DEFAULT")
 
   user          User                  @relation(fields: [user_id], references: [id])
+  department    Department            @relation(fields: [department_id], references: [department_id])
   course        Course[]
   busySchedules TeacherBusySchedule[]
 
@@ -78,11 +94,14 @@ model TeacherBusySchedule {
 }
 
 model Subject {
-  subject_id String @id
-  name       String
-  credits    Int
+  subject_id    String  @id
+  name          String
+  credits       Int
+  department_id String  @default("DEFAULT")
+  is_general    Boolean @default(false)
 
-  course Course[]
+  department Department @relation(fields: [department_id], references: [department_id])
+  course     Course[]
 
   @@map("subject")
 }

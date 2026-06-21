@@ -101,6 +101,17 @@ export class EnrollmentsService {
       );
     }
 
+    const studentDepartmentId = student.class?.department_id;
+    const subjectDepartmentId = course.subject?.department_id;
+    if (
+      !course.subject?.is_general &&
+      studentDepartmentId !== subjectDepartmentId
+    ) {
+      throw new BadRequestException(
+        'Subject is not available for this student department',
+      );
+    }
+
     if (!options.allowInactiveSemester && !course.semester?.is_active) {
       throw new BadRequestException(
         'This course is not in the active semester',

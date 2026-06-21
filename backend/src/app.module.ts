@@ -19,6 +19,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { SemestersModule } from './modules/semesters/semesters.module';
 import { TeacherBusySchedulesModule } from './modules/teacher-busy-schedules/teacher-busy-schedules.module';
 import { StudentClassesModule } from './modules/student-classes/student-classes.module';
+import { DepartmentsModule } from './modules/departments/departments.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { StudentClassesModule } from './modules/student-classes/student-classes.
     SemestersModule,
     TeacherBusySchedulesModule,
     StudentClassesModule,
+    DepartmentsModule,
     AuthModule,
     ChatbotModule,
   ],

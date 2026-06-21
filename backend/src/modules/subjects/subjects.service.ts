@@ -2,10 +2,14 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateSubjectDto } from './dto/create-subject.dto';
 import { UpdateSubjectDto } from './dto/update-subject.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { DepartmentsService } from '../departments/departments.service';
 
 @Injectable()
 export class SubjectsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly departmentsService: DepartmentsService,
+  ) {}
 
   async create(createSubjectDto: CreateSubjectDto) {
     const subjectOld = await this.findOne(createSubjectDto.subject_id);
@@ -14,15 +18,23 @@ export class SubjectsService {
       throw new BadRequestException('Subject_ID already exists');
     }
 
+    await this.departmentsService.ensureExists(createSubjectDto.department_id);
+
     return this.prisma.subject.create({ data: createSubjectDto });
   }
 
   async findAll() {
-    return this.prisma.subject.findMany();
+    return this.prisma.subject.findMany({
+      include: { department: true },
+      orderBy: { subject_id: 'asc' },
+    });
   }
 
   async findOne(id: string) {
-    return this.prisma.subject.findUnique({ where: { subject_id: id } });
+    return this.prisma.subject.findUnique({
+      where: { subject_id: id },
+      include: { department: true },
+    });
   }
 
   async update(id: string, updateSubjectDto: UpdateSubjectDto) {
@@ -30,6 +42,12 @@ export class SubjectsService {
 
     if (!subjectOld) {
       throw new BadRequestException('Subject does not exists');
+    }
+
+    if (updateSubjectDto.department_id) {
+      await this.departmentsService.ensureExists(
+        updateSubjectDto.department_id,
+      );
     }
 
     return this.prisma.subject.update({
@@ -52,7 +70,12 @@ export class SubjectsService {
 
   async findAllId() {
     return this.prisma.subject.findMany({
-      select: { subject_id: true },
+      select: {
+        subject_id: true,
+        name: true,
+        department_id: true,
+        is_general: true,
+      },
     });
   }
 }

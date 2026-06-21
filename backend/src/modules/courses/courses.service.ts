@@ -68,6 +68,17 @@ export class CoursesService {
     }
   }
 
+  private ensureTeacherCanTeachSubject(
+    teacher: { department_id?: string | null },
+    subject: { department_id?: string | null },
+  ) {
+    if (teacher.department_id !== subject.department_id) {
+      throw new BadRequestException(
+        'Teacher department does not match subject department',
+      );
+    }
+  }
+
   private hasCourseUpdateChanges(
     currentCourse: {
       course_code: string | null;
@@ -138,6 +149,8 @@ export class CoursesService {
       throw new BadRequestException('Not teacher or Not subject or Not semester');
     }
 
+    this.ensureTeacherCanTeachSubject(teacher, subject);
+
     const courseCode =
       createCourseDto.course_code?.trim() ||
       (await this.generateCourseCode(createCourseDto.subject_id));
@@ -196,18 +209,20 @@ export class CoursesService {
       throw new BadRequestException('Cannot update course that has schedule');
     }
 
-    const teacher = updateCourseDto.teacher_id
-      ? await this.teacherService.findOne(updateCourseDto.teacher_id)
-      : true;
-    const subject = updateCourseDto.subject_id
-      ? await this.subjectService.findOne(updateCourseDto.subject_id)
-      : true;
+    const teacher = await this.teacherService.findOne(
+      updateCourseDto.teacher_id || currentCourse.teacher_id,
+    );
+    const subject = await this.subjectService.findOne(
+      updateCourseDto.subject_id || currentCourse.subject_id,
+    );
     const semester = updateCourseDto.semester_id
       ? await this.semestersService.findOne(updateCourseDto.semester_id)
       : true;
     if (!teacher || !subject || !semester) {
       throw new BadRequestException('Not teacher or Not subject or Not semester');
     }
+
+    this.ensureTeacherCanTeachSubject(teacher, subject);
 
     if (updateCourseDto.semester_id) {
       await this.ensureCourseSchedulesFitSemester(
@@ -310,12 +325,15 @@ export class CoursesService {
             subject_id: true,
             name: true,
             credits: true,
+            department_id: true,
+            is_general: true,
           },
         },
         teacher: {
           select: {
             teacher_id: true,
             name: true,
+            department_id: true,
           },
         },
         schedule: {
