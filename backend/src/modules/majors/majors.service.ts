@@ -15,6 +15,27 @@ export class MajorsService {
     private readonly departmentsService: DepartmentsService,
   ) {}
 
+  private async withStudentsCount<T extends { major_id: string }>(major: T) {
+    const studentClasses = await this.prisma.studentClass.findMany({
+      where: { major_id: major.major_id },
+      select: { _count: { select: { students: true } } },
+    });
+
+    return {
+      ...major,
+      studentsCount: studentClasses.reduce(
+        (total, studentClass) => total + studentClass._count.students,
+        0,
+      ),
+    };
+  }
+
+  private async withMajorsStudentsCount<T extends { major_id: string }>(
+    majors: T[],
+  ) {
+    return Promise.all(majors.map((major) => this.withStudentsCount(major)));
+  }
+
   async create(createMajorDto: CreateMajorDto) {
     const existingMajor = await this.findOne(createMajorDto.major_id);
     if (existingMajor) {
@@ -26,24 +47,28 @@ export class MajorsService {
     return this.prisma.major.create({ data: createMajorDto });
   }
 
-  findAll() {
-    return this.prisma.major.findMany({
+  async findAll() {
+    const majors = await this.prisma.major.findMany({
       include: {
         department: true,
         _count: { select: { studentClasses: true, subjects: true } },
       },
       orderBy: { major_id: 'asc' },
     });
+
+    return this.withMajorsStudentsCount(majors);
   }
 
-  findOne(majorId: string) {
-    return this.prisma.major.findUnique({
+  async findOne(majorId: string) {
+    const major = await this.prisma.major.findUnique({
       where: { major_id: majorId },
       include: {
         department: true,
         _count: { select: { studentClasses: true, subjects: true } },
       },
     });
+
+    return major ? this.withStudentsCount(major) : null;
   }
 
   async ensureExists(majorId: string) {

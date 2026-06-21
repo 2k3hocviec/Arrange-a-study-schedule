@@ -11,6 +11,33 @@ import { UpdateDepartmentDto } from './dto/update-department.dto';
 export class DepartmentsService {
   constructor(private readonly prisma: PrismaService) {}
 
+  private async withStudentClassesCount<
+    T extends { department_id: string },
+  >(department: T) {
+    const majors = await this.prisma.major.findMany({
+      where: { department_id: department.department_id },
+      select: { _count: { select: { studentClasses: true } } },
+    });
+
+    return {
+      ...department,
+      studentClassesCount: majors.reduce(
+        (total, major) => total + major._count.studentClasses,
+        0,
+      ),
+    };
+  }
+
+  private async withDepartmentsStudentClassesCount<
+    T extends { department_id: string },
+  >(departments: T[]) {
+    return Promise.all(
+      departments.map((department) =>
+        this.withStudentClassesCount(department),
+      ),
+    );
+  }
+
   async create(createDepartmentDto: CreateDepartmentDto) {
     const existingDepartment = await this.findOne(
       createDepartmentDto.department_id,
@@ -22,8 +49,8 @@ export class DepartmentsService {
     return this.prisma.department.create({ data: createDepartmentDto });
   }
 
-  findAll() {
-    return this.prisma.department.findMany({
+  async findAll() {
+    const departments = await this.prisma.department.findMany({
       include: {
         _count: {
           select: {
@@ -34,10 +61,12 @@ export class DepartmentsService {
       },
       orderBy: { department_id: 'asc' },
     });
+
+    return this.withDepartmentsStudentClassesCount(departments);
   }
 
-  findOne(departmentId: string) {
-    return this.prisma.department.findUnique({
+  async findOne(departmentId: string) {
+    const department = await this.prisma.department.findUnique({
       where: { department_id: departmentId },
       include: {
         _count: {
@@ -48,6 +77,8 @@ export class DepartmentsService {
         },
       },
     });
+
+    return department ? this.withStudentClassesCount(department) : null;
   }
 
   async ensureExists(departmentId: string) {

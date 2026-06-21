@@ -39,11 +39,22 @@ export class ClassroomsService {
     return false;
   }
 
+  /*
+    Tạo lớp học
+      - Điều kiện là mã lớp phải không tồn tại.
+      - Số lượng sinh viên phải lớn hơn 0.
+  */
   async create(createClassroomDto: CreateClassroomDto) {
     const classroom = await this.findOne(createClassroomDto.classroom_id);
 
     if (classroom) {
       throw new BadRequestException('Classroom already exists');
+    }
+
+    if (createClassroomDto.capacity <= 0) {
+      throw new BadRequestException(
+        'The number of students must be greater than zero.',
+      );
     }
 
     return this.prisma.classroom.create({ data: createClassroomDto });
@@ -72,12 +83,11 @@ export class ClassroomsService {
 
     if (
       scheduleCount > 0 &&
-      this.hasScheduledClassroomProtectedChanges(
-        classroom,
-        updateclassroomsDto,
-      )
+      this.hasScheduledClassroomProtectedChanges(classroom, updateclassroomsDto)
     ) {
-      throw new BadRequestException('Cannot update classroom that has schedule');
+      throw new BadRequestException(
+        'Cannot update classroom that has schedule',
+      );
     }
 
     return this.prisma.classroom.update({
@@ -97,7 +107,9 @@ export class ClassroomsService {
     });
 
     if (scheduleCount > 0) {
-      throw new BadRequestException('Cannot delete classroom that has schedules');
+      throw new BadRequestException(
+        'Cannot delete classroom that has schedules',
+      );
     }
 
     await this.prisma.classroom.delete({ where: { classroom_id: id } });

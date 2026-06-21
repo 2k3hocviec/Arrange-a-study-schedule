@@ -15,6 +15,14 @@ export class StudentClassesService {
     private readonly majorsService: MajorsService,
   ) {}
 
+  private normalizeClassId(classId?: string | null) {
+    const normalized = classId?.trim();
+    if (!normalized) {
+      throw new BadRequestException('Student class id is required');
+    }
+    return normalized;
+  }
+
   private normalizeCapacity(capacity?: number | string | null) {
     if (capacity === undefined || capacity === null || capacity === '') {
       return null;
@@ -28,8 +36,14 @@ export class StudentClassesService {
     return normalized;
   }
 
+  /*
+  Tạo lớp sinh viên:
+    - Kiểm tra mã lớp có tồn tại.
+    - Kiểm tra mã ngành có tồn tại không.
+  */
   async create(createStudentClassDto: CreateStudentClassDto) {
-    const existingClass = await this.findOne(createStudentClassDto.class_id);
+    const classId = this.normalizeClassId(createStudentClassDto.class_id);
+    const existingClass = await this.findOne(classId);
     if (existingClass) {
       throw new BadRequestException('Student class already exists');
     }
@@ -39,6 +53,7 @@ export class StudentClassesService {
     return this.prisma.studentClass.create({
       data: {
         ...createStudentClassDto,
+        class_id: classId,
         capacity: this.normalizeCapacity(createStudentClassDto.capacity),
       },
     });
