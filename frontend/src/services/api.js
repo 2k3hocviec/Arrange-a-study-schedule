@@ -140,22 +140,32 @@ export const teachersAPI = {
   },
   getAll: () => api.get("/teachers"),
   getMyInfo: () => api.get("/teachers/me"),
-  create: ({ user_id, teacher_id, name, degree, expertise }) =>
-      api.post("/teachers", { user_id, teacher_id, name, degree, expertise }),
+  create: ({ user_id, teacher_id, name, degree, expertise, department_id }) =>
+      api.post("/teachers", { user_id, teacher_id, name, degree, expertise, department_id }),
   delete: (teacher_id) => api.delete(`/teachers/${teacher_id}`),
-  update: (teacher_id, { user_id, name, degree, expertise }) =>
-      api.patch(`/teachers/${teacher_id}`, { user_id, name, degree, expertise }),
+  update: (teacher_id, { user_id, name, degree, expertise, department_id }) =>
+      api.patch(`/teachers/${teacher_id}`, { user_id, name, degree, expertise, department_id }),
   getSchedule: (teacher_id) =>
       api.get(`/teachers/teacher/${teacher_id}/courses-details`),
+};
+
+export const departmentsAPI = {
+  getAll: () => api.get("/departments"),
+  create: ({ department_id, name, description }) =>
+      api.post("/departments", { department_id, name, description }),
+  update: (department_id, { name, description }) =>
+      api.patch(`/departments/${department_id}`, { name, description }),
+  delete: (department_id) => api.delete(`/departments/${department_id}`),
 };
 
 export const subjectsAPI = {
   getAllIds: () => api.get("/subjects/allid"),
   getAll: () => api.get("/subjects"),
-  create: ({ subject_id, name, credits }) =>
-      api.post("/subjects", { subject_id, name, credits }),
+  create: ({ subject_id, name, credits, department_id, is_general }) =>
+      api.post("/subjects", { subject_id, name, credits, department_id, is_general }),
   delete: (id) => api.delete(`/subjects/${id}`),
-  update: (id, { name, credits }) => api.patch(`/subjects/${id}`, { name, credits }),
+  update: (id, { name, credits, department_id, is_general }) =>
+      api.patch(`/subjects/${id}`, { name, credits, department_id, is_general }),
 };
 
 export const roomsAPI = {
@@ -169,10 +179,10 @@ export const roomsAPI = {
 
 export const studentClassesAPI = {
   getAll: () => api.get("/student-classes"),
-  create: ({ class_id, name, cohort, major, capacity }) =>
-      api.post("/student-classes", { class_id, name, cohort, major, capacity }),
-  update: (class_id, { name, cohort, major, capacity }) =>
-      api.patch(`/student-classes/${class_id}`, { name, cohort, major, capacity }),
+  create: ({ class_id, name, cohort, major, department_id, capacity }) =>
+      api.post("/student-classes", { class_id, name, cohort, major, department_id, capacity }),
+  update: (class_id, { name, cohort, major, department_id, capacity }) =>
+      api.patch(`/student-classes/${class_id}`, { name, cohort, major, department_id, capacity }),
   delete: (class_id) => api.delete(`/student-classes/${class_id}`),
 };
 

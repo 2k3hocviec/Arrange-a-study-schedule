@@ -28,6 +28,10 @@ const getRegistrationErrorMessage = (err) => {
     return "Không thể đăng ký vì học phần này chưa được xếp lịch.";
   }
 
+  if (message.includes("not available for this student department")) {
+    return "Khong the dang ky vi mon hoc nay khong thuoc khoa/chuyen nganh cua ban.";
+  }
+
   if (message.includes("not in the active semester")) {
     return "Không thể đăng ký vì học phần này không thuộc học kỳ hiện tại.";
   }

@@ -292,6 +292,7 @@ const MinistryStudents = () => {
               <th style={styles.th}>HỌ TÊN</th>
               <th style={styles.th}>TÀI KHOẢN</th>
               <th style={styles.th}>LỚP HỌC</th>
+              <th style={styles.th}>KHOA</th>
               <th style={styles.th}>USER ID</th>
               <th style={styles.th}>THAO TÁC</th>
             </tr>
@@ -299,7 +300,7 @@ const MinistryStudents = () => {
           <tbody>
             {paginatedStudents.length === 0 ? (
               <tr>
-                <td colSpan={7} style={styles.emptyCell}>
+                <td colSpan={8} style={styles.emptyCell}>
                   Không có dữ liệu sinh viên
                 </td>
               </tr>
@@ -322,6 +323,11 @@ const MinistryStudents = () => {
                     {student.class
                       ? `${student.class.class_id} - ${student.class.name}`
                       : student.class_id || "-"}
+                  </td>
+                  <td style={styles.td}>
+                    {student.class?.department
+                      ? `${student.class.department.department_id} - ${student.class.department.name}`
+                      : "-"}
                   </td>
                   <td style={styles.td}>{student.user_id}</td>
                   <td style={styles.td}>

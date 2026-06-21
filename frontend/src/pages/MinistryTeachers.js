@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { teachersAPI, usersAPI } from "../services/api";
+import { departmentsAPI, teachersAPI, usersAPI } from "../services/api";
 import toast from "react-hot-toast";
 import { GiTeacher } from "react-icons/gi";
 
@@ -22,6 +22,7 @@ const getTeacherErrorMessage = (err, action = "save") => {
 
 const AdminTeachers = () => {
   const [teachers, setTeachers] = useState([]);
+  const [departments, setDepartments] = useState([]);
   const [availableUsers, setAvailableUsers] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [repair, setRepair] = useState(false);
@@ -33,6 +34,7 @@ const AdminTeachers = () => {
     name: "",
     degree: "",
     expertise: "",
+    department_id: "",
   });
 
   const fetchTeachers = async () => {
@@ -54,9 +56,20 @@ const AdminTeachers = () => {
     }
   };
 
+  const fetchDepartments = async () => {
+    try {
+      const response = await departmentsAPI.getAll();
+      setDepartments(response.data || []);
+    } catch (e) {
+      console.error(e);
+      toast.error("Khong the tai danh sach khoa");
+    }
+  };
+
   useEffect(() => {
     fetchTeachers();
     fetchAvailableUsers();
+    fetchDepartments();
   }, []);
 
   const handleInputChange = (e) => {
@@ -74,6 +87,7 @@ const AdminTeachers = () => {
       name: "",
       degree: "",
       expertise: "",
+      department_id: "",
     });
     setRepair(false);
     setShowForm(true);
@@ -97,7 +111,8 @@ const AdminTeachers = () => {
       formData.user_id === 0 ||
       !formData.name ||
       !formData.degree ||
-      !formData.expertise
+      !formData.expertise ||
+      !formData.department_id
     ) {
       toast.error("Vui lòng điền đầy đủ thông tin.");
       return;
@@ -120,7 +135,8 @@ const AdminTeachers = () => {
       formData.user_id === 0 ||
       !formData.name ||
       !formData.degree ||
-      !formData.expertise
+      !formData.expertise ||
+      !formData.department_id
     ) {
       toast.error("Vui lòng điền đầy đủ thông tin.");
       return;
@@ -278,6 +294,27 @@ const AdminTeachers = () => {
                 />
               </div>
 
+              <div style={styles.fieldGroup}>
+                <label style={styles.label}>Khoa</label>
+                <select
+                  name="department_id"
+                  value={formData.department_id || ""}
+                  onChange={handleInputChange}
+                  required
+                  style={styles.input}
+                >
+                  <option value="">-- Chon khoa --</option>
+                  {departments.map((department) => (
+                    <option
+                      key={department.department_id}
+                      value={department.department_id}
+                    >
+                      {department.department_id} - {department.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               <button
                 type="submit"
                 style={{
@@ -302,6 +339,7 @@ const AdminTeachers = () => {
               <th style={styles.th}>HỌ TÊN</th>
               <th style={styles.th}>HỌC VỊ</th>
               <th style={styles.th}>CHUYÊN MÔN</th>
+              <th style={styles.th}>KHOA</th>
               <th style={styles.th}>TAI KHOAN</th>
               <th style={styles.th}>USER ID</th>
               <th style={styles.th}>THAO TÁC</th>
@@ -310,7 +348,7 @@ const AdminTeachers = () => {
           <tbody>
             {paginatedTeachers.length === 0 ? (
               <tr>
-                <td colSpan={8} style={styles.emptyCell}>
+                <td colSpan={9} style={styles.emptyCell}>
                   Không có dữ liệu giảng viên
                 </td>
               </tr>
@@ -330,6 +368,11 @@ const AdminTeachers = () => {
                   <td style={{ ...styles.td, fontWeight: 500 }}>{t.name}</td>
                   <td style={styles.td}>{t.degree}</td>
                   <td style={styles.td}>{t.expertise}</td>
+                  <td style={styles.td}>
+                    {t.department
+                      ? `${t.department.department_id} - ${t.department.name}`
+                      : t.department_id || "-"}
+                  </td>
                   <td style={styles.td}>{t.user?.email || "-"}</td>
                   <td style={styles.td}>{t.user_id}</td>
                   <td style={styles.td}>

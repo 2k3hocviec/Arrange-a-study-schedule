@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { subjectsAPI } from "../services/api";
+﻿import React, { useEffect, useState } from "react";
+import { departmentsAPI, subjectsAPI } from "../services/api";
 import toast from "react-hot-toast";
 import { MdMenuBook } from "react-icons/md";
 import { FiPlus, FiEdit2, FiTrash2 } from "react-icons/fi";
@@ -8,21 +8,24 @@ const PAGE_SIZE = 5;
 
 const getSubjectErrorMessage = (err, action = "save") => {
   const rawMessage = err?.response?.data?.message || err?.message || "";
-  const message = Array.isArray(rawMessage) ? rawMessage.join(" ") : String(rawMessage);
+  const message = Array.isArray(rawMessage)
+    ? rawMessage.join(" ")
+    : String(rawMessage);
   const lowerMessage = message.toLowerCase();
 
   if (lowerMessage.includes("cannot delete subject that has courses")) {
-    return "Không thể xóa môn học vì đã có khóa học thuộc môn này.";
+    return "KhÃ´ng thá»ƒ xÃ³a mÃ´n há»c vÃ¬ Ä‘Ã£ cÃ³ khÃ³a há»c thuá»™c mÃ´n nÃ y.";
   }
   if (lowerMessage.includes("unique") || lowerMessage.includes("duplicate")) {
-    return "Mã môn học đã tồn tại. Vui lòng kiểm tra lại.";
+    return "MÃ£ mÃ´n há»c Ä‘Ã£ tá»“n táº¡i. Vui lÃ²ng kiá»ƒm tra láº¡i.";
   }
-  if (action === "delete") return "Không thể xóa môn học.";
-  return "Thao tác thất bại. Vui lòng kiểm tra lại dữ liệu.";
+  if (action === "delete") return "KhÃ´ng thá»ƒ xÃ³a mÃ´n há»c.";
+  return "Thao tÃ¡c tháº¥t báº¡i. Vui lÃ²ng kiá»ƒm tra láº¡i dá»¯ liá»‡u.";
 };
 
 const MinistrySubjects = () => {
   const [subjects, setSubjects] = useState([]);
+  const [departments, setDepartments] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [repair, setRepair] = useState(false);
   const [page, setPage] = useState(1);
@@ -30,6 +33,8 @@ const MinistrySubjects = () => {
     subject_id: "",
     name: "",
     credits: 0,
+    department_id: "",
+    is_general: false,
   });
 
   const fetchSubjects = async () => {
@@ -37,40 +42,72 @@ const MinistrySubjects = () => {
       const response = await subjectsAPI.getAll();
       setSubjects(response.data);
     } catch (e) {
-      toast.error("Không thể tải dữ liệu môn học");
+      toast.error("KhÃ´ng thá»ƒ táº£i dá»¯ liá»‡u mÃ´n há»c");
+    }
+  };
+
+  const fetchDepartments = async () => {
+    try {
+      const response = await departmentsAPI.getAll();
+      setDepartments(response.data || []);
+    } catch (e) {
+      toast.error("Khong the tai danh sach khoa");
     }
   };
 
   useEffect(() => {
     fetchSubjects();
+    fetchDepartments();
   }, []);
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, checked, type } = e.target;
     setFormData({
       ...formData,
-      [name]: name === "credits" ? Number(value) : value,
+      [name]:
+        type === "checkbox"
+          ? checked
+          : name === "credits"
+            ? Number(value)
+            : value,
     });
   };
 
   const handleClickCreateSubject = () => {
-    setFormData({ subject_id: "", name: "", credits: 0 });
+    setFormData({
+      subject_id: "",
+      name: "",
+      credits: 0,
+      department_id: "",
+      is_general: false,
+    });
     setRepair(false);
     setShowForm(!showForm);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.subject_id || !formData.name || formData.credits === 0) {
-      toast.error("Vui lòng điền đầy đủ thông tin.");
+    if (
+      !formData.subject_id ||
+      !formData.name ||
+      formData.credits === 0 ||
+      !formData.department_id
+    ) {
+      toast.error("Vui lÃ²ng Ä‘iá»n Ä‘áº§y Ä‘á»§ thÃ´ng tin.");
       return;
     }
     try {
       await subjectsAPI.create(formData);
-      setFormData({ subject_id: "", name: "", credits: 0 });
+      setFormData({
+        subject_id: "",
+        name: "",
+        credits: 0,
+        department_id: "",
+        is_general: false,
+      });
       setShowForm(false);
       await fetchSubjects();
-      toast.success("Tạo môn học thành công!");
+      toast.success("Táº¡o mÃ´n há»c thÃ nh cÃ´ng!");
     } catch (err) {
       toast.error(getSubjectErrorMessage(err));
     }
@@ -78,17 +115,28 @@ const MinistrySubjects = () => {
 
   const handleSubmitUpdate = async (e) => {
     e.preventDefault();
-    if (!formData.subject_id || !formData.name || formData.credits === 0) {
-      toast.error("Vui lòng điền đầy đủ thông tin.");
+    if (
+      !formData.subject_id ||
+      !formData.name ||
+      formData.credits === 0 ||
+      !formData.department_id
+    ) {
+      toast.error("Vui lÃ²ng Ä‘iá»n Ä‘áº§y Ä‘á»§ thÃ´ng tin.");
       return;
     }
     try {
       await subjectsAPI.update(formData.subject_id, formData);
-      setFormData({ subject_id: "", name: "", credits: 0 });
+      setFormData({
+        subject_id: "",
+        name: "",
+        credits: 0,
+        department_id: "",
+        is_general: false,
+      });
       setShowForm(false);
       setRepair(false);
       await fetchSubjects();
-      toast.success("Cập nhật môn học thành công!");
+      toast.success("Cáº­p nháº­t mÃ´n há»c thÃ nh cÃ´ng!");
     } catch (err) {
       toast.error(getSubjectErrorMessage(err));
     }
@@ -103,7 +151,7 @@ const MinistrySubjects = () => {
   const handleDeleteSubject = async (subject) => {
     if (
       !window.confirm(
-        `Bạn có chắc muốn xóa môn học ${subject.subject_id} - ${subject.name}?`,
+        `Báº¡n cÃ³ cháº¯c muá»‘n xÃ³a mÃ´n há»c ${subject.subject_id} - ${subject.name}?`,
       )
     ) {
       return;
@@ -112,7 +160,7 @@ const MinistrySubjects = () => {
     try {
       await subjectsAPI.delete(subject.subject_id);
       await fetchSubjects();
-      toast.success("Xóa môn học thành công!");
+      toast.success("XÃ³a mÃ´n há»c thÃ nh cÃ´ng!");
     } catch (err) {
       toast.error(getSubjectErrorMessage(err, "delete"));
     }
@@ -129,20 +177,20 @@ const MinistrySubjects = () => {
       {/* BREADCRUMB */}
       <div style={breadcrumb}>
         <span style={breadcrumbHome}>Dashboard</span>
-        <span style={breadcrumbSep}>›</span>
-        <span style={breadcrumbCurrent}>Quản lý môn học</span>
+        <span style={breadcrumbSep}>â€º</span>
+        <span style={breadcrumbCurrent}>Quáº£n lÃ½ mÃ´n há»c</span>
       </div>
 
       {/* PAGE HEADER */}
       <div style={pageHeader}>
         <div style={pageHeaderLeft}>
           <div>
-            <h1 style={pageTitle}>QUẢN LÝ DANH MỤC MÔN HỌC</h1>
+            <h1 style={pageTitle}>QUáº¢N LÃ DANH Má»¤C MÃ”N Há»ŒC</h1>
           </div>
         </div>
         <button onClick={handleClickCreateSubject} style={addBtn}>
           <FiPlus size={16} />
-          {showForm ? "Đóng Form" : "Thêm môn học mới"}
+          {showForm ? "ÄÃ³ng Form" : "ThÃªm mÃ´n há»c má»›i"}
         </button>
       </div>
 
@@ -150,7 +198,7 @@ const MinistrySubjects = () => {
       <div style={statBanner}>
         <div style={statBannerInner}>
           <div>
-            <p style={statLabel}>Tổng số môn học</p>
+            <p style={statLabel}>Tá»•ng sá»‘ mÃ´n há»c</p>
             <p style={statNumber}>{subjects.length}</p>
           </div>
           <div style={bannerIconBg}>
@@ -166,18 +214,18 @@ const MinistrySubjects = () => {
           <div style={modalContainer}>
             <div style={formCard}>
               <h3 style={formTitle}>
-                {repair ? "Cập nhật môn học" : "Thêm môn học mới"}
+                {repair ? "Cáº­p nháº­t mÃ´n há»c" : "ThÃªm mÃ´n há»c má»›i"}
               </h3>
 
               <form onSubmit={repair ? handleSubmitUpdate : handleSubmit}>
                 <div style={formGrid}>
                   <div style={fieldGroup}>
-                    <label style={fieldLabel}>Mã Môn Học</label>
+                    <label style={fieldLabel}>MÃ£ MÃ´n Há»c</label>
 
                     <input
                       type="text"
                       name="subject_id"
-                      placeholder="Nhập mã môn (VD: INT1306)"
+                      placeholder="Nháº­p mÃ£ mÃ´n (VD: INT1306)"
                       value={formData.subject_id}
                       onChange={handleInputChange}
                       required
@@ -196,12 +244,12 @@ const MinistrySubjects = () => {
                   </div>
 
                   <div style={fieldGroup}>
-                    <label style={fieldLabel}>Tên Môn Học</label>
+                    <label style={fieldLabel}>TÃªn MÃ´n Há»c</label>
 
                     <input
                       type="text"
                       name="name"
-                      placeholder="Nhập tên môn học"
+                      placeholder="Nháº­p tÃªn mÃ´n há»c"
                       value={formData.name}
                       onChange={handleInputChange}
                       required
@@ -210,12 +258,12 @@ const MinistrySubjects = () => {
                   </div>
 
                   <div style={fieldGroup}>
-                    <label style={fieldLabel}>Số Tín Chỉ</label>
+                    <label style={fieldLabel}>Sá»‘ TÃ­n Chá»‰</label>
 
                     <input
                       type="number"
                       name="credits"
-                      placeholder="Nhập số tín chỉ"
+                      placeholder="Nháº­p sá»‘ tÃ­n chá»‰"
                       value={formData.credits}
                       onChange={handleInputChange}
                       required
@@ -224,6 +272,44 @@ const MinistrySubjects = () => {
                       style={fieldInput}
                     />
                   </div>
+                  <div style={fieldGroup}>
+                    <label style={fieldLabel}>Khoa</label>
+                    <select
+                      name="department_id"
+                      value={formData.department_id || ""}
+                      onChange={handleInputChange}
+                      required
+                      style={fieldInput}
+                    >
+                      <option value="">-- Chon khoa --</option>
+                      {departments.map((department) => (
+                        <option
+                          key={department.department_id}
+                          value={department.department_id}
+                        >
+                          {department.department_id} - {department.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <label
+                    style={{
+                      ...fieldGroup,
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 8,
+                      marginTop: 26,
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      name="is_general"
+                      checked={!!formData.is_general}
+                      onChange={handleInputChange}
+                    />
+                    Mon chung cho sinh vien khac khoa
+                  </label>
                 </div>
 
                 <div
@@ -241,7 +327,7 @@ const MinistrySubjects = () => {
                       marginTop: 0,
                     }}
                   >
-                    {repair ? "Cập nhật Môn Học" : "Tạo Môn Học"}
+                    {repair ? "Cáº­p nháº­t MÃ´n Há»c" : "Táº¡o MÃ´n Há»c"}
                   </button>
 
                   <button
@@ -252,7 +338,7 @@ const MinistrySubjects = () => {
                     }}
                     style={cancelBtn}
                   >
-                    Hủy
+                    Há»§y
                   </button>
                 </div>
               </form>
@@ -263,7 +349,7 @@ const MinistrySubjects = () => {
       {/* TABLE */}
       <div style={tableCard}>
         <div style={tableHeader}>
-          <h3 style={tableTitle}>Danh sách môn học hiện tại</h3>
+          <h3 style={tableTitle}>Danh sÃ¡ch mÃ´n há»c hiá»‡n táº¡i</h3>
         </div>
 
         <div style={{ overflowX: "auto" }}>
@@ -271,10 +357,12 @@ const MinistrySubjects = () => {
             <thead>
               <tr style={theadRow}>
                 <th style={th}>STT</th>
-                <th style={th}>MÃ MÔN</th>
-                <th style={th}>TÊN MÔN HỌC</th>
-                <th style={th}>SỐ TÍN CHỈ</th>
-                <th style={th}>THAO TÁC</th>
+                <th style={th}>MÃƒ MÃ”N</th>
+                <th style={th}>TÃŠN MÃ”N Há»ŒC</th>
+                <th style={th}>Sá» TÃN CHá»ˆ</th>
+                <th style={th}>KHOA</th>
+                <th style={th}>MON CHUNG</th>
+                <th style={th}>THAO TÃC</th>
               </tr>
             </thead>
             <tbody>
@@ -293,18 +381,24 @@ const MinistrySubjects = () => {
                   <td style={td}>
                     <span style={creditBadge}>{subject.credits}</span>
                   </td>
+                  <td style={td}>
+                    {subject.department
+                      ? `${subject.department.department_id} - ${subject.department.name}`
+                      : subject.department_id || "-"}
+                  </td>
+                  <td style={td}>{subject.is_general ? "Co" : "Khong"}</td>
                   <td style={{ ...td, whiteSpace: "nowrap" }}>
                     <button
                       onClick={() => handleOpenFormUpdateSubject(subject)}
                       style={editBtn}
                     >
-                      <FiEdit2 size={13} /> Sửa
+                      <FiEdit2 size={13} /> Sá»­a
                     </button>
                     <button
                       onClick={() => handleDeleteSubject(subject)}
                       style={deleteBtn}
                     >
-                      <FiTrash2 size={13} /> Xóa
+                      <FiTrash2 size={13} /> XÃ³a
                     </button>
                   </td>
                 </tr>
@@ -316,8 +410,9 @@ const MinistrySubjects = () => {
         {subjects.length > 0 && (
           <div style={tableFooter}>
             <span style={{ color: "#94a3b8", fontSize: "13px" }}>
-              Hiển thị {(page - 1) * PAGE_SIZE + 1}–
-              {Math.min(page * PAGE_SIZE, subjects.length)} trên {subjects.length} môn học
+              Hiá»ƒn thá»‹ {(page - 1) * PAGE_SIZE + 1}â€“
+              {Math.min(page * PAGE_SIZE, subjects.length)} trÃªn{" "}
+              {subjects.length} mÃ´n há»c
             </span>
             <div style={pageControls}>
               <button
@@ -325,9 +420,11 @@ const MinistrySubjects = () => {
                 disabled={page === 1}
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
               >
-                Trước
+                TrÆ°á»›c
               </button>
-              <span style={pageInfo}>{page} / {totalPages}</span>
+              <span style={pageInfo}>
+                {page} / {totalPages}
+              </span>
               <button
                 style={{
                   ...pageBtn,
@@ -336,7 +433,7 @@ const MinistrySubjects = () => {
                 disabled={page === totalPages}
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               >
-                Tiếp
+                Tiáº¿p
               </button>
             </div>
           </div>
@@ -346,7 +443,7 @@ const MinistrySubjects = () => {
   );
 };
 
-// ─── STYLES ────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ STYLES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const pageWrapper = {
   padding: "28px 32px",
@@ -379,26 +476,12 @@ const pageHeaderLeft = {
   alignItems: "center",
   gap: "14px",
 };
-const headerIconWrap = {
-  width: "42px",
-  height: "42px",
-  borderRadius: "10px",
-  background: "#ede9fe",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-};
 const pageTitle = {
   margin: 0,
   fontSize: "20px",
   fontWeight: 800,
   color: "#1e293b",
   letterSpacing: "0.3px",
-};
-const pageSubtitle = {
-  margin: "2px 0 0",
-  fontSize: "13px",
-  color: "#94a3b8",
 };
 const addBtn = {
   display: "flex",
@@ -435,7 +518,6 @@ const statNumber = {
   fontWeight: 700,
   lineHeight: 1.1,
 };
-const statFootnote = { margin: 0, fontSize: "13px", opacity: 0.75 };
 const bannerIconBg = {
   position: "absolute",
   right: "28px",

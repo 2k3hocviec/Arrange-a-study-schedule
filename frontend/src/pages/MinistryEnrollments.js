@@ -1,5 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { enrollmentsAPI, studentsAPI, coursesAPI, semestersAPI } from "../services/api";
+import {
+  enrollmentsAPI,
+  studentsAPI,
+  coursesAPI,
+  semestersAPI,
+} from "../services/api";
 import toast from "react-hot-toast";
 import { FiPlus, FiTrash2 } from "react-icons/fi";
 
@@ -50,8 +55,9 @@ const MinistryEnrollments = () => {
     try {
       const response = await semestersAPI.getAll();
       setSemesters(response.data);
-      setSelectedSemesterId((current) =>
-        current || response.data.find((s) => s.is_active)?.semester_id || "",
+      setSelectedSemesterId(
+        (current) =>
+          current || response.data.find((s) => s.is_active)?.semester_id || "",
       );
     } catch (e) {
       toast.error("Không thể tải danh sách kỳ học");
@@ -110,7 +116,9 @@ const MinistryEnrollments = () => {
     }
   };
 
-  const courseById = new Map(courses.map((course) => [course.course_id, course]));
+  const courseById = new Map(
+    courses.map((course) => [course.course_id, course]),
+  );
   const filteredEnrollments = selectedSemesterId
     ? enrollments.filter((enroll) => {
         const course = courseById.get(enroll.course_id);
@@ -121,7 +129,10 @@ const MinistryEnrollments = () => {
     ? courses.filter((course) => course.semester_id === selectedSemesterId)
     : courses;
   const totalPages = Math.ceil(filteredEnrollments.length / PAGE_SIZE);
-  const paginated = filteredEnrollments.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const paginated = filteredEnrollments.slice(
+    (page - 1) * PAGE_SIZE,
+    page * PAGE_SIZE,
+  );
 
   return (
     <div style={pageWrapper}>
@@ -150,8 +161,8 @@ const MinistryEnrollments = () => {
             <p style={statNumber}>{filteredEnrollments.length}</p>
 
             <p style={statFootnote}>
-              Hệ thống hiện có {students.length} sinh viên và {filteredCourses.length}{" "}
-              khóa học trong bộ lọc
+              Hệ thống hiện có {students.length} sinh viên và{" "}
+              {filteredCourses.length} khóa học trong bộ lọc
             </p>
           </div>
 
@@ -284,7 +295,9 @@ const MinistryEnrollments = () => {
                     {enroll.enrollment_id}
                   </td>
                   <td style={td}>{enroll.student_id}</td>
-                  <td style={td}>{enroll.course?.course_code || enroll.course_id}</td>
+                  <td style={td}>
+                    {enroll.course?.course_code || enroll.course_id}
+                  </td>
                   <td style={td}>
                     {enroll.course?.subject_id ||
                       enroll.course?.subject?.subject_id ||
@@ -390,15 +403,6 @@ const addBtn = {
   fontWeight: 700,
   fontSize: "13px",
   letterSpacing: "0.4px",
-};
-
-const formCard = {
-  background: "white",
-  borderRadius: "12px",
-  padding: "24px",
-  marginBottom: "20px",
-  boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-  border: "1px solid #e2e8f0",
 };
 const formTitle = {
   margin: "0 0 18px",

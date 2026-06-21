@@ -6,6 +6,7 @@ import MinistryTeachers from "./MinistryTeachers";
 import MinistrySubjectsAndCourses from "./MinistrySubjectsAndCourses";
 import MinistryStudents from "./MinistryStudent";
 import MinistryStudentClasses from "./MinistryStudentClasses";
+import MinistryDepartments from "./MinistryDepartments";
 import MinistryEnrollments from "./MinistryEnrollments";
 import MinistrySemesters from "./MinistrySemesters";
 import MinistryTeacherBusySchedules from "./MinistryTeacherBusySchedules";
@@ -13,7 +14,7 @@ import { PiStudentDuotone } from "react-icons/pi";
 import { MdMeetingRoom, MdSubject, MdDashboard } from "react-icons/md";
 import { IoCalendar } from "react-icons/io5";
 import { GiTeacher } from "react-icons/gi";
-import { FiSearch, FiLogOut } from "react-icons/fi";
+import { FiLogOut } from "react-icons/fi";
 import { roomsAPI, subjectsAPI } from "../services/api";
 import { GrSchedule } from "react-icons/gr";
 import toast from "react-hot-toast";
@@ -223,6 +224,7 @@ if (
 const NAV_ITEMS = [
   { path: "students", label: "Sinh viên", Icon: PiStudentDuotone },
   { path: "student-classes", label: "Lớp học", Icon: PiStudentDuotone },
+  { path: "departments", label: "Khoa", Icon: MdSubject },
   { path: "teachers", label: "Giảng viên", Icon: GiTeacher },
   { path: "rooms", label: "Phòng học", Icon: MdMeetingRoom },
   { path: "semesters", label: "Kỳ học", Icon: GrSchedule },
@@ -550,7 +552,11 @@ const MinistryDashboard = () => {
             />
             <Route path="rooms" element={<MinistryRooms />} />
             <Route path="teachers" element={<MinistryTeachers />} />
-            <Route path="student-classes" element={<MinistryStudentClasses />} />
+            <Route
+              path="student-classes"
+              element={<MinistryStudentClasses />}
+            />
+            <Route path="departments" element={<MinistryDepartments />} />
             <Route path="students" element={<MinistryStudents />} />
             <Route path="enrollments" element={<MinistryEnrollments />} />
             <Route path="change-password" element={<ChangePassword />} />
