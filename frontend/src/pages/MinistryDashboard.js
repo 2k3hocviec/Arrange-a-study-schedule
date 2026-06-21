@@ -1,12 +1,14 @@
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import { Routes, Route, Link, useLocation } from "react-router-dom";
 import MinistrySchedule from "./MinistrySchedule";
 import MinistryRooms from "./MinistryRooms";
 import MinistryTeachers from "./MinistryTeachers";
 import MinistrySubjectsAndCourses from "./MinistrySubjectsAndCourses";
 import MinistryStudents from "./MinistryStudent";
+import MinistryStudentClasses from "./MinistryStudentClasses";
 import MinistryEnrollments from "./MinistryEnrollments";
 import MinistrySemesters from "./MinistrySemesters";
+import MinistryTeacherBusySchedules from "./MinistryTeacherBusySchedules";
 import { PiStudentDuotone } from "react-icons/pi";
 import { MdMeetingRoom, MdSubject, MdDashboard } from "react-icons/md";
 import { IoCalendar } from "react-icons/io5";
@@ -220,11 +222,13 @@ if (
 // ── Thứ tự danh mục quản lý ───────────────────────────────────
 const NAV_ITEMS = [
   { path: "students", label: "Sinh viên", Icon: PiStudentDuotone },
+  { path: "student-classes", label: "Lớp học", Icon: PiStudentDuotone },
   { path: "teachers", label: "Giảng viên", Icon: GiTeacher },
   { path: "rooms", label: "Phòng học", Icon: MdMeetingRoom },
   { path: "semesters", label: "Kỳ học", Icon: GrSchedule },
   { path: "subjects", label: "Môn học & Khóa học", Icon: MdSubject },
   { path: "schedule", label: "Lịch học", Icon: IoCalendar },
+  { path: "teacher-busy-schedules", label: "Duyệt lịch bận", Icon: IoCalendar },
   { path: "enrollments", label: "Ghi danh", Icon: PiStudentDuotone },
   { path: "change-password", label: "Đổi mật khẩu", Icon: FaLock },
 ];
@@ -270,7 +274,7 @@ const MinistryDashboard = () => {
     fetchRooms();
   }, []);
 
-  const isActive = (path) => location.pathname.includes(path);
+  const isActive = (path) => location.pathname.split("/").includes(path);
 
   const HomeContent = (
     <div style={{ fontFamily: "'Be Vietnam Pro', sans-serif" }}>
@@ -540,8 +544,13 @@ const MinistryDashboard = () => {
             <Route path="subjects" element={<MinistrySubjectsAndCourses />} />
             <Route path="semesters" element={<MinistrySemesters />} />
             <Route path="schedule" element={<MinistrySchedule />} />
+            <Route
+              path="teacher-busy-schedules"
+              element={<MinistryTeacherBusySchedules />}
+            />
             <Route path="rooms" element={<MinistryRooms />} />
             <Route path="teachers" element={<MinistryTeachers />} />
+            <Route path="student-classes" element={<MinistryStudentClasses />} />
             <Route path="students" element={<MinistryStudents />} />
             <Route path="enrollments" element={<MinistryEnrollments />} />
             <Route path="change-password" element={<ChangePassword />} />

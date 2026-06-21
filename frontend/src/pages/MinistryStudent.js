@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { studentsAPI, usersAPI } from "../services/api";
+import { studentClassesAPI, studentsAPI, usersAPI } from "../services/api";
 import toast from "react-hot-toast";
 import { PiStudentDuotone } from "react-icons/pi";
 
@@ -22,6 +22,7 @@ const getStudentErrorMessage = (err, action = "save") => {
 
 const MinistryStudents = () => {
   const [students, setStudents] = useState([]);
+  const [studentClasses, setStudentClasses] = useState([]);
   const [availableUsers, setAvailableUsers] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [repair, setRepair] = useState(false);
@@ -31,6 +32,7 @@ const MinistryStudents = () => {
     user_id: "",
     student_id: "",
     name: "",
+    class_id: "",
   });
 
   const fetchStudents = async () => {
@@ -52,9 +54,20 @@ const MinistryStudents = () => {
     }
   };
 
+  const fetchStudentClasses = async () => {
+    try {
+      const response = await studentClassesAPI.getAll();
+      setStudentClasses(response.data || []);
+    } catch (e) {
+      console.error(e);
+      toast.error("Không thể tải danh sách lớp học");
+    }
+  };
+
   useEffect(() => {
     fetchStudents();
     fetchAvailableUsers();
+    fetchStudentClasses();
   }, []);
 
   const handleInputChange = (e) => {
@@ -66,7 +79,7 @@ const MinistryStudents = () => {
   };
 
   const handleClickCreate = () => {
-    setFormData({ user_id: "", student_id: "", name: "" });
+    setFormData({ user_id: "", student_id: "", name: "", class_id: "" });
     setRepair(false);
     setShowForm(true);
   };
@@ -76,6 +89,7 @@ const MinistryStudents = () => {
       user_id: student.user_id,
       student_id: student.student_id,
       name: student.name,
+      class_id: student.class_id || "",
     });
     setRepair(true);
     setShowForm(true);
@@ -88,7 +102,7 @@ const MinistryStudents = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.user_id || !formData.student_id || !formData.name) {
+    if (!formData.user_id || !formData.student_id || !formData.name || !formData.class_id) {
       toast.error("Vui lòng điền đầy đủ thông tin.");
       return;
     }
@@ -105,7 +119,7 @@ const MinistryStudents = () => {
 
   const handleSubmitUpdate = async (e) => {
     e.preventDefault();
-    if (!formData.student_id || !formData.name) {
+    if (!formData.student_id || !formData.name || !formData.class_id) {
       toast.error("Vui lòng điền đầy đủ thông tin.");
       return;
     }
@@ -236,6 +250,24 @@ const MinistryStudents = () => {
                 />
               </div>
 
+              <div style={styles.fieldGroup}>
+                <label style={styles.label}>Lớp học</label>
+                <select
+                  name="class_id"
+                  value={formData.class_id}
+                  onChange={handleInputChange}
+                  required
+                  style={styles.input}
+                >
+                  <option value="">-- Chọn lớp học --</option>
+                  {studentClasses.map((item) => (
+                    <option key={item.class_id} value={item.class_id}>
+                      {item.class_id} - {item.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               <button
                 type="submit"
                 style={{
@@ -259,6 +291,7 @@ const MinistryStudents = () => {
               <th style={styles.th}>MÃ SINH VIÊN</th>
               <th style={styles.th}>HỌ TÊN</th>
               <th style={styles.th}>TÀI KHOẢN</th>
+              <th style={styles.th}>LỚP HỌC</th>
               <th style={styles.th}>USER ID</th>
               <th style={styles.th}>THAO TÁC</th>
             </tr>
@@ -266,7 +299,7 @@ const MinistryStudents = () => {
           <tbody>
             {paginatedStudents.length === 0 ? (
               <tr>
-                <td colSpan={6} style={styles.emptyCell}>
+                <td colSpan={7} style={styles.emptyCell}>
                   Không có dữ liệu sinh viên
                 </td>
               </tr>
@@ -285,6 +318,11 @@ const MinistryStudents = () => {
                   </td>
                   <td style={styles.td}>{student.name}</td>
                   <td style={styles.td}>{student.user?.email || "-"}</td>
+                  <td style={styles.td}>
+                    {student.class
+                      ? `${student.class.class_id} - ${student.class.name}`
+                      : student.class_id || "-"}
+                  </td>
                   <td style={styles.td}>{student.user_id}</td>
                   <td style={styles.td}>
                     <button

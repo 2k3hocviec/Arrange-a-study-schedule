@@ -8,6 +8,7 @@ import {
 } from "react-router-dom";
 
 import TeacherSchedule from "./TeacherSchedule";
+import TeacherBusySchedules from "./TeacherBusySchedules";
 import ChangePassword from "./ChangePassword";
 
 import { AuthContext } from "../contexts/AuthContext";
@@ -28,6 +29,7 @@ import {
   FaBookOpen,
   FaClock,
   FaLock,
+  FaCalendarCheck,
 } from "react-icons/fa";
 
 // ─────────────────────────────────────────────────────────────
@@ -46,6 +48,12 @@ const NAV = [
     key: "schedule",
     icon: <FaCalendarAlt />,
     label: "Lịch giảng dạy",
+  },
+  {
+    path: "/teacher/busy-schedules",
+    key: "busy-schedules",
+    icon: <FaCalendarCheck />,
+    label: "Lịch bận",
   },
   {
     path: "/teacher/notifications",
@@ -145,10 +153,17 @@ const TeacherDashboard = () => {
   // ACTIVE MENU
   // ─────────────────────────────────────────
 
-  const isActive = (key) =>
-    location.pathname.includes(key) ||
-    (key === "dashboard" &&
-      (location.pathname === "/teacher" || location.pathname === "/teacher/"));
+  const isActive = (key) => {
+    if (key === "dashboard") {
+      return (
+        location.pathname === "/teacher" ||
+        location.pathname === "/teacher/" ||
+        location.pathname === "/teacher/dashboard"
+      );
+    }
+
+    return location.pathname.split("/").includes(key);
+  };
 
   // ─────────────────────────────────────────
   // HOME PAGE
@@ -378,6 +393,8 @@ const TeacherDashboard = () => {
               path="schedule"
               element={<TeacherSchedule teacherInfo={teacherInfo} />}
             />
+
+            <Route path="busy-schedules" element={<TeacherBusySchedules />} />
 
             <Route path="notifications" element={<ChangePassword />} />
           </Routes>

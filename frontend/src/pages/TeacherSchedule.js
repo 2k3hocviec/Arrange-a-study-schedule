@@ -11,7 +11,6 @@ import {
   FaTimes,
   FaChevronLeft,
   FaChevronRight,
-  FaMapMarkerAlt,
 } from "react-icons/fa";
 
 // ── Tiết → giờ ───────────────────────────────────────────────
@@ -62,8 +61,7 @@ const getWeekStart = (date) => {
 };
 
 const fmtDate = (d) => d?.toLocaleDateString("vi-VN");
-
-// ── COMPONENT ─────────────────────────────────────────────────
+// COMPONENT ─────────────────────────────────────────────────
 const TeacherSchedule = ({ teacherInfo }) => {
   const [scheduleData, setScheduleData] = useState([]);
   const [selectedClass, setSelectedClass] = useState(null);
@@ -161,7 +159,7 @@ const TeacherSchedule = ({ teacherInfo }) => {
         </div>
       </div>
 
-      {/* ── Week bar ── */}
+      {/* Week bar */}
       <div style={S.weekBar}>
         <button style={S.navBtn} onClick={() => shiftWeek(-1)}>
           <FaChevronLeft />

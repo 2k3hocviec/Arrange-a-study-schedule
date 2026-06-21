@@ -83,6 +83,14 @@ const getErrorMessage = (err) => {
     return "Giảng viên đã có lịch dạy ở khoảng thời gian này.";
   }
 
+  if (message.includes("Teacher has registered a busy date")) {
+    return "Giảng viên đã khai báo bận trong khoảng thời gian này. Vui lòng chọn lịch khác.";
+  }
+
+  if (message.includes("approved busy request")) {
+    return "Giảng viên đã có lịch bận được duyệt trùng ngày và khoảng tiết này.";
+  }
+
   if (message.includes("Course not exist")) {
     return "Học phần không tồn tại.";
   }
