@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { StudentClassesController } from './student-classes.controller';
 import { StudentClassesService } from './student-classes.service';
-import { DepartmentsModule } from '../departments/departments.module';
+import { MajorsModule } from '../majors/majors.module';
 
 @Module({
-  imports: [DepartmentsModule],
+  imports: [MajorsModule],
   controllers: [StudentClassesController],
   providers: [StudentClassesService],
   exports: [StudentClassesService],

@@ -6,13 +6,13 @@ import {
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateStudentClassDto } from './dto/create-student-class.dto';
 import { UpdateStudentClassDto } from './dto/update-student-class.dto';
-import { DepartmentsService } from '../departments/departments.service';
+import { MajorsService } from '../majors/majors.service';
 
 @Injectable()
 export class StudentClassesService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly departmentsService: DepartmentsService,
+    private readonly majorsService: MajorsService,
   ) {}
 
   private normalizeCapacity(capacity?: number | string | null) {
@@ -34,9 +34,7 @@ export class StudentClassesService {
       throw new BadRequestException('Student class already exists');
     }
 
-    await this.departmentsService.ensureExists(
-      createStudentClassDto.department_id,
-    );
+    await this.majorsService.ensureExists(createStudentClassDto.major_id);
 
     return this.prisma.studentClass.create({
       data: {
@@ -48,7 +46,10 @@ export class StudentClassesService {
 
   findAll() {
     return this.prisma.studentClass.findMany({
-      include: { department: true, _count: { select: { students: true } } },
+      include: {
+        major: { include: { department: true } },
+        _count: { select: { students: true } },
+      },
       orderBy: { class_id: 'asc' },
     });
   }
@@ -56,7 +57,10 @@ export class StudentClassesService {
   findOne(classId: string) {
     return this.prisma.studentClass.findUnique({
       where: { class_id: classId },
-      include: { department: true, _count: { select: { students: true } } },
+      include: {
+        major: { include: { department: true } },
+        _count: { select: { students: true } },
+      },
     });
   }
 
@@ -66,10 +70,8 @@ export class StudentClassesService {
       throw new NotFoundException('Student class not found');
     }
 
-    if (updateStudentClassDto.department_id) {
-      await this.departmentsService.ensureExists(
-        updateStudentClassDto.department_id,
-      );
+    if (updateStudentClassDto.major_id) {
+      await this.majorsService.ensureExists(updateStudentClassDto.major_id);
     }
 
     const capacity =
@@ -92,8 +94,7 @@ export class StudentClassesService {
       data: {
         name: updateStudentClassDto.name,
         cohort: updateStudentClassDto.cohort,
-        major: updateStudentClassDto.major,
-        department_id: updateStudentClassDto.department_id,
+        major_id: updateStudentClassDto.major_id,
         capacity,
       },
     });

@@ -27,7 +27,6 @@ export class DepartmentsService {
       include: {
         _count: {
           select: {
-            studentClasses: true,
             teachers: true,
             majors: true,
           },
@@ -43,7 +42,6 @@ export class DepartmentsService {
       include: {
         _count: {
           select: {
-            studentClasses: true,
             teachers: true,
             majors: true,
           },
@@ -89,7 +87,6 @@ export class DepartmentsService {
     }
 
     const hasRelations =
-      department._count.studentClasses > 0 ||
       department._count.teachers > 0 ||
       department._count.majors > 0;
 

@@ -7,14 +7,12 @@ import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
 import { UsersService } from '../users/users.service';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { MajorsService } from '../majors/majors.service';
 
 @Injectable()
 export class StudentsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly userService: UsersService,
-    private readonly majorsService: MajorsService,
   ) {}
 
   private async ensureClassCanAcceptStudent(
@@ -69,7 +67,6 @@ export class StudentsService {
     }
 
     await this.ensureClassCanAcceptStudent(createStudentDto.class_id);
-    await this.majorsService.ensureExists(createStudentDto.major_id);
 
     return this.prisma.student.create({ data: createStudentDto });
   }
@@ -83,8 +80,7 @@ export class StudentsService {
             email: true,
           },
         },
-        class: { include: { department: true } },
-        major: { include: { department: true } },
+        class: { include: { major: { include: { department: true } } } },
       },
     });
   }
@@ -93,8 +89,7 @@ export class StudentsService {
     return this.prisma.student.findUnique({
       where: { student_id: studentId },
       include: {
-        class: { include: { department: true } },
-        major: { include: { department: true } },
+        class: { include: { major: { include: { department: true } } } },
       },
     });
   }
@@ -115,7 +110,6 @@ export class StudentsService {
     }
 
     await this.ensureClassCanAcceptStudent(updateStudentDto.class_id, id);
-    await this.majorsService.ensureExists(updateStudentDto.major_id);
 
     return this.prisma.student.update({
       where: { student_id: id },
@@ -145,8 +139,7 @@ export class StudentsService {
     const student = await this.prisma.student.findUnique({
       where: { user_id: userId },
       include: {
-        class: { include: { department: true } },
-        major: { include: { department: true } },
+        class: { include: { major: { include: { department: true } } } },
       },
     });
     if (!student) {

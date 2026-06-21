@@ -101,8 +101,8 @@ export class EnrollmentsService {
       );
     }
 
-    const studentMajorId = student.major_id;
-    const studentDepartmentId = student.major?.department_id;
+    const studentMajorId = student.class?.major_id;
+    const studentDepartmentId = student.class?.major?.department_id;
     const subjectMajorId = course.subject?.major_id;
     const subjectDepartmentId = course.subject?.major?.department_id;
     const allowPublic =

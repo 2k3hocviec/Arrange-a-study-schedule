@@ -26,7 +26,6 @@ model Department {
   name          String
   description   String?
 
-  studentClasses StudentClass[]
   teachers       Teacher[]
   majors         Major[]
 
@@ -39,23 +38,22 @@ model Major {
   department_id String
   description   String?
 
-  department Department @relation(fields: [department_id], references: [department_id])
-  students   Student[]
-  subjects   Subject[]
+  department     Department     @relation(fields: [department_id], references: [department_id])
+  studentClasses StudentClass[]
+  subjects       Subject[]
 
   @@map("major")
 }
 
 model StudentClass {
-  class_id      String @id
-  name          String
-  cohort        String
-  major         String
-  capacity      Int?
-  department_id String @default("DEFAULT")
+  class_id String @id
+  name     String
+  cohort   String
+  capacity Int?
+  major_id String @default("DEFAULT")
 
-  department Department @relation(fields: [department_id], references: [department_id])
-  students   Student[]
+  major    Major     @relation(fields: [major_id], references: [major_id])
+  students Student[]
 
   @@map("student_class")
 }
@@ -65,11 +63,9 @@ model Student {
   name       String
   user_id    Int    @unique
   class_id   String @default("DEFAULT")
-  major_id   String @default("DEFAULT")
 
   user        User         @relation(fields: [user_id], references: [id])
   class       StudentClass @relation(fields: [class_id], references: [class_id])
-  major       Major        @relation(fields: [major_id], references: [major_id])
   enrollments Enrollment[]
 
   @@map("student")

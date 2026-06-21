@@ -30,7 +30,7 @@ export class MajorsService {
     return this.prisma.major.findMany({
       include: {
         department: true,
-        _count: { select: { students: true, subjects: true } },
+        _count: { select: { studentClasses: true, subjects: true } },
       },
       orderBy: { major_id: 'asc' },
     });
@@ -41,7 +41,7 @@ export class MajorsService {
       where: { major_id: majorId },
       include: {
         department: true,
-        _count: { select: { students: true, subjects: true } },
+        _count: { select: { studentClasses: true, subjects: true } },
       },
     });
   }
@@ -87,7 +87,7 @@ export class MajorsService {
       throw new NotFoundException('Major not found');
     }
 
-    if (major._count.students > 0 || major._count.subjects > 0) {
+    if (major._count.studentClasses > 0 || major._count.subjects > 0) {
       throw new BadRequestException('Cannot delete major that is in use');
     }
 

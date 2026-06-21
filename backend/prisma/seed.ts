@@ -1,1039 +1,644 @@
 import 'dotenv/config';
 import { PrismaPg } from '@prisma/adapter-pg';
-import { PrismaClient, type User } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 const databaseUrl = process.env.DATABASE_URL;
 
-const ministryUsers = [
-  { email: 'ministry0@ptit.dkt' },
-  { email: 'ministry1@ptit.dkt' },
-];
-
-const teacherUsers = [
-  { email: 'teacher0@ptit.dkt' },
-  { email: 'teacher1@ptit.dkt' },
-  { email: 'teacher2@ptit.dkt' },
-  { email: 'teacher3@ptit.dkt' },
-  { email: 'teacher4@ptit.dkt' },
-  { email: 'teacher5@ptit.dkt' },
-  { email: 'teacher6@ptit.dkt' },
-  { email: 'teacher7@ptit.dkt' },
-  { email: 'teacher8@ptit.dkt' },
-  { email: 'teacher9@ptit.dkt' },
-];
-
-const studentUsers = [
-  { email: 'student0@ptit.dkt' },
-  { email: 'student1@ptit.dkt' },
-  { email: 'student2@ptit.dkt' },
-  { email: 'student3@ptit.dkt' },
-  { email: 'student4@ptit.dkt' },
-  { email: 'student5@ptit.dkt' },
-  { email: 'student6@ptit.dkt' },
-  { email: 'student7@ptit.dkt' },
-  { email: 'student8@ptit.dkt' },
-  { email: 'student9@ptit.dkt' },
-];
-
-const teacherProfiles = [
-  {
-    teacher_id: 'GV001',
-    name: 'Nguyễn Thị Bích Nguyên',
-    degree: 'ThS',
-    expertise: 'Công nghệ thông tin 2',
-  },
-  {
-    teacher_id: 'GV002',
-    name: 'Nguyễn Thị Tuyết Hải',
-    degree: 'TS',
-    expertise: 'Công nghệ thông tin 2',
-  },
-  {
-    teacher_id: 'GV003',
-    name: 'Huỳnh Trọng Thưa',
-    degree: 'ThS',
-    expertise: 'Mạng máy tính 2',
-  },
-  {
-    teacher_id: 'GV004',
-    name: 'Phạm Minh Tuấn',
-    degree: 'TS',
-    expertise: 'Trí tuệ nhân tạo 2',
-  },
-  {
-    teacher_id: 'GV005',
-    name: 'Lê Hà Thanh',
-    degree: 'ThS',
-    expertise: 'Hệ Thống thông tin 2',
-  },
-  {
-    teacher_id: 'GV006',
-    name: 'Lê Ngọc Hiếu',
-    degree: 'TS',
-    expertise: 'An toàn thông tin 2',
-  },
-  {
-    teacher_id: 'GV007',
-    name: 'Lê Ngọc Hiếu',
-    degree: 'ThS',
-    expertise: 'Công nghệ thông tin 1',
-  },
-  {
-    teacher_id: 'GV008',
-    name: 'Nguyễn Hoàng Thành',
-    degree: 'TS',
-    expertise: 'Công nghệ thông tin 1',
-  },
-  {
-    teacher_id: 'GV009',
-    name: 'Nguyễn Thị Tri Lý',
-    degree: 'ThS',
-    expertise: 'Cơ bản 2',
-  },
-  {
-    teacher_id: 'GV010',
-    name: 'Mai Thanh Tâm',
-    degree: 'TS',
-    expertise: 'Đa phương tiện 2',
-  },
-];
-
-const studentProfiles = [
-  { student_id: 'N23DCCN166', name: 'Huỳnh Hoàng Khoa' },
-  { student_id: 'N23DCCN122', name: 'Lê Hồng Thái' },
-  { student_id: 'N23DCAT111', name: 'Nguyễn Hữu Duy' },
-  { student_id: 'N23DCCN162', name: 'Phạm Đình Hải' },
-  { student_id: 'N23DCCN164', name: 'Nguyễn Ngọc Quốc Huy' },
-  { student_id: 'N23DCCN165', name: 'Nguyễn Đông Din' },
-  { student_id: 'N23DCCN167', name: 'Lê Vũ Hảo' },
-  { student_id: 'N23DCCN168', name: 'Trần Hoàng Đạt' },
-  { student_id: 'N23DCCN169', name: 'Nguyễn Xuân Hữu' },
-  { student_id: 'N23DCCN110', name: 'Mai Xuân Hiếu' },
-];
-
-const classroomSeeds = [
-  {
-    classroom_id: '2A01',
-    capacity: 10,
-    type: 'Theory',
-    description: 'Máy chiếu, bảng trắng, micro không dây',
-    status: 'Ready',
-  },
-  {
-    classroom_id: '2A02',
-    capacity: 10,
-    type: 'Theory',
-    description: 'Máy chiếu, loa treo tường, điều hòa',
-    status: 'Ready',
-  },
-  {
-    classroom_id: '2A03',
-    capacity: 10,
-    type: 'Practice',
-    description: 'Máy tính thực hành, máy chiếu, mạng LAN',
-    status: 'Ready',
-  },
-  {
-    classroom_id: '2A04',
-    capacity: 10,
-    type: 'Theory',
-    description: 'Bảng tương tác, micro, camera lớp học',
-    status: 'Maintaince',
-  },
-  {
-    classroom_id: '2A05',
-    capacity: 10,
-    type: 'Practice',
-    description: 'Máy tính cấu hình cao, máy chiếu, điều hòa',
-    status: 'Ready',
-  },
-  {
-    classroom_id: '2A06',
-    capacity: 10,
-    type: 'Theory',
-    description: 'Máy chiếu, bảng kính, loa âm trần',
-    status: 'Ready',
-  },
-  {
-    classroom_id: '2A07',
-    capacity: 10,
-    type: 'Practice',
-    description: 'Phòng lab mạng, switch, router thực hành',
-    status: 'Maintaince',
-  },
-  {
-    classroom_id: '2A08',
-    capacity: 10,
-    type: 'Theory',
-    description: 'Máy chiếu, bảng trắng, hệ thống âm thanh',
-    status: 'Ready',
-  },
-  {
-    classroom_id: '2A09',
-    capacity: 10,
-    type: 'Practice',
-    description: 'Máy tính thực hành, tai nghe, máy chiếu',
-    status: 'Ready',
-  },
-  {
-    classroom_id: '2A10',
-    capacity: 10,
-    type: 'Theory',
-    description: 'Máy chiếu, màn chiếu lớn, micro cài áo',
-    status: 'Maintaince',
-  },
-];
-
-const subjectSeeds = [
-  { subject_id: 'INT1337', name: 'Lập trình hướng đối tượng', credits: 3 },
-  { subject_id: 'INT1306', name: 'Cơ sở dữ liệu', credits: 3 },
-  { subject_id: 'INT1312', name: 'Cấu trúc dữ liệu và giải thuật', credits: 3 },
-  { subject_id: 'INT1405', name: 'Mạng máy tính', credits: 3 },
-  { subject_id: 'INT1414', name: 'Công nghệ phần mềm', credits: 3 },
-  { subject_id: 'INT1434', name: 'Trí tuệ nhân tạo', credits: 3 },
-  { subject_id: 'INT1448', name: 'An toàn thông tin', credits: 3 },
-  { subject_id: 'INT1450', name: 'Phát triển ứng dụng web', credits: 4 },
-];
-
-const semesterSeeds = [
-  {
-    name: 'HK1',
-    school_year: '2025-2026',
-    start_date: new Date('2025-08-01'),
-    end_date: new Date('2025-12-25'),
-    is_active: false,
-  },
-  {
-    name: 'HK2',
-    school_year: '2025-2026',
-    start_date: new Date('2026-01-05'),
-    end_date: new Date('2026-05-31'),
-    is_active: true,
-  },
-  {
-    name: 'HK1',
-    school_year: '2026-2027',
-    start_date: new Date('2026-08-01'),
-    end_date: new Date('2026-12-25'),
-    is_active: false,
-  },
-];
-
-const courseSeeds = [
-  {
-    course_code: 'INT1337-01',
-    subject_id: 'INT1337',
-    teacher_id: 'GV001',
-    capacity: 5,
-    remaining_capacity: 5,
-    required_room_type: 'Theory',
-  },
-  {
-    course_code: 'INT1337-02',
-    subject_id: 'INT1337',
-    teacher_id: 'GV002',
-    capacity: 6,
-    remaining_capacity: 6,
-    required_room_type: 'Theory',
-  },
-  {
-    course_code: 'INT1337-03',
-    subject_id: 'INT1337',
-    teacher_id: 'GV007',
-    capacity: 7,
-    remaining_capacity: 7,
-    required_room_type: 'Practice',
-  },
-  {
-    course_code: 'INT1306-01',
-    subject_id: 'INT1306',
-    teacher_id: 'GV005',
-    capacity: 8,
-    remaining_capacity: 8,
-    required_room_type: 'Theory',
-  },
-  {
-    course_code: 'INT1306-02',
-    subject_id: 'INT1306',
-    teacher_id: 'GV008',
-    capacity: 6,
-    remaining_capacity: 6,
-    required_room_type: 'Practice',
-  },
-  {
-    course_code: 'INT1312-01',
-    subject_id: 'INT1312',
-    teacher_id: 'GV003',
-    capacity: 7,
-    remaining_capacity: 7,
-    required_room_type: 'Theory',
-  },
-  {
-    course_code: 'INT1312-02',
-    subject_id: 'INT1312',
-    teacher_id: 'GV001',
-    capacity: 5,
-    remaining_capacity: 5,
-    required_room_type: 'Practice',
-  },
-  {
-    course_code: 'INT1405-01',
-    subject_id: 'INT1405',
-    teacher_id: 'GV003',
-    capacity: 8,
-    remaining_capacity: 8,
-    required_room_type: 'Theory',
-  },
-  {
-    course_code: 'INT1405-02',
-    subject_id: 'INT1405',
-    teacher_id: 'GV006',
-    capacity: 5,
-    remaining_capacity: 5,
-    required_room_type: 'Practice',
-  },
-  {
-    course_code: 'INT1414-01',
-    subject_id: 'INT1414',
-    teacher_id: 'GV005',
-    capacity: 9,
-    remaining_capacity: 9,
-    required_room_type: 'Theory',
-  },
-  {
-    course_code: 'INT1434-01',
-    subject_id: 'INT1434',
-    teacher_id: 'GV004',
-    capacity: 6,
-    remaining_capacity: 6,
-    required_room_type: 'Theory',
-  },
-  {
-    course_code: 'INT1434-02',
-    subject_id: 'INT1434',
-    teacher_id: 'GV010',
-    capacity: 8,
-    remaining_capacity: 8,
-    required_room_type: 'Practice',
-  },
-  {
-    course_code: 'INT1448-01',
-    subject_id: 'INT1448',
-    teacher_id: 'GV006',
-    capacity: 6,
-    remaining_capacity: 6,
-    required_room_type: 'Theory',
-  },
-  {
-    course_code: 'INT1448-02',
-    subject_id: 'INT1448',
-    teacher_id: 'GV009',
-    capacity: 5,
-    remaining_capacity: 5,
-    required_room_type: 'Practice',
-  },
-  {
-    course_code: 'INT1450-01',
-    subject_id: 'INT1450',
-    teacher_id: 'GV008',
-    capacity: 9,
-    remaining_capacity: 9,
-    required_room_type: 'Practice',
-  },
-  {
-    course_code: 'INT1450-02',
-    subject_id: 'INT1450',
-    teacher_id: 'GV010',
-    capacity: 10,
-    remaining_capacity: 10,
-    required_room_type: 'Theory',
-  },
-];
-
-const scheduleSeeds = [
-  {
-    course_code: 'INT1337-01',
-    classroom_id: '2A01',
-    dayOfWeek: '2',
-    start_slot: 1,
-    end_slot: 5,
-    start_date: new Date('2026-01-05'),
-    end_date: new Date('2026-05-31'),
-  },
-  {
-    course_code: 'INT1306-01',
-    classroom_id: '2A06',
-    dayOfWeek: '3',
-    start_slot: 1,
-    end_slot: 5,
-    start_date: new Date('2026-01-05'),
-    end_date: new Date('2026-05-31'),
-  },
-  {
-    course_code: 'INT1337-03',
-    classroom_id: '2A03',
-    dayOfWeek: '4',
-    start_slot: 1,
-    end_slot: 5,
-    start_date: new Date('2026-01-05'),
-    end_date: new Date('2026-05-31'),
-  },
-  {
-    course_code: 'INT1306-02',
-    classroom_id: '2A05',
-    dayOfWeek: '5',
-    start_slot: 1,
-    end_slot: 5,
-    start_date: new Date('2026-01-05'),
-    end_date: new Date('2026-05-31'),
-  },
-  {
-    course_code: 'INT1434-01',
-    classroom_id: '2A02',
-    dayOfWeek: '6',
-    start_slot: 1,
-    end_slot: 5,
-    start_date: new Date('2026-01-05'),
-    end_date: new Date('2026-05-31'),
-  },
-  {
-    course_code: 'INT1450-01',
-    classroom_id: '2A05',
-    dayOfWeek: '7',
-    start_slot: 1,
-    end_slot: 5,
-    start_date: new Date('2026-01-05'),
-    end_date: new Date('2026-05-31'),
-  },
-  {
-    course_code: 'INT1448-01',
-    classroom_id: '2A08',
-    dayOfWeek: '2',
-    start_slot: 6,
-    end_slot: 10,
-    start_date: new Date('2026-01-05'),
-    end_date: new Date('2026-05-31'),
-  },
-];
-
-const enrollmentSeeds = [
-  { student_id: 'N23DCCN166', course_code: 'INT1337-01' },
-  { student_id: 'N23DCCN166', course_code: 'INT1306-02' },
-  { student_id: 'N23DCCN166', course_code: 'INT1434-01' },
-  { student_id: 'N23DCCN122', course_code: 'INT1337-01' },
-  { student_id: 'N23DCCN122', course_code: 'INT1306-01' },
-  { student_id: 'N23DCCN122', course_code: 'INT1450-01' },
-  { student_id: 'N23DCAT111', course_code: 'INT1337-03' },
-  { student_id: 'N23DCAT111', course_code: 'INT1448-01' },
-  { student_id: 'N23DCCN162', course_code: 'INT1306-01' },
-  { student_id: 'N23DCCN162', course_code: 'INT1434-01' },
-  { student_id: 'N23DCCN164', course_code: 'INT1337-03' },
-  { student_id: 'N23DCCN164', course_code: 'INT1450-01' },
-  { student_id: 'N23DCCN165', course_code: 'INT1337-01' },
-  { student_id: 'N23DCCN165', course_code: 'INT1448-01' },
-  { student_id: 'N23DCCN167', course_code: 'INT1306-02' },
-  { student_id: 'N23DCCN168', course_code: 'INT1434-01' },
-];
-
-const activeCourseSeeds = [
-  {
-    course_code: 'INT1337-01',
-    subject_id: 'INT1337',
-    teacher_id: 'GV001',
-    semester: { name: 'HK1', school_year: '2025-2026' },
-    capacity: 5,
-    remaining_capacity: 5,
-    required_room_type: 'Theory',
-  },
-  {
-    course_code: 'INT1306-01',
-    subject_id: 'INT1306',
-    teacher_id: 'GV005',
-    semester: { name: 'HK1', school_year: '2025-2026' },
-    capacity: 8,
-    remaining_capacity: 8,
-    required_room_type: 'Theory',
-  },
-  {
-    course_code: 'INT1337-03',
-    subject_id: 'INT1337',
-    teacher_id: 'GV007',
-    semester: { name: 'HK1', school_year: '2025-2026' },
-    capacity: 7,
-    remaining_capacity: 7,
-    required_room_type: 'Practice',
-  },
-  {
-    course_code: 'INT1306-02',
-    subject_id: 'INT1306',
-    teacher_id: 'GV008',
-    semester: { name: 'HK2', school_year: '2025-2026' },
-    capacity: 6,
-    remaining_capacity: 6,
-    required_room_type: 'Practice',
-  },
-  {
-    course_code: 'INT1434-01',
-    subject_id: 'INT1434',
-    teacher_id: 'GV004',
-    semester: { name: 'HK2', school_year: '2025-2026' },
-    capacity: 6,
-    remaining_capacity: 6,
-    required_room_type: 'Theory',
-  },
-  {
-    course_code: 'INT1450-01',
-    subject_id: 'INT1450',
-    teacher_id: 'GV008',
-    semester: { name: 'HK2', school_year: '2025-2026' },
-    capacity: 9,
-    remaining_capacity: 9,
-    required_room_type: 'Practice',
-  },
-  {
-    course_code: 'INT1448-01',
-    subject_id: 'INT1448',
-    teacher_id: 'GV006',
-    semester: { name: 'HK2', school_year: '2025-2026' },
-    capacity: 6,
-    remaining_capacity: 6,
-    required_room_type: 'Theory',
-  },
-];
-
-const activeScheduleSeeds = [
-  {
-    course_code: 'INT1337-01',
-    classroom_id: '2A01',
-    dayOfWeek: '2',
-    start_slot: 1,
-    end_slot: 5,
-  },
-  {
-    course_code: 'INT1306-01',
-    classroom_id: '2A06',
-    dayOfWeek: '3',
-    start_slot: 1,
-    end_slot: 5,
-  },
-  {
-    course_code: 'INT1337-03',
-    classroom_id: '2A03',
-    dayOfWeek: '4',
-    start_slot: 6,
-    end_slot: 10,
-  },
-  {
-    course_code: 'INT1306-02',
-    classroom_id: '2A05',
-    dayOfWeek: '2',
-    start_slot: 1,
-    end_slot: 5,
-  },
-  {
-    course_code: 'INT1434-01',
-    classroom_id: '2A02',
-    dayOfWeek: '3',
-    start_slot: 6,
-    end_slot: 10,
-  },
-  {
-    course_code: 'INT1450-01',
-    classroom_id: '2A05',
-    dayOfWeek: '4',
-    start_slot: 6,
-    end_slot: 10,
-  },
-  {
-    course_code: 'INT1448-01',
-    classroom_id: '2A08',
-    dayOfWeek: '5',
-    start_slot: 1,
-    end_slot: 5,
-  },
-];
-
-const activeEnrollmentSeeds = [
-  { student_id: 'N23DCCN166', course_code: 'INT1337-01' },
-  { student_id: 'N23DCCN166', course_code: 'INT1306-02' },
-  { student_id: 'N23DCCN166', course_code: 'INT1434-01' },
-  { student_id: 'N23DCCN122', course_code: 'INT1337-01' },
-  { student_id: 'N23DCCN122', course_code: 'INT1306-01' },
-  { student_id: 'N23DCCN122', course_code: 'INT1450-01' },
-  { student_id: 'N23DCAT111', course_code: 'INT1337-03' },
-  { student_id: 'N23DCAT111', course_code: 'INT1448-01' },
-  { student_id: 'N23DCCN162', course_code: 'INT1306-01' },
-  { student_id: 'N23DCCN162', course_code: 'INT1434-01' },
-  { student_id: 'N23DCCN164', course_code: 'INT1337-03' },
-  { student_id: 'N23DCCN164', course_code: 'INT1450-01' },
-  { student_id: 'N23DCCN165', course_code: 'INT1337-01' },
-  { student_id: 'N23DCCN165', course_code: 'INT1448-01' },
-  { student_id: 'N23DCCN167', course_code: 'INT1306-02' },
-  { student_id: 'N23DCCN168', course_code: 'INT1434-01' },
-];
-
-const managedCourseCodes = courseSeeds.map((course) => course.course_code);
-const activeCourseCodes = activeCourseSeeds.map((course) => course.course_code);
-const allowedScheduleSlots = [
-  { start_slot: 1, end_slot: 5 },
-  { start_slot: 6, end_slot: 10 },
-];
-
-const semesterKey = (semester: { name: string; school_year: string }) =>
-  `${semester.name}:${semester.school_year}`;
-
-const isSameSlot = (
-  left: { start_slot: number; end_slot: number },
-  right: { start_slot: number; end_slot: number },
-) => left.start_slot === right.start_slot && left.end_slot === right.end_slot;
-
-const schedulesOverlap = (
-  left: { start_slot: number; end_slot: number },
-  right: { start_slot: number; end_slot: number },
-) => left.start_slot <= right.end_slot && right.start_slot <= left.end_slot;
-
-const assertUnique = (values: string[], label: string) => {
-  const seen = new Set<string>();
-  for (const value of values) {
-    if (seen.has(value)) {
-      throw new Error(`Duplicate ${label}: ${value}`);
-    }
-    seen.add(value);
-  }
-};
-
-function validateSeedData() {
-  assertUnique(activeCourseCodes, 'course seed');
-  assertUnique(
-    activeScheduleSeeds.map((schedule) => schedule.course_code),
-    'schedule course',
-  );
-  assertUnique(
-    activeEnrollmentSeeds.map(
-      (enrollment) => `${enrollment.student_id}:${enrollment.course_code}`,
-    ),
-    'enrollment seed',
-  );
-
-  const courseByCode = new Map(
-    activeCourseSeeds.map((course) => [course.course_code, course]),
-  );
-  const classroomById = new Map(
-    classroomSeeds.map((classroom) => [classroom.classroom_id, classroom]),
-  );
-  const semesterByKey = new Map(
-    semesterSeeds.map((semester) => [semesterKey(semester), semester]),
-  );
-  const scheduleByCourseCode = new Map(
-    activeScheduleSeeds.map((schedule) => [schedule.course_code, schedule]),
-  );
-
-  if (activeScheduleSeeds.length !== activeCourseSeeds.length) {
-    throw new Error('Every seeded course must have exactly one schedule');
-  }
-
-  for (const course of activeCourseSeeds) {
-    if (!semesterByKey.has(semesterKey(course.semester))) {
-      throw new Error(`Semester not found for course ${course.course_code}`);
-    }
-    if (!scheduleByCourseCode.has(course.course_code)) {
-      throw new Error(`Missing schedule for course ${course.course_code}`);
-    }
-  }
-
-  const roomSlotKeys = new Set<string>();
-  const teacherSlotKeys = new Set<string>();
-
-  for (const schedule of activeScheduleSeeds) {
-    const course = courseByCode.get(schedule.course_code);
-    if (!course) {
-      throw new Error(
-        `Course ${schedule.course_code} is required for schedule seed`,
-      );
-    }
-
-    if (
-      schedule.dayOfWeek !== schedule.dayOfWeek.trim() ||
-      !['2', '3', '4', '5', '6', '7', '8'].includes(schedule.dayOfWeek)
-    ) {
-      throw new Error(
-        `Schedule ${schedule.course_code} dayOfWeek must be a clean string from "2" to "8"`,
-      );
-    }
-
-    if (!allowedScheduleSlots.some((slot) => isSameSlot(slot, schedule))) {
-      throw new Error(
-        `Schedule ${schedule.course_code} must use slot 1-5 or 6-10`,
-      );
-    }
-
-    const classroom = classroomById.get(schedule.classroom_id);
-    if (!classroom) {
-      throw new Error(
-        `Classroom ${schedule.classroom_id} is required for schedule seed`,
-      );
-    }
-    if (classroom.status !== 'Ready') {
-      throw new Error(`Classroom ${schedule.classroom_id} is not ready`);
-    }
-    if (classroom.type !== course.required_room_type) {
-      throw new Error(
-        `Classroom ${schedule.classroom_id} type does not match ${schedule.course_code}`,
-      );
-    }
-    if (course.capacity && classroom.capacity < course.capacity) {
-      throw new Error(
-        `Classroom ${schedule.classroom_id} capacity is less than ${schedule.course_code}`,
-      );
-    }
-
-    const keyPrefix = [
-      semesterKey(course.semester),
-      schedule.dayOfWeek,
-      schedule.start_slot,
-      schedule.end_slot,
-    ].join(':');
-    const roomSlotKey = `${keyPrefix}:room:${schedule.classroom_id}`;
-    const teacherSlotKey = `${keyPrefix}:teacher:${course.teacher_id}`;
-
-    if (roomSlotKeys.has(roomSlotKey)) {
-      throw new Error(`Room conflict in schedule seed: ${roomSlotKey}`);
-    }
-    roomSlotKeys.add(roomSlotKey);
-
-    if (teacherSlotKeys.has(teacherSlotKey)) {
-      throw new Error(`Teacher conflict in schedule seed: ${teacherSlotKey}`);
-    }
-    teacherSlotKeys.add(teacherSlotKey);
-  }
-
-  const enrollmentsByStudent = new Map<string, typeof activeEnrollmentSeeds>();
-  for (const enrollment of activeEnrollmentSeeds) {
-    if (!courseByCode.has(enrollment.course_code)) {
-      throw new Error(
-        `Course ${enrollment.course_code} is required for enrollment seed`,
-      );
-    }
-
-    const currentEnrollments =
-      enrollmentsByStudent.get(enrollment.student_id) || [];
-    currentEnrollments.push(enrollment);
-    enrollmentsByStudent.set(enrollment.student_id, currentEnrollments);
-  }
-
-  for (const [studentId, enrollments] of enrollmentsByStudent) {
-    for (let i = 0; i < enrollments.length; i += 1) {
-      for (let j = i + 1; j < enrollments.length; j += 1) {
-        const leftCourse = courseByCode.get(enrollments[i].course_code)!;
-        const rightCourse = courseByCode.get(enrollments[j].course_code)!;
-        const leftSchedule = scheduleByCourseCode.get(
-          enrollments[i].course_code,
-        )!;
-        const rightSchedule = scheduleByCourseCode.get(
-          enrollments[j].course_code,
-        )!;
-
-        if (
-          semesterKey(leftCourse.semester) ===
-            semesterKey(rightCourse.semester) &&
-          leftSchedule.dayOfWeek === rightSchedule.dayOfWeek &&
-          schedulesOverlap(leftSchedule, rightSchedule)
-        ) {
-          throw new Error(
-            `Student ${studentId} has schedule conflict between ${enrollments[i].course_code} and ${enrollments[j].course_code}`,
-          );
-        }
-      }
-    }
-  }
-}
-
 if (!databaseUrl) {
-  throw new Error('DATABASE_URL is required to run seed');
+  throw new Error('DATABASE_URL is required');
 }
 
 const prisma = new PrismaClient({
   adapter: new PrismaPg(databaseUrl),
 });
 
-async function main() {
-  validateSeedData();
+const date = (value: string) => new Date(`${value}T00:00:00.000Z`);
 
+const departments = [
+  {
+    department_id: 'CNTT_DEPT',
+    name: 'Khoa Công nghệ thông tin',
+    description: 'Đào tạo các ngành công nghệ thông tin và an toàn thông tin',
+  },
+  {
+    department_id: 'CB_DEPT',
+    name: 'Khoa Cơ bản',
+    description: 'Đào tạo các môn đại cương và nền tảng',
+  },
+  {
+    department_id: 'QTKD_DEPT',
+    name: 'Khoa Quản trị kinh doanh',
+    description: 'Đào tạo ngành quản trị kinh doanh',
+  },
+];
+
+const majors = [
+  {
+    major_id: 'CNTT',
+    name: 'Công nghệ thông tin',
+    department_id: 'CNTT_DEPT',
+    description: 'Chuyên ngành Công nghệ thông tin',
+  },
+  {
+    major_id: 'ATTT',
+    name: 'An toàn thông tin',
+    department_id: 'CNTT_DEPT',
+    description: 'Chuyên ngành An toàn thông tin',
+  },
+  {
+    major_id: 'CB',
+    name: 'Cơ bản',
+    department_id: 'CB_DEPT',
+    description: 'Chuyên ngành Cơ bản',
+  },
+  {
+    major_id: 'QTKD',
+    name: 'Quản trị kinh doanh',
+    department_id: 'QTKD_DEPT',
+    description: 'Chuyên ngành Quản trị kinh doanh',
+  },
+];
+
+const semesters = [
+  {
+    name: 'Học kỳ 1',
+    school_year: '2025-2026',
+    start_date: date('2025-09-05'),
+    end_date: date('2026-01-15'),
+    is_active: false,
+  },
+  {
+    name: 'Học kỳ 2',
+    school_year: '2025-2026',
+    start_date: date('2026-02-16'),
+    end_date: date('2026-06-30'),
+    is_active: true,
+  },
+  {
+    name: 'Học kỳ 1',
+    school_year: '2026-2027',
+    start_date: date('2026-09-05'),
+    end_date: date('2027-01-15'),
+    is_active: false,
+  },
+];
+
+const studentClasses = [
+  {
+    class_id: 'D23CQCN01-N',
+    name: 'Lớp Công nghệ thông tin 01',
+    cohort: 'D23',
+    major_id: 'CNTT',
+    capacity: 50,
+  },
+  {
+    class_id: 'D23CQCN02-N',
+    name: 'Lớp Công nghệ thông tin 02',
+    cohort: 'D23',
+    major_id: 'CNTT',
+    capacity: 50,
+  },
+  {
+    class_id: 'D23CQAT01-N',
+    name: 'Lớp An toàn thông tin 01',
+    cohort: 'D23',
+    major_id: 'ATTT',
+    capacity: 50,
+  },
+  {
+    class_id: 'D23CQQT01-N',
+    name: 'Lớp Quản trị kinh doanh 01',
+    cohort: 'D23',
+    major_id: 'QTKD',
+    capacity: 50,
+  },
+];
+
+const classrooms = [
+  {
+    classroom_id: 'A101',
+    capacity: 5,
+    type: 'Theory',
+    description: 'Phòng lý thuyết A101',
+    status: 'Ready',
+  },
+  {
+    classroom_id: 'A102',
+    capacity: 5,
+    type: 'Theory',
+    description: 'Phòng lý thuyết A102',
+    status: 'Ready',
+  },
+  {
+    classroom_id: 'A103',
+    capacity: 5,
+    type: 'Theory',
+    description: 'Phòng lý thuyết A103',
+    status: 'Ready',
+  },
+  {
+    classroom_id: 'A104',
+    capacity: 5,
+    type: 'Theory',
+    description: 'Phòng lý thuyết A104',
+    status: 'Ready',
+  },
+  {
+    classroom_id: 'A105',
+    capacity: 5,
+    type: 'Theory',
+    description: 'Phòng lý thuyết A105',
+    status: 'Ready',
+  },
+  {
+    classroom_id: 'LAB01',
+    capacity: 5,
+    type: 'Practice',
+    description: 'Phòng thực hành LAB01',
+    status: 'Ready',
+  },
+  {
+    classroom_id: 'LAB02',
+    capacity: 5,
+    type: 'Practice',
+    description: 'Phòng thực hành LAB02',
+    status: 'Ready',
+  },
+  {
+    classroom_id: 'LAB03',
+    capacity: 5,
+    type: 'Practice',
+    description: 'Phòng thực hành LAB03',
+    status: 'Ready',
+  },
+  {
+    classroom_id: 'LAB04',
+    capacity: 5,
+    type: 'Practice',
+    description: 'Phòng thực hành LAB04',
+    status: 'Ready',
+  },
+  {
+    classroom_id: 'B201',
+    capacity: 5,
+    type: 'Theory',
+    description: 'Phòng lý thuyết B201',
+    status: 'Ready',
+  },
+];
+
+const teacherProfiles = [
+  {
+    teacher_id: 'GV00',
+    name: 'Nguyễn Văn An',
+    degree: 'Thạc sĩ',
+    expertise: 'Cấu trúc dữ liệu',
+    department_id: 'CNTT_DEPT',
+  },
+  {
+    teacher_id: 'GV01',
+    name: 'Trần Thị Bình',
+    degree: 'Thạc sĩ',
+    expertise: 'Lập trình C++',
+    department_id: 'CNTT_DEPT',
+  },
+  {
+    teacher_id: 'GV02',
+    name: 'Lê Minh Châu',
+    degree: 'Tiến sĩ',
+    expertise: 'Lập trình Java',
+    department_id: 'CNTT_DEPT',
+  },
+  {
+    teacher_id: 'GV03',
+    name: 'Phạm Quốc Dũng',
+    degree: 'Thạc sĩ',
+    expertise: 'Phân tích thiết kế hệ thống',
+    department_id: 'CNTT_DEPT',
+  },
+  {
+    teacher_id: 'GV04',
+    name: 'Hoàng Ngọc Hà',
+    degree: 'Thạc sĩ',
+    expertise: 'Ứng dụng di động',
+    department_id: 'CNTT_DEPT',
+  },
+  {
+    teacher_id: 'GV05',
+    name: 'Đỗ Anh Khoa',
+    degree: 'Tiến sĩ',
+    expertise: 'An toàn mạng',
+    department_id: 'CNTT_DEPT',
+  },
+  {
+    teacher_id: 'GV06',
+    name: 'Vũ Thị Lan',
+    degree: 'Thạc sĩ',
+    expertise: 'Quản trị doanh nghiệp',
+    department_id: 'QTKD_DEPT',
+  },
+  {
+    teacher_id: 'GV07',
+    name: 'Bùi Thành Nam',
+    degree: 'Thạc sĩ',
+    expertise: 'Quản trị kinh doanh',
+    department_id: 'QTKD_DEPT',
+  },
+  {
+    teacher_id: 'GV08',
+    name: 'Phan Thu Hương',
+    degree: 'Thạc sĩ',
+    expertise: 'Toán học',
+    department_id: 'CB_DEPT',
+  },
+  {
+    teacher_id: 'GV09',
+    name: 'Đặng Minh Tuấn',
+    degree: 'Thạc sĩ',
+    expertise: 'Tin học cơ sở',
+    department_id: 'CB_DEPT',
+  },
+];
+
+const subjects = [
+  {
+    subject_id: 'CTDL',
+    name: 'Cấu trúc dữ liệu',
+    credits: 3,
+    major_id: 'CNTT',
+    allow_same_major: false,
+    allow_same_department: true,
+    required_room_type: 'Practice',
+  },
+  {
+    subject_id: 'CPP',
+    name: 'Lập trình C++',
+    credits: 3,
+    major_id: 'CNTT',
+    allow_same_major: false,
+    allow_same_department: true,
+    required_room_type: 'Practice',
+  },
+  {
+    subject_id: 'JAVA',
+    name: 'Lập trình Java',
+    credits: 3,
+    major_id: 'CNTT',
+    allow_same_major: false,
+    allow_same_department: true,
+    required_room_type: 'Practice',
+  },
+  {
+    subject_id: 'PTTKHT',
+    name: 'Phân tích thiết kế hệ thống',
+    credits: 3,
+    major_id: 'CNTT',
+    allow_same_major: true,
+    allow_same_department: false,
+    required_room_type: 'Theory',
+  },
+  {
+    subject_id: 'LTUDDD',
+    name: 'Lập trình ứng dụng di động',
+    credits: 3,
+    major_id: 'CNTT',
+    allow_same_major: true,
+    allow_same_department: false,
+    required_room_type: 'Practice',
+  },
+  {
+    subject_id: 'ANMMT',
+    name: 'An mạng máy tính',
+    credits: 3,
+    major_id: 'ATTT',
+    allow_same_major: true,
+    allow_same_department: false,
+    required_room_type: 'Practice',
+  },
+  {
+    subject_id: 'QTDN',
+    name: 'Quản trị doanh nghiệp',
+    credits: 3,
+    major_id: 'QTKD',
+    allow_same_major: false,
+    allow_same_department: true,
+    required_room_type: 'Theory',
+  },
+  {
+    subject_id: 'GT',
+    name: 'Giải tích',
+    credits: 3,
+    major_id: 'CB',
+    allow_same_major: false,
+    allow_same_department: false,
+    required_room_type: 'Theory',
+  },
+  {
+    subject_id: 'TCC',
+    name: 'Toán cao cấp',
+    credits: 3,
+    major_id: 'CB',
+    allow_same_major: false,
+    allow_same_department: false,
+    required_room_type: 'Theory',
+  },
+  {
+    subject_id: 'THCS',
+    name: 'Tin học cơ sở',
+    credits: 3,
+    major_id: 'CB',
+    allow_same_major: false,
+    allow_same_department: false,
+    required_room_type: 'Practice',
+  },
+];
+
+const teacherIdsByDepartment: Record<string, string[]> = {
+  CNTT_DEPT: ['GV00', 'GV01', 'GV02', 'GV03', 'GV04', 'GV05'],
+  QTKD_DEPT: ['GV06', 'GV07'],
+  CB_DEPT: ['GV08', 'GV09'],
+};
+
+const scheduleSlots = [
+  { dayOfWeek: '2', start_slot: 1, end_slot: 2 },
+  { dayOfWeek: '2', start_slot: 3, end_slot: 4 },
+  { dayOfWeek: '2', start_slot: 6, end_slot: 7 },
+  { dayOfWeek: '2', start_slot: 8, end_slot: 9 },
+  { dayOfWeek: '3', start_slot: 1, end_slot: 2 },
+  { dayOfWeek: '3', start_slot: 3, end_slot: 4 },
+  { dayOfWeek: '3', start_slot: 6, end_slot: 7 },
+  { dayOfWeek: '3', start_slot: 8, end_slot: 9 },
+  { dayOfWeek: '4', start_slot: 1, end_slot: 2 },
+  { dayOfWeek: '4', start_slot: 3, end_slot: 4 },
+  { dayOfWeek: '4', start_slot: 6, end_slot: 7 },
+  { dayOfWeek: '4', start_slot: 8, end_slot: 9 },
+  { dayOfWeek: '5', start_slot: 1, end_slot: 2 },
+  { dayOfWeek: '5', start_slot: 3, end_slot: 4 },
+  { dayOfWeek: '5', start_slot: 6, end_slot: 7 },
+  { dayOfWeek: '5', start_slot: 8, end_slot: 9 },
+  { dayOfWeek: '6', start_slot: 1, end_slot: 2 },
+  { dayOfWeek: '6', start_slot: 3, end_slot: 4 },
+  { dayOfWeek: '6', start_slot: 6, end_slot: 7 },
+  { dayOfWeek: '6', start_slot: 8, end_slot: 9 },
+];
+
+async function upsertUser(email: string, role: string, password: string) {
+  return prisma.user.upsert({
+    where: { email },
+    update: { password, role },
+    create: { email, password, role },
+  });
+}
+
+async function clearDatabase() {
+  await prisma.teacherBusySchedule.deleteMany();
+  await prisma.enrollment.deleteMany();
+  await prisma.schedule.deleteMany();
+  await prisma.course.deleteMany();
+  await prisma.subject.deleteMany();
+  await prisma.student.deleteMany();
+  await prisma.teacher.deleteMany();
+  await prisma.studentClass.deleteMany();
+  await prisma.classroom.deleteMany();
+  await prisma.semester.deleteMany();
+  await prisma.major.deleteMany();
+  await prisma.department.deleteMany();
+  await prisma.user.deleteMany();
+}
+
+async function main() {
   const password = await bcrypt.hash('1', 10);
 
-  await prisma.user.upsert({
-    where: { email: 'admin@ptit.dkt' },
-    update: {
-      password,
-      role: 'sysadmin',
-    },
-    create: {
-      email: 'admin@ptit.dkt',
-      password,
-      role: 'sysadmin',
-    },
-  });
+  await clearDatabase();
 
-  for (const user of ministryUsers) {
-    await prisma.user.upsert({
-      where: { email: user.email },
+  await upsertUser('admin@gmail.com', 'sysadmin', password);
+  await upsertUser('ministry0@gmail.com', 'ministry', password);
+  await upsertUser('ministry1@gmail.com', 'ministry', password);
+
+  for (const department of departments) {
+    await prisma.department.upsert({
+      where: { department_id: department.department_id },
       update: {
-        password,
-        role: 'ministry',
+        name: department.name,
+        description: department.description,
       },
-      create: {
-        email: user.email,
-        password,
-        role: 'ministry',
-      },
+      create: department,
     });
   }
 
-  const seededTeacherUsers: User[] = [];
-  for (const user of teacherUsers) {
-    const seededUser = await prisma.user.upsert({
-      where: { email: user.email },
+  for (const major of majors) {
+    await prisma.major.upsert({
+      where: { major_id: major.major_id },
       update: {
-        password,
-        role: 'teacher',
+        name: major.name,
+        department_id: major.department_id,
+        description: major.description,
       },
-      create: {
-        email: user.email,
-        password,
-        role: 'teacher',
-      },
+      create: major,
     });
-    seededTeacherUsers.push(seededUser);
   }
 
-  const seededStudentUsers: User[] = [];
-  for (const user of studentUsers) {
-    const seededUser = await prisma.user.upsert({
-      where: { email: user.email },
-      update: {
-        password,
-        role: 'student',
-      },
-      create: {
-        email: user.email,
-        password,
-        role: 'student',
-      },
-    });
-    seededStudentUsers.push(seededUser);
-  }
-
-  await prisma.department.upsert({
-    where: { department_id: 'DEFAULT' },
-    update: {
-      name: 'Khoa mac dinh',
-      description: 'Khoa mac dinh cho du lieu cu',
-    },
-    create: {
-      department_id: 'DEFAULT',
-      name: 'Khoa mac dinh',
-      description: 'Khoa mac dinh cho du lieu cu',
-    },
-  });
-
-  await prisma.major.upsert({
-    where: { major_id: 'DEFAULT' },
-    update: {
-      name: 'Chuyen nganh mac dinh',
-      department_id: 'DEFAULT',
-      description: 'Chuyen nganh mac dinh cho du lieu cu',
-    },
-    create: {
-      major_id: 'DEFAULT',
-      name: 'Chuyen nganh mac dinh',
-      department_id: 'DEFAULT',
-      description: 'Chuyen nganh mac dinh cho du lieu cu',
-    },
-  });
-
-  for (const [index, user] of seededTeacherUsers.entries()) {
-    const profile = teacherProfiles[index];
-    const existingTeacher = await prisma.teacher.findUnique({
-      where: { user_id: user.id },
-    });
-
-    if (existingTeacher) {
-      await prisma.teacher.update({
-        where: { teacher_id: existingTeacher.teacher_id },
-        data: {
-          name: profile.name,
-          degree: profile.degree,
-          expertise: profile.expertise,
-          department_id: 'DEFAULT',
+  for (const semester of semesters) {
+    await prisma.semester.upsert({
+      where: {
+        name_school_year: {
+          name: semester.name,
+          school_year: semester.school_year,
         },
-      });
-      continue;
-    }
-
-    await prisma.teacher.upsert({
-      where: { teacher_id: profile.teacher_id },
-      update: {
-        user_id: user.id,
-        name: profile.name,
-        degree: profile.degree,
-        expertise: profile.expertise,
-        department_id: 'DEFAULT',
       },
-      create: {
-        teacher_id: profile.teacher_id,
-        user_id: user.id,
-        name: profile.name,
-        degree: profile.degree,
-        expertise: profile.expertise,
-        department_id: 'DEFAULT',
-      },
+      update: semester,
+      create: semester,
     });
   }
 
-  for (const [index, user] of seededStudentUsers.entries()) {
-    const profile = studentProfiles[index];
+  for (const studentClass of studentClasses) {
     await prisma.studentClass.upsert({
-      where: { class_id: 'DEFAULT' },
+      where: { class_id: studentClass.class_id },
       update: {
-        name: 'Lớp mặc định',
-        cohort: 'N/A',
-        major: 'N/A',
-        department_id: 'DEFAULT',
-        capacity: null,
+        name: studentClass.name,
+        cohort: studentClass.cohort,
+        major_id: studentClass.major_id,
+        capacity: studentClass.capacity,
       },
-      create: {
-        class_id: 'DEFAULT',
-        name: 'Lớp mặc định',
-        cohort: 'N/A',
-        major: 'N/A',
-        department_id: 'DEFAULT',
-        capacity: null,
-      },
-    });
-
-    const existingStudent = await prisma.student.findUnique({
-      where: { user_id: user.id },
-    });
-
-    if (existingStudent) {
-      await prisma.student.update({
-        where: { student_id: existingStudent.student_id },
-        data: { name: profile.name, class_id: 'DEFAULT', major_id: 'DEFAULT' },
-      });
-      continue;
-    }
-
-    await prisma.student.upsert({
-      where: { student_id: profile.student_id },
-      update: {
-        user_id: user.id,
-        name: profile.name,
-        class_id: 'DEFAULT',
-        major_id: 'DEFAULT',
-      },
-      create: {
-        student_id: profile.student_id,
-        user_id: user.id,
-        name: profile.name,
-        class_id: 'DEFAULT',
-        major_id: 'DEFAULT',
-      },
+      create: studentClass,
     });
   }
 
-  for (const classroom of classroomSeeds) {
+  for (const classroom of classrooms) {
     await prisma.classroom.upsert({
       where: { classroom_id: classroom.classroom_id },
-      update: {
-        capacity: classroom.capacity,
-        type: classroom.type,
-        description: classroom.description,
-        status: classroom.status,
-      },
+      update: classroom,
       create: classroom,
     });
   }
 
-  for (const subject of subjectSeeds) {
+  for (const [index, teacher] of teacherProfiles.entries()) {
+    const user = await upsertUser(
+      `teacher${String(index).padStart(2, '0')}@gmail.com`,
+      'teacher',
+      password,
+    );
+
+    await prisma.teacher.upsert({
+      where: { teacher_id: teacher.teacher_id },
+      update: {
+        user_id: user.id,
+        name: teacher.name,
+        degree: teacher.degree,
+        expertise: teacher.expertise,
+        department_id: teacher.department_id,
+      },
+      create: {
+        teacher_id: teacher.teacher_id,
+        user_id: user.id,
+        name: teacher.name,
+        degree: teacher.degree,
+        expertise: teacher.expertise,
+        department_id: teacher.department_id,
+      },
+    });
+  }
+
+  const classDistribution = [
+    'D23CQCN01-N',
+    'D23CQCN02-N',
+    'D23CQAT01-N',
+    'D23CQQT01-N',
+  ];
+
+  for (let index = 0; index < 20; index += 1) {
+    const user = await upsertUser(
+      `student${String(index).padStart(2, '0')}@gmail.com`,
+      'student',
+      password,
+    );
+    const classId = classDistribution[Math.floor(index / 5)];
+
+    await prisma.student.upsert({
+      where: { student_id: `SV${String(index).padStart(3, '0')}` },
+      update: {
+        user_id: user.id,
+        name: `Sinh viên ${String(index + 1).padStart(2, '0')}`,
+        class_id: classId,
+      },
+      create: {
+        student_id: `SV${String(index).padStart(3, '0')}`,
+        user_id: user.id,
+        name: `Sinh viên ${String(index + 1).padStart(2, '0')}`,
+        class_id: classId,
+      },
+    });
+  }
+
+  for (const subject of subjects) {
     await prisma.subject.upsert({
       where: { subject_id: subject.subject_id },
       update: {
         name: subject.name,
         credits: subject.credits,
-        major_id: 'DEFAULT',
-        allow_same_major: false,
-        allow_same_department: false,
+        major_id: subject.major_id,
+        allow_same_major: subject.allow_same_major,
+        allow_same_department: subject.allow_same_department,
       },
       create: {
-        ...subject,
-        major_id: 'DEFAULT',
-        allow_same_major: false,
-        allow_same_department: false,
+        subject_id: subject.subject_id,
+        name: subject.name,
+        credits: subject.credits,
+        major_id: subject.major_id,
+        allow_same_major: subject.allow_same_major,
+        allow_same_department: subject.allow_same_department,
       },
     });
   }
 
-  await prisma.semester.updateMany({ data: { is_active: false } });
-
-  const semesterIdByKey = new Map<string, string>();
-  for (const semesterSeed of semesterSeeds) {
-    const semester = await prisma.semester.upsert({
-      where: {
-        name_school_year: {
-          name: semesterSeed.name,
-          school_year: semesterSeed.school_year,
-        },
-      },
-      update: semesterSeed,
-      create: semesterSeed,
-    });
-
-    semesterIdByKey.set(semesterKey(semesterSeed), semester.semester_id);
-  }
-
-  if (!semesterSeeds.some((semester) => semester.is_active)) {
-    throw new Error('Active semester seed is required');
-  }
-
-  const inactiveManagedCourses = await prisma.course.findMany({
+  const activeSemester = await prisma.semester.findUniqueOrThrow({
     where: {
-      course_code: {
-        in: managedCourseCodes.filter(
-          (courseCode) => !activeCourseCodes.includes(courseCode),
-        ),
+      name_school_year: {
+        name: 'Học kỳ 2',
+        school_year: '2025-2026',
       },
     },
-    select: { course_id: true },
   });
-  const inactiveManagedCourseIds = inactiveManagedCourses.map(
-    (course) => course.course_id,
-  );
 
-  if (inactiveManagedCourseIds.length > 0) {
-    await prisma.enrollment.deleteMany({
-      where: { course_id: { in: inactiveManagedCourseIds } },
-    });
-    await prisma.schedule.deleteMany({
-      where: { course_id: { in: inactiveManagedCourseIds } },
-    });
-    await prisma.course.deleteMany({
-      where: { course_id: { in: inactiveManagedCourseIds } },
-    });
-  }
+  const futureSemester = await prisma.semester.findFirstOrThrow({
+    where: {
+      school_year: '2026-2027',
+    },
+  });
 
-  for (const course of activeCourseSeeds) {
-    const semesterId = semesterIdByKey.get(semesterKey(course.semester));
-    if (!semesterId) {
-      throw new Error(`Semester is required for course ${course.course_code}`);
+  const courseSeeds = subjects.flatMap((subject, subjectIndex) => {
+    const major = majors.find((item) => item.major_id === subject.major_id);
+    if (!major) {
+      throw new Error(
+        `Major ${subject.major_id} not found for subject ${subject.subject_id}`,
+      );
     }
 
-    await prisma.course.upsert({
+    const compatibleTeachers = teacherIdsByDepartment[major.department_id];
+
+    return [0, 1].map((groupIndex) => {
+      const courseIndex = subjectIndex * 2 + groupIndex;
+      const theoryRooms = classrooms.filter((room) => room.type === 'Theory');
+      const practiceRooms = classrooms.filter(
+        (room) => room.type === 'Practice',
+      );
+      const rooms =
+        subject.required_room_type === 'Practice' ? practiceRooms : theoryRooms;
+
+      return {
+        course_code: `${subject.subject_id}-${groupIndex + 1}`,
+        subject_id: subject.subject_id,
+        teacher_id:
+          compatibleTeachers[
+            (subjectIndex + groupIndex) % compatibleTeachers.length
+          ],
+        semester_id: activeSemester.semester_id,
+        capacity: 5,
+        remaining_capacity: 5,
+        required_room_type: subject.required_room_type,
+        classroom_id: rooms[courseIndex % rooms.length].classroom_id,
+        schedule: scheduleSlots[courseIndex],
+        start_date: activeSemester.start_date,
+        end_date: activeSemester.end_date,
+      };
+    });
+  });
+
+  const futureTestCourse = {
+    course_code: 'CTDL-2026HK1-TEST',
+    subject_id: 'CTDL',
+    teacher_id: 'GV00',
+    semester_id: futureSemester.semester_id,
+    capacity: 5,
+    remaining_capacity: 5,
+    required_room_type: 'Theory',
+    classroom_id: 'A101',
+    schedule: { dayOfWeek: '2', start_slot: 1, end_slot: 2 },
+    start_date: futureSemester.start_date,
+    end_date: futureSemester.end_date,
+  };
+
+  const allCourseSeeds = [...courseSeeds, futureTestCourse];
+
+  await prisma.schedule.deleteMany({
+    where: {
+      course: {
+        course_code: {
+          in: allCourseSeeds.map((course) => course.course_code),
+        },
+      },
+    },
+  });
+
+  const courseIdByCode = new Map<string, string>();
+  for (const course of allCourseSeeds) {
+    const savedCourse = await prisma.course.upsert({
       where: { course_code: course.course_code },
       update: {
         subject_id: course.subject_id,
         teacher_id: course.teacher_id,
-        semester_id: semesterId,
+        semester_id: course.semester_id,
         capacity: course.capacity,
         remaining_capacity: course.remaining_capacity,
         required_room_type: course.required_room_type,
@@ -1042,111 +647,36 @@ async function main() {
         course_code: course.course_code,
         subject_id: course.subject_id,
         teacher_id: course.teacher_id,
-        semester_id: semesterId,
+        semester_id: course.semester_id,
         capacity: course.capacity,
         remaining_capacity: course.remaining_capacity,
         required_room_type: course.required_room_type,
       },
     });
+    courseIdByCode.set(course.course_code, savedCourse.course_id);
   }
 
-  const activeCourses = await prisma.course.findMany({
-    where: { course_code: { in: activeCourseCodes } },
-    select: { course_id: true },
-  });
-  const activeCourseIds = activeCourses.map((course) => course.course_id);
-
-  await prisma.schedule.deleteMany({
-    where: { course_id: { in: activeCourseIds } },
-  });
-
-  for (const scheduleSeed of activeScheduleSeeds) {
-    const course = await prisma.course.findUnique({
-      where: { course_code: scheduleSeed.course_code },
-      select: {
-        course_id: true,
-        semester: {
-          select: {
-            start_date: true,
-            end_date: true,
-          },
-        },
-      },
-    });
-
-    if (!course) {
-      throw new Error(
-        `Course ${scheduleSeed.course_code} is required for schedule seed`,
-      );
+  for (const course of allCourseSeeds) {
+    const courseId = courseIdByCode.get(course.course_code);
+    if (!courseId) {
+      throw new Error(`Course ${course.course_code} was not created`);
     }
 
-    const scheduleData = {
-      course_id: course.course_id,
-      classroom_id: scheduleSeed.classroom_id,
-      dayOfWeek: scheduleSeed.dayOfWeek,
-      start_slot: scheduleSeed.start_slot,
-      end_slot: scheduleSeed.end_slot,
-      start_date: course.semester.start_date,
-      end_date: course.semester.end_date,
-    };
-
-    await prisma.schedule.create({ data: scheduleData });
-  }
-
-  for (const enrollmentSeed of activeEnrollmentSeeds) {
-    const course = await prisma.course.findUnique({
-      where: { course_code: enrollmentSeed.course_code },
-      select: { course_id: true },
-    });
-
-    if (!course) {
-      throw new Error(
-        `Course ${enrollmentSeed.course_code} is required for enrollment seed`,
-      );
-    }
-
-    await prisma.enrollment.upsert({
-      where: {
-        student_id_course_id: {
-          student_id: enrollmentSeed.student_id,
-          course_id: course.course_id,
-        },
-      },
-      update: {},
-      create: {
-        student_id: enrollmentSeed.student_id,
-        course_id: course.course_id,
-      },
-    });
-  }
-
-  const seededCourses = await prisma.course.findMany({
-    where: {
-      course_code: { in: activeCourseCodes },
-    },
-    select: {
-      course_id: true,
-      capacity: true,
-    },
-  });
-
-  for (const course of seededCourses) {
-    const enrollmentCount = await prisma.enrollment.count({
-      where: { course_id: course.course_id },
-    });
-
-    await prisma.course.update({
-      where: { course_id: course.course_id },
+    await prisma.schedule.create({
       data: {
-        remaining_capacity:
-          course.capacity === null
-            ? null
-            : Math.max(0, course.capacity - enrollmentCount),
+        course_id: courseId,
+        classroom_id: course.classroom_id,
+        dayOfWeek: course.schedule.dayOfWeek,
+        start_slot: course.schedule.start_slot,
+        end_slot: course.schedule.end_slot,
+        start_date: course.start_date,
+        end_date: course.end_date,
       },
     });
   }
 
-  console.log('Seeded success');
+  console.log('Seed completed');
+  console.log('Password for all seeded accounts: 1');
 }
 
 main()
