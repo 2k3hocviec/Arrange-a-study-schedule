@@ -191,8 +191,8 @@ export const studentClassesAPI = {
   create: ({ class_id, name, cohort, major_id, capacity }) =>
       api.post("/student-classes", { class_id, name, cohort, major_id, capacity }),
   update: (class_id, { name, cohort, major_id, capacity }) =>
-      api.patch(`/student-classes/${class_id}`, { name, cohort, major_id, capacity }),
-  delete: (class_id) => api.delete(`/student-classes/${class_id}`),
+      api.patch(`/student-classes/${encodeURIComponent(class_id)}`, { name, cohort, major_id, capacity }),
+  delete: (class_id) => api.delete(`/student-classes/${encodeURIComponent(class_id)}`),
 };
 
 export const coursesAPI = {

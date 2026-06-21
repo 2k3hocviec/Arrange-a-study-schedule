@@ -1,0 +1,706 @@
+.ministry-schedule {
+  background: #f8fafc;
+  font-family: "Segoe UI", sans-serif;
+  min-height: 100vh;
+  padding: 24px 32px;
+}
+
+.ministry-schedule__breadcrumb {
+  align-items: center;
+  display: flex;
+  font-size: 13px;
+  gap: 6px;
+  margin-bottom: 18px;
+}
+
+.ministry-schedule__breadcrumb-home {
+  color: #94a3b8;
+  cursor: pointer;
+}
+
+.ministry-schedule__breadcrumb-sep {
+  color: #cbd5e1;
+}
+
+.ministry-schedule__breadcrumb-current {
+  color: #4f46e5;
+  font-weight: 700;
+}
+
+.ministry-schedule__filter-bar,
+.ministry-schedule__form-card,
+.ministry-schedule__table-card,
+.ministry-schedule__timetable-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.ministry-schedule__filter-bar {
+  margin-bottom: 18px;
+  padding: 14px 18px;
+}
+
+.ministry-schedule__filter-bar .ministry-schedule__field-group {
+  max-width: 420px;
+}
+
+.ministry-schedule__stats-row {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 1fr 1fr 2fr;
+  margin-bottom: 24px;
+}
+
+.ministry-schedule__stat-card {
+  align-items: center;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  display: flex;
+  gap: 16px;
+  padding: 20px 22px;
+}
+
+.ministry-schedule__stat-icon {
+  align-items: center;
+  border-radius: 10px;
+  display: flex;
+  flex-shrink: 0;
+  height: 46px;
+  justify-content: center;
+  width: 46px;
+}
+
+.ministry-schedule__stat-icon--calendar {
+  background: #ede9fe;
+  color: #4338ca;
+}
+
+.ministry-schedule__stat-icon--course {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.ministry-schedule__stat-label {
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.ministry-schedule__stat-value {
+  color: #0f172a;
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.ministry-schedule__stat-value--green {
+  color: #15803d;
+}
+
+.ministry-schedule__banner-card {
+  align-items: center;
+  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.25);
+  color: white;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  padding: 22px 26px;
+}
+
+.ministry-schedule__banner-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.ministry-schedule__banner-sub {
+  font-size: 13px;
+  line-height: 1.5;
+  opacity: 0.85;
+}
+
+.ministry-schedule__banner-icon {
+  color: rgba(255, 255, 255, 0.2);
+  flex-shrink: 0;
+}
+
+.ministry-schedule__form-card {
+  margin-bottom: 18px;
+  padding: 20px 24px 24px;
+}
+
+.ministry-schedule__card-header,
+.ministry-schedule__table-header,
+.ministry-schedule__timetable-toolbar {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.ministry-schedule__card-title {
+  align-items: center;
+  color: #1e293b;
+  display: flex;
+  font-size: 15px;
+  font-weight: 700;
+  gap: 10px;
+}
+
+.ministry-schedule__title-icon {
+  align-items: center;
+  background: #e0e7ff;
+  border-radius: 8px;
+  color: #4338ca;
+  display: flex;
+  height: 32px;
+  justify-content: center;
+  width: 32px;
+}
+
+.ministry-schedule__divider {
+  background: #f1f5f9;
+  height: 1px;
+  margin: 14px 0 18px;
+}
+
+.ministry-schedule__form-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.ministry-schedule__field-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.ministry-schedule__label {
+  color: #475569;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.ministry-schedule__input {
+  border: 1px solid #e2e8f0;
+  border-radius: 7px;
+  box-sizing: border-box;
+  color: #1e293b;
+  font-size: 14px;
+  outline: none;
+  padding: 9px 12px;
+  width: 100%;
+}
+
+.ministry-schedule__form-actions {
+  margin-top: 18px;
+}
+
+.ministry-schedule__submit-btn,
+.ministry-schedule__reset-btn,
+.ministry-schedule__view-tab,
+.ministry-schedule__segment-btn,
+.ministry-schedule__icon-btn,
+.ministry-schedule__page-btn,
+.ministry-schedule__modal-close,
+.ministry-schedule__modal-action {
+  cursor: pointer;
+}
+
+.ministry-schedule__submit-btn {
+  align-items: center;
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  display: inline-flex;
+  font-size: 14px;
+  font-weight: 600;
+  gap: 7px;
+  padding: 10px 24px;
+}
+
+.ministry-schedule__submit-btn--create {
+  background: #16a34a;
+}
+
+.ministry-schedule__submit-btn--update {
+  background: #4f46e5;
+}
+
+.ministry-schedule__reset-btn {
+  align-items: center;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 7px;
+  color: #475569;
+  display: inline-flex;
+  font-size: 13px;
+  font-weight: 500;
+  gap: 6px;
+  padding: 6px 14px;
+}
+
+.ministry-schedule__view-tabs {
+  display: inline-flex;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.ministry-schedule__view-tab {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  color: #475569;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 9px 16px;
+}
+
+.ministry-schedule__view-tab--active {
+  background: #4f46e5;
+  border-color: #4f46e5;
+  color: #fff;
+}
+
+.ministry-schedule__table-card,
+.ministry-schedule__timetable-card {
+  overflow: hidden;
+}
+
+.ministry-schedule__table-header,
+.ministry-schedule__timetable-toolbar {
+  border-bottom: 1px solid #f1f5f9;
+  flex-wrap: wrap;
+  padding: 16px 22px 14px;
+}
+
+.ministry-schedule__search-wrap {
+  align-items: center;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  color: #94a3b8;
+  display: flex;
+  gap: 8px;
+  min-width: 340px;
+  padding: 0 12px;
+}
+
+.ministry-schedule__search-input {
+  border: none;
+  font-size: 14px;
+  outline: none;
+  padding: 10px 0;
+  width: 100%;
+}
+
+.ministry-schedule__table-scroll,
+.ministry-schedule__timetable-scroll {
+  overflow-x: auto;
+}
+
+.ministry-schedule__table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.ministry-schedule__table th {
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  color: #64748b;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 12px 14px;
+  text-align: left;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.ministry-schedule__table td {
+  border-bottom: 1px solid #f1f5f9;
+  color: #334155;
+  font-size: 14px;
+  max-width: 180px;
+  overflow: hidden;
+  padding: 14px;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.ministry-schedule__id-cell {
+  color: #4f46e5 !important;
+  font-weight: 700;
+}
+
+.ministry-schedule__strong-cell {
+  font-weight: 600;
+}
+
+.ministry-schedule__center-cell {
+  text-align: center;
+}
+
+.ministry-schedule__room-badge {
+  background: #e0e7ff;
+  border-radius: 6px;
+  color: #4f46e5;
+  display: inline-block;
+  font-size: 12.5px;
+  font-weight: 700;
+  padding: 3px 10px;
+}
+
+.ministry-schedule__action-group {
+  align-items: center;
+  display: flex;
+  gap: 6px;
+}
+
+.ministry-schedule__icon-btn {
+  align-items: center;
+  border: none;
+  border-radius: 7px;
+  display: flex;
+  height: 32px;
+  justify-content: center;
+  width: 32px;
+}
+
+.ministry-schedule__icon-btn--edit {
+  background: #e0e7ff;
+  color: #4f46e5;
+}
+
+.ministry-schedule__icon-btn--delete {
+  background: #fee2e2;
+  color: #ef4444;
+}
+
+.ministry-schedule__pagination-row {
+  align-items: center;
+  border-top: 1px solid #f1f5f9;
+  display: flex;
+  justify-content: space-between;
+  padding: 14px 22px;
+}
+
+.ministry-schedule__page-info {
+  color: #64748b;
+  font-size: 13px;
+}
+
+.ministry-schedule__page-controls {
+  display: flex;
+  gap: 4px;
+}
+
+.ministry-schedule__page-btn {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 7px;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 500;
+  height: 32px;
+  min-width: 32px;
+  padding: 0 10px;
+}
+
+.ministry-schedule__page-btn--active {
+  background: #4f46e5;
+  border-color: #4f46e5;
+  color: #fff;
+}
+
+.ministry-schedule__page-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.ministry-schedule__timetable-filters {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.ministry-schedule__segmented {
+  background: #f1f5f9;
+  border-radius: 9px;
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+}
+
+.ministry-schedule__segment-btn {
+  background: transparent;
+  border: none;
+  border-radius: 7px;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 7px 12px;
+}
+
+.ministry-schedule__segment-btn--active {
+  background: #fff;
+  color: #4f46e5;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
+}
+
+.ministry-schedule__toolbar-select {
+  min-width: 260px;
+}
+
+.ministry-schedule__timetable-summary {
+  align-items: center;
+  color: #64748b;
+  display: flex;
+  flex-wrap: wrap;
+  font-size: 13px;
+  font-weight: 700;
+  gap: 8px;
+  padding: 12px 22px;
+}
+
+.ministry-schedule__timetable-summary span {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  padding: 5px 10px;
+}
+
+.ministry-schedule__timetable {
+  border-collapse: collapse;
+  min-width: 860px;
+  table-layout: fixed;
+  width: 100%;
+}
+
+.ministry-schedule__timetable th {
+  background: #f8fafc;
+  border-bottom: 2px solid #e8eaef;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  padding: 10px 8px;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.ministry-schedule__slot-head {
+  text-align: left !important;
+  width: 100px;
+}
+
+.ministry-schedule__slot-cell {
+  background: #fafafa;
+  border-right: 1px solid #f1f5f9;
+  box-sizing: border-box;
+  height: 58px;
+  padding: 6px 12px;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.ministry-schedule__slot-cell span {
+  color: #334155;
+  display: block;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.ministry-schedule__slot-cell small {
+  color: #94a3b8;
+  display: block;
+  font-size: 10px;
+  margin-top: 1px;
+}
+
+.ministry-schedule__timetable-empty,
+.ministry-schedule__timetable-class-cell {
+  border: 1px solid #f1f5f9;
+  box-sizing: border-box;
+  height: 58px;
+}
+
+.ministry-schedule__timetable-empty {
+  background: #fff;
+}
+
+.ministry-schedule__timetable-class-cell {
+  cursor: pointer;
+  overflow: visible;
+  padding: 0;
+  position: relative;
+  vertical-align: top;
+}
+
+.ministry-schedule__schedule-block {
+  border-left: 4px solid;
+  border-radius: 0 8px 8px 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  left: 0;
+  overflow: hidden;
+  padding: 7px 9px;
+  position: absolute;
+  right: 0;
+  top: 3px;
+  z-index: 2;
+}
+
+.ministry-schedule__schedule-block strong {
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.ministry-schedule__schedule-block span,
+.ministry-schedule__schedule-block small {
+  font-size: 10.5px;
+  line-height: 1.25;
+}
+
+.ministry-schedule__schedule-dot {
+  border-radius: 50%;
+  flex: 0 0 auto;
+  height: 6px;
+  width: 6px;
+}
+
+.ministry-schedule__empty-state,
+.ministry-schedule__empty-cell {
+  color: #64748b;
+  font-size: 14px;
+  padding: 28px;
+  text-align: center;
+}
+
+.ministry-schedule__modal-overlay {
+  align-items: center;
+  background: rgba(15, 23, 42, 0.52);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  position: fixed;
+  z-index: 1000;
+}
+
+.ministry-schedule__modal {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  max-width: 94vw;
+  overflow: hidden;
+  width: 520px;
+}
+
+.ministry-schedule__modal-header {
+  align-items: center;
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  color: #fff;
+  display: flex;
+  justify-content: space-between;
+  padding: 16px 20px;
+}
+
+.ministry-schedule__modal-title {
+  align-items: center;
+  display: flex;
+  font-size: 15px;
+  font-weight: 800;
+  gap: 8px;
+}
+
+.ministry-schedule__modal-close {
+  background: transparent;
+  border: none;
+  color: #fff;
+}
+
+.ministry-schedule__modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px;
+}
+
+.ministry-schedule__modal-row {
+  align-items: flex-start;
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 120px 1fr;
+}
+
+.ministry-schedule__modal-label {
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.ministry-schedule__modal-value {
+  color: #1e293b;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.ministry-schedule__modal-footer {
+  border-top: 1px solid #f1f5f9;
+  padding: 14px 20px 18px;
+}
+
+.ministry-schedule__modal-action {
+  align-items: center;
+  background: #e0e7ff;
+  border: none;
+  border-radius: 9px;
+  color: #4f46e5;
+  display: inline-flex;
+  font-size: 14px;
+  font-weight: 800;
+  gap: 7px;
+  padding: 10px 14px;
+}
+
+@media (max-width: 900px) {
+  .ministry-schedule {
+    padding: 18px;
+  }
+
+  .ministry-schedule__stats-row {
+    grid-template-columns: 1fr;
+  }
+
+  .ministry-schedule__search-wrap,
+  .ministry-schedule__toolbar-select {
+    min-width: 100%;
+  }
+
+  .ministry-schedule__timetable-filters,
+  .ministry-schedule__table-header,
+  .ministry-schedule__timetable-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .ministry-schedule__segmented {
+    width: 100%;
+  }
+
+  .ministry-schedule__segment-btn {
+    flex: 1;
+  }
+}

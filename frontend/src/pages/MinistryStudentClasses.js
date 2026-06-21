@@ -106,6 +106,7 @@ const MinistryStudentClasses = () => {
 
     const payload = {
       ...formData,
+      class_id: formData.class_id.trim(),
       capacity: formData.capacity === "" ? undefined : Number(formData.capacity),
     };
 

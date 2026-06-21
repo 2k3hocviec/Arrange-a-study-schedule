@@ -3,6 +3,7 @@ import toast from "react-hot-toast";
 import { MdSubject } from "react-icons/md";
 import { FiSearch } from "react-icons/fi";
 import { departmentsAPI, majorsAPI } from "../services/api";
+import "../styles/MinistryMajors.css";
 
 const EMPTY_FORM = {
   major_id: "",
@@ -18,11 +19,14 @@ const getMajorErrorMessage = (err, action = "save") => {
     : String(rawMessage);
   const lower = message.toLowerCase();
 
-  if (lower.includes("already exists")) return "Mã chuyên ngành đã tồn tại.";
+  if (lower.includes("already exists")) {
+    return "Mã chuyên ngành đã tồn tại.";
+  }
   if (lower.includes("department not found")) return "Khoa không tồn tại.";
   if (lower.includes("in use")) {
     return "Không thể xóa chuyên ngành đang có sinh viên hoặc môn học.";
   }
+
   return action === "delete"
     ? "Không thể xóa chuyên ngành."
     : "Không thể lưu chuyên ngành. Vui lòng kiểm tra dữ liệu.";
@@ -110,7 +114,9 @@ const MinistryMajors = () => {
   };
 
   const handleDelete = async (majorId) => {
-    if (!window.confirm(`Bạn có chắc muốn xóa chuyên ngành ${majorId}?`)) return;
+    if (!window.confirm(`Bạn có chắc muốn xóa chuyên ngành ${majorId}?`)) {
+      return;
+    }
 
     try {
       await majorsAPI.delete(majorId);
@@ -130,6 +136,7 @@ const MinistryMajors = () => {
           major.description,
           major.department_id,
           major.department?.name,
+          major.studentsCount,
           major._count?.students,
           major._count?.subjects,
         ]
@@ -141,58 +148,61 @@ const MinistryMajors = () => {
     : majors;
 
   return (
-    <div style={styles.wrapper}>
-      <div style={styles.headerRow}>
-        <h2 style={styles.title}>
-          <MdSubject style={{ marginRight: 10 }} />
+    <div className="ministry-majors">
+      <div className="ministry-majors__header-row">
+        <h2 className="ministry-majors__title">
+          <MdSubject className="ministry-majors__title-icon" />
           QUẢN LÝ CHUYÊN NGÀNH
         </h2>
-        <button style={styles.addBtn} onClick={openCreate}>
+        <button className="ministry-majors__add-btn" onClick={openCreate}>
           + Thêm chuyên ngành
         </button>
       </div>
 
       {showForm && (
-        <div style={styles.modalOverlay}>
-          <div style={styles.modalContent}>
-            <button style={styles.closeBtn} onClick={resetForm}>
+        <div className="ministry-majors__modal-overlay">
+          <div className="ministry-majors__modal-content">
+            <button className="ministry-majors__close-btn" onClick={resetForm}>
               x
             </button>
-            <h3 style={styles.formTitle}>
+            <h3 className="ministry-majors__form-title">
               {editingId ? "Cập nhật chuyên ngành" : "Tạo chuyên ngành mới"}
             </h3>
             <form onSubmit={handleSubmit}>
-              <div style={styles.fieldGroup}>
-                <label style={styles.label}>Mã chuyên ngành</label>
+              <div className="ministry-majors__field-group">
+                <label className="ministry-majors__label">
+                  Mã chuyên ngành
+                </label>
                 <input
                   name="major_id"
                   value={formData.major_id}
                   onChange={handleChange}
                   disabled={!!editingId}
-                  style={{
-                    ...styles.input,
-                    background: editingId ? "#f0f0f0" : "white",
-                  }}
+                  className={`ministry-majors__input ${
+                    editingId ? "ministry-majors__input--disabled" : ""
+                  }`}
                   required
                 />
               </div>
-              <div style={styles.fieldGroup}>
-                <label style={styles.label}>Tên chuyên ngành</label>
+              <div className="ministry-majors__field-group">
+                <label className="ministry-majors__label">
+                  Tên chuyên ngành
+                </label>
                 <input
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
-                  style={styles.input}
+                  className="ministry-majors__input"
                   required
                 />
               </div>
-              <div style={styles.fieldGroup}>
-                <label style={styles.label}>Khoa</label>
+              <div className="ministry-majors__field-group">
+                <label className="ministry-majors__label">Khoa</label>
                 <select
                   name="department_id"
                   value={formData.department_id}
                   onChange={handleChange}
-                  style={styles.input}
+                  className="ministry-majors__input"
                   required
                 >
                   <option value="">-- Chọn khoa --</option>
@@ -206,16 +216,16 @@ const MinistryMajors = () => {
                   ))}
                 </select>
               </div>
-              <div style={styles.fieldGroup}>
-                <label style={styles.label}>Mô tả</label>
+              <div className="ministry-majors__field-group">
+                <label className="ministry-majors__label">Mô tả</label>
                 <textarea
                   name="description"
                   value={formData.description}
                   onChange={handleChange}
-                  style={{ ...styles.input, minHeight: 80 }}
+                  className="ministry-majors__input ministry-majors__textarea"
                 />
               </div>
-              <button style={styles.submitBtn} type="submit">
+              <button className="ministry-majors__submit-btn" type="submit">
                 {editingId ? "Cập nhật" : "Tạo chuyên ngành"}
               </button>
             </form>
@@ -223,56 +233,59 @@ const MinistryMajors = () => {
         </div>
       )}
 
-      <div style={styles.tableWrapper}>
-        <div style={styles.tableHeader}>
-          <div style={styles.searchWrap}>
-            <FiSearch size={15} color="#94a3b8" />
+      <div className="ministry-majors__table-wrapper">
+        <div className="ministry-majors__table-header">
+          <div className="ministry-majors__search-wrap">
+            <FiSearch className="ministry-majors__search-icon" size={15} />
             <input
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
-              placeholder="Tim ma, ten chuyen nganh, khoa..."
-              style={styles.searchInput}
+              placeholder="Tìm mã, tên chuyên ngành, khoa..."
+              className="ministry-majors__search-input"
             />
           </div>
         </div>
-        <table style={styles.table}>
+        <table className="ministry-majors__table">
           <thead>
             <tr>
-              <th style={styles.th}>MÃ</th>
-              <th style={styles.th}>TÊN CHUYÊN NGÀNH</th>
-              <th style={styles.th}>KHOA</th>
-              <th style={styles.th}>SINH VIÊN</th>
-              <th style={styles.th}>MÔN HỌC</th>
-              <th style={styles.th}>THAO TÁC</th>
+              <th>MÃ</th>
+              <th>TÊN CHUYÊN NGÀNH</th>
+              <th>KHOA</th>
+              <th>SINH VIÊN</th>
+              <th>MÔN HỌC</th>
+              <th>THAO TÁC</th>
             </tr>
           </thead>
           <tbody>
             {filteredMajors.length === 0 ? (
               <tr>
-                <td colSpan={6} style={styles.emptyCell}>
+                <td colSpan={6} className="ministry-majors__empty-cell">
                   Chưa có chuyên ngành nào
                 </td>
               </tr>
             ) : (
               filteredMajors.map((major) => (
-                <tr key={major.major_id} style={styles.tbodyRow}>
-                  <td style={{ ...styles.td, color: "#4f63d2", fontWeight: 700 }}>
+                <tr key={major.major_id}>
+                  <td className="ministry-majors__major-id">
                     {major.major_id}
                   </td>
-                  <td style={styles.td}>{major.name}</td>
-                  <td style={styles.td}>
+                  <td>{major.name}</td>
+                  <td>
                     {major.department
                       ? `${major.department.department_id} - ${major.department.name}`
                       : major.department_id}
                   </td>
-                  <td style={styles.td}>{major._count?.students || 0}</td>
-                  <td style={styles.td}>{major._count?.subjects || 0}</td>
-                  <td style={styles.td}>
-                    <button style={styles.editBtn} onClick={() => openEdit(major)}>
+                  <td>{major.studentsCount ?? major._count?.students ?? 0}</td>
+                  <td>{major._count?.subjects || 0}</td>
+                  <td>
+                    <button
+                      className="ministry-majors__edit-btn"
+                      onClick={() => openEdit(major)}
+                    >
                       Sửa
                     </button>
                     <button
-                      style={styles.deleteBtn}
+                      className="ministry-majors__delete-btn"
                       onClick={() => handleDelete(major.major_id)}
                     >
                       Xóa
@@ -286,139 +299,6 @@ const MinistryMajors = () => {
       </div>
     </div>
   );
-};
-
-const styles = {
-  wrapper: { padding: "0 4px", fontFamily: "'Segoe UI', sans-serif" },
-  headerRow: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 20,
-  },
-  title: {
-    color: "#2c3e50",
-    margin: 0,
-    fontSize: 22,
-    fontWeight: 700,
-    display: "flex",
-    alignItems: "center",
-  },
-  addBtn: {
-    background: "#4f63d2",
-    color: "white",
-    border: "none",
-    padding: "10px 18px",
-    borderRadius: 8,
-    cursor: "pointer",
-    fontWeight: 600,
-  },
-  modalOverlay: {
-    position: "fixed",
-    inset: 0,
-    background: "rgba(15, 23, 42, 0.45)",
-    zIndex: 1000,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  modalContent: {
-    background: "white",
-    width: "min(520px, 92vw)",
-    borderRadius: 12,
-    padding: 24,
-    position: "relative",
-    boxShadow: "0 20px 60px rgba(15, 23, 42, 0.25)",
-  },
-  closeBtn: {
-    position: "absolute",
-    right: 14,
-    top: 12,
-    border: "none",
-    background: "transparent",
-    fontSize: 18,
-    cursor: "pointer",
-  },
-  formTitle: { marginTop: 0, color: "#1f2937" },
-  fieldGroup: { display: "flex", flexDirection: "column", marginBottom: 14 },
-  label: { fontWeight: 600, marginBottom: 6, color: "#475569" },
-  input: {
-    border: "1px solid #dbe2ef",
-    borderRadius: 8,
-    padding: "10px 12px",
-    outline: "none",
-  },
-  submitBtn: {
-    width: "100%",
-    border: "none",
-    borderRadius: 8,
-    padding: "11px 16px",
-    background: "#16a34a",
-    color: "white",
-    fontWeight: 700,
-    cursor: "pointer",
-  },
-  tableWrapper: {
-    background: "white",
-    borderRadius: 10,
-    overflowX: "auto",
-    boxShadow: "0 1px 4px rgba(15, 23, 42, 0.08)",
-  },
-  tableHeader: {
-    padding: "16px",
-    borderBottom: "1px solid #eef2f7",
-    display: "flex",
-    justifyContent: "flex-end",
-  },
-  searchWrap: {
-    display: "flex",
-    alignItems: "center",
-    gap: 8,
-    border: "1px solid #e2e8f0",
-    borderRadius: 8,
-    padding: "0 12px",
-    minWidth: 300,
-    background: "#fff",
-  },
-  searchInput: {
-    border: "none",
-    outline: "none",
-    padding: "10px 0",
-    fontSize: 14,
-    width: "100%",
-  },
-  table: { width: "100%", borderCollapse: "collapse" },
-  th: {
-    background: "#f8fafc",
-    padding: "12px 14px",
-    fontSize: 12,
-    textAlign: "left",
-    color: "#64748b",
-  },
-  td: {
-    padding: "12px 14px",
-    borderTop: "1px solid #eef2f7",
-    fontSize: 14,
-  },
-  tbodyRow: { background: "white" },
-  emptyCell: { padding: 24, textAlign: "center", color: "#64748b" },
-  editBtn: {
-    marginRight: 8,
-    border: "none",
-    borderRadius: 6,
-    padding: "7px 10px",
-    background: "#e0f2fe",
-    color: "#0369a1",
-    cursor: "pointer",
-  },
-  deleteBtn: {
-    border: "none",
-    borderRadius: 6,
-    padding: "7px 10px",
-    background: "#fee2e2",
-    color: "#b91c1c",
-    cursor: "pointer",
-  },
 };
 
 export default MinistryMajors;

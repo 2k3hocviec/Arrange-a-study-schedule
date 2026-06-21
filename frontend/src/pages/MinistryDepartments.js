@@ -3,6 +3,7 @@ import toast from "react-hot-toast";
 import { MdSubject } from "react-icons/md";
 import { FiSearch } from "react-icons/fi";
 import { departmentsAPI } from "../services/api";
+import "../styles/MinistryDepartments.css";
 
 const EMPTY_FORM = {
   department_id: "",
@@ -17,11 +18,11 @@ const getDepartmentErrorMessage = (err, action = "save") => {
     : String(rawMessage);
   const lower = message.toLowerCase();
 
-  if (lower.includes("already exists")) return "Ma khoa da ton tai.";
-  if (lower.includes("in use")) return "Khong the xoa khoa dang duoc su dung.";
+  if (lower.includes("already exists")) return "Mã khoa đã tồn tại.";
+  if (lower.includes("in use")) return "Không thể xóa khoa đang được sử dụng.";
   return action === "delete"
-    ? "Khong the xoa khoa."
-    : "Khong the luu khoa. Vui long kiem tra du lieu.";
+    ? "Không thể xóa khoa."
+    : "Không thể lưu khoa. Vui lòng kiểm tra dữ liệu.";
 };
 
 const MinistryDepartments = () => {
@@ -36,7 +37,7 @@ const MinistryDepartments = () => {
       const res = await departmentsAPI.getAll();
       setDepartments(res.data || []);
     } catch {
-      toast.error("Khong the tai danh sach khoa.");
+      toast.error("Không thể tải danh sách khoa.");
     }
   };
 
@@ -74,17 +75,17 @@ const MinistryDepartments = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.department_id || !formData.name) {
-      toast.error("Vui long nhap ma khoa va ten khoa.");
+      toast.error("Vui lòng nhập mã khoa và tên khoa.");
       return;
     }
 
     try {
       if (editingId) {
         await departmentsAPI.update(editingId, formData);
-        toast.success("Cap nhat khoa thanh cong.");
+        toast.success("Cập nhật khoa thành công.");
       } else {
         await departmentsAPI.create(formData);
-        toast.success("Tao khoa thanh cong.");
+        toast.success("Tạo khoa thành công.");
       }
       resetForm();
       fetchDepartments();
@@ -94,11 +95,11 @@ const MinistryDepartments = () => {
   };
 
   const handleDelete = async (departmentId) => {
-    if (!window.confirm(`Ban co chac muon xoa khoa ${departmentId}?`)) return;
+    if (!window.confirm(`Bạn có chắc muốn xóa khoa ${departmentId}?`)) return;
 
     try {
       await departmentsAPI.delete(departmentId);
-      toast.success("Xoa khoa thanh cong.");
+      toast.success("Xóa khoa thành công.");
       fetchDepartments();
     } catch (err) {
       toast.error(getDepartmentErrorMessage(err, "delete"), {
@@ -114,6 +115,7 @@ const MinistryDepartments = () => {
           item.department_id,
           item.name,
           item.description,
+          item.studentClassesCount,
           item._count?.studentClasses,
           item._count?.teachers,
           item._count?.majors,
@@ -126,124 +128,129 @@ const MinistryDepartments = () => {
     : departments;
 
   return (
-    <div style={styles.wrapper}>
-      <div style={styles.headerRow}>
-        <h2 style={styles.title}>
-          <MdSubject style={{ marginRight: 10 }} />
+    <div className="ministry-departments">
+      <div className="ministry-departments__header-row">
+        <h2 className="ministry-departments__title">
+          <MdSubject className="ministry-departments__title-icon" />
           QUẢN LÝ KHOA
         </h2>
-        <button style={styles.addBtn} onClick={openCreate}>
-          + Them khoa
+        <button className="ministry-departments__add-btn" onClick={openCreate}>
+          + Thêm khoa
         </button>
       </div>
 
       {showForm && (
-        <div style={styles.modalOverlay}>
-          <div style={styles.modalContent}>
-            <button style={styles.closeBtn} onClick={resetForm}>
+        <div className="ministry-departments__modal-overlay">
+          <div className="ministry-departments__modal-content">
+            <button
+              className="ministry-departments__close-btn"
+              onClick={resetForm}
+            >
               x
             </button>
-            <h3 style={styles.formTitle}>
-              {editingId ? "Cap nhat khoa" : "Tao khoa moi"}
+            <h3 className="ministry-departments__form-title">
+              {editingId ? "Cập nhật khoa" : "Tạo khoa mới"}
             </h3>
             <form onSubmit={handleSubmit}>
-              <div style={styles.fieldGroup}>
-                <label style={styles.label}>Ma khoa</label>
+              <div className="ministry-departments__field-group">
+                <label className="ministry-departments__label">Ma khoa</label>
                 <input
                   name="department_id"
                   value={formData.department_id}
                   onChange={handleChange}
                   disabled={!!editingId}
-                  style={{
-                    ...styles.input,
-                    background: editingId ? "#f0f0f0" : "white",
-                  }}
+                  className={`ministry-departments__input ${
+                    editingId ? "ministry-departments__input--disabled" : ""
+                  }`}
                   required
                 />
               </div>
-              <div style={styles.fieldGroup}>
-                <label style={styles.label}>Ten khoa</label>
+              <div className="ministry-departments__field-group">
+                <label className="ministry-departments__label">Ten khoa</label>
                 <input
                   name="name"
                   value={formData.name}
                   onChange={handleChange}
-                  style={styles.input}
+                  className="ministry-departments__input"
                   required
                 />
               </div>
-              <div style={styles.fieldGroup}>
-                <label style={styles.label}>Mo ta</label>
+              <div className="ministry-departments__field-group">
+                <label className="ministry-departments__label">Mo ta</label>
                 <textarea
                   name="description"
                   value={formData.description}
                   onChange={handleChange}
-                  style={{ ...styles.input, minHeight: 80 }}
+                  className="ministry-departments__input ministry-departments__textarea"
                 />
               </div>
-              <button style={styles.submitBtn} type="submit">
-                {editingId ? "Cap nhat" : "Tao khoa"}
+              <button
+                className="ministry-departments__submit-btn"
+                type="submit"
+              >
+                {editingId ? "Cập nhật" : "Tạo khoa"}
               </button>
             </form>
           </div>
         </div>
       )}
 
-      <div style={styles.tableWrapper}>
-        <div style={styles.tableHeader}>
-          <div style={styles.searchWrap}>
-            <FiSearch size={15} color="#94a3b8" />
+      <div className="ministry-departments__table-wrapper">
+        <div className="ministry-departments__table-header">
+          <div className="ministry-departments__search-wrap">
+            <FiSearch className="ministry-departments__search-icon" size={15} />
             <input
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
-              placeholder="Tim ma khoa, ten khoa, mo ta..."
-              style={styles.searchInput}
+              placeholder="Tìm mã khoa, tên khoa, mô tả..."
+              className="ministry-departments__search-input"
             />
           </div>
         </div>
-        <table style={styles.table}>
+        <table className="ministry-departments__table">
           <thead>
             <tr>
-              <th style={styles.th}>MÃ KHOA</th>
-              <th style={styles.th}>TÊN KHOA</th>
-              <th style={styles.th}>MÔ TẢ</th>
-              <th style={styles.th}>LỚP</th>
-              <th style={styles.th}>GIÁO VIÊN</th>
-              <th style={styles.th}>CHUYÊN NGÀNH</th>
-              <th style={styles.th}>THAO TÁC</th>
+              <th>MÃ KHOA</th>
+              <th>TÊN KHOA</th>
+              <th>MÔ TẢ</th>
+              <th>LỚP</th>
+              <th>GIÁO VIÊN</th>
+              <th>CHUYÊN NGÀNH</th>
+              <th>THAO TÁC</th>
             </tr>
           </thead>
           <tbody>
             {filteredDepartments.length === 0 ? (
               <tr>
-                <td colSpan={7} style={styles.emptyCell}>
+                <td colSpan={7} className="ministry-departments__empty-cell">
                   Chua co khoa nao
                 </td>
               </tr>
             ) : (
               filteredDepartments.map((item) => (
-                <tr key={item.department_id} style={styles.tbodyRow}>
-                  <td
-                    style={{ ...styles.td, color: "#4f63d2", fontWeight: 700 }}
-                  >
+                <tr key={item.department_id}>
+                  <td className="ministry-departments__department-id">
                     {item.department_id}
                   </td>
-                  <td style={styles.td}>{item.name}</td>
-                  <td style={styles.td}>{item.description || "-"}</td>
-                  <td style={styles.td}>{item._count?.studentClasses || 0}</td>
-                  <td style={styles.td}>{item._count?.teachers || 0}</td>
-                  <td style={styles.td}>{item._count?.majors || 0}</td>
-                  <td style={styles.td}>
+                  <td>{item.name}</td>
+                  <td>{item.description || "-"}</td>
+                  <td>
+                    {item.studentClassesCount ?? item._count?.studentClasses ?? 0}
+                  </td>
+                  <td>{item._count?.teachers || 0}</td>
+                  <td>{item._count?.majors || 0}</td>
+                  <td>
                     <button
-                      style={styles.editBtn}
+                      className="ministry-departments__edit-btn"
                       onClick={() => openEdit(item)}
                     >
-                      Sua
+                      Sửa
                     </button>
                     <button
-                      style={styles.deleteBtn}
+                      className="ministry-departments__delete-btn"
                       onClick={() => handleDelete(item.department_id)}
                     >
-                      Xoa
+                      Xóa
                     </button>
                   </td>
                 </tr>
@@ -254,139 +261,6 @@ const MinistryDepartments = () => {
       </div>
     </div>
   );
-};
-
-const styles = {
-  wrapper: { padding: "0 4px", fontFamily: "'Segoe UI', sans-serif" },
-  headerRow: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 20,
-  },
-  title: {
-    color: "#2c3e50",
-    margin: 0,
-    fontSize: 22,
-    fontWeight: 700,
-    display: "flex",
-    alignItems: "center",
-  },
-  addBtn: {
-    background: "#4f63d2",
-    color: "white",
-    border: "none",
-    padding: "10px 18px",
-    borderRadius: 8,
-    cursor: "pointer",
-    fontWeight: 600,
-  },
-  modalOverlay: {
-    position: "fixed",
-    inset: 0,
-    background: "rgba(15, 23, 42, 0.45)",
-    zIndex: 1000,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  modalContent: {
-    background: "white",
-    width: "min(520px, 92vw)",
-    borderRadius: 12,
-    padding: 24,
-    position: "relative",
-    boxShadow: "0 20px 60px rgba(15, 23, 42, 0.25)",
-  },
-  closeBtn: {
-    position: "absolute",
-    right: 14,
-    top: 12,
-    border: "none",
-    background: "transparent",
-    fontSize: 18,
-    cursor: "pointer",
-  },
-  formTitle: { marginTop: 0, color: "#1f2937" },
-  fieldGroup: { display: "flex", flexDirection: "column", marginBottom: 14 },
-  label: { fontWeight: 600, marginBottom: 6, color: "#475569" },
-  input: {
-    border: "1px solid #dbe2ef",
-    borderRadius: 8,
-    padding: "10px 12px",
-    outline: "none",
-  },
-  submitBtn: {
-    width: "100%",
-    border: "none",
-    borderRadius: 8,
-    padding: "11px 16px",
-    background: "#16a34a",
-    color: "white",
-    fontWeight: 700,
-    cursor: "pointer",
-  },
-  tableWrapper: {
-    background: "white",
-    borderRadius: 10,
-    overflowX: "auto",
-    boxShadow: "0 1px 4px rgba(15, 23, 42, 0.08)",
-  },
-  tableHeader: {
-    padding: "16px",
-    borderBottom: "1px solid #eef2f7",
-    display: "flex",
-    justifyContent: "flex-end",
-  },
-  searchWrap: {
-    display: "flex",
-    alignItems: "center",
-    gap: 8,
-    border: "1px solid #e2e8f0",
-    borderRadius: 8,
-    padding: "0 12px",
-    minWidth: 280,
-    background: "#fff",
-  },
-  searchInput: {
-    border: "none",
-    outline: "none",
-    padding: "10px 0",
-    fontSize: 14,
-    width: "100%",
-  },
-  table: { width: "100%", borderCollapse: "collapse" },
-  th: {
-    background: "#f8fafc",
-    padding: "12px 14px",
-    fontSize: 12,
-    textAlign: "left",
-    color: "#64748b",
-  },
-  td: {
-    padding: "12px 14px",
-    borderTop: "1px solid #eef2f7",
-    fontSize: 14,
-  },
-  tbodyRow: { background: "white" },
-  emptyCell: { padding: 24, textAlign: "center", color: "#64748b" },
-  editBtn: {
-    marginRight: 8,
-    border: "none",
-    borderRadius: 6,
-    padding: "7px 10px",
-    background: "#e0f2fe",
-    color: "#0369a1",
-    cursor: "pointer",
-  },
-  deleteBtn: {
-    border: "none",
-    borderRadius: 6,
-    padding: "7px 10px",
-    background: "#fee2e2",
-    color: "#b91c1c",
-    cursor: "pointer",
-  },
 };
 
 export default MinistryDepartments;
