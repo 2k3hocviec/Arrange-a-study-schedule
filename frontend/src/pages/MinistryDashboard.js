@@ -15,7 +15,15 @@ import { MdMeetingRoom, MdSubject, MdDashboard } from "react-icons/md";
 import { IoCalendar } from "react-icons/io5";
 import { GiTeacher } from "react-icons/gi";
 import { FiLogOut } from "react-icons/fi";
-import { roomsAPI, subjectsAPI } from "../services/api";
+import {
+  coursesAPI,
+  departmentsAPI,
+  roomsAPI,
+  semestersAPI,
+  studentsAPI,
+  subjectsAPI,
+  teachersAPI,
+} from "../services/api";
 import { GrSchedule } from "react-icons/gr";
 import toast from "react-hot-toast";
 import { FaLock } from "react-icons/fa";
@@ -236,44 +244,91 @@ const NAV_ITEMS = [
 ];
 
 const STAT_ICONS = {
+  students: {
+    color: "#4f46e5",
+    bg: "#e0e7ff",
+    svg: <PiStudentDuotone size={22} color="#4f46e5" />,
+  },
+  teachers: {
+    color: "#16a34a",
+    bg: "#dcfce7",
+    svg: <GiTeacher size={22} color="#16a34a" />,
+  },
+  departments: {
+    color: "#9333ea",
+    bg: "#f3e8ff",
+    svg: <MdDashboard size={22} color="#9333ea" />,
+  },
   subjects: {
     color: "#6366f1",
     bg: "#ede9fe",
     svg: <MdSubject size={22} color="#6366f1" />,
+  },
+  courses: {
+    color: "#f97316",
+    bg: "#ffedd5",
+    svg: <GrSchedule size={22} color="#f97316" />,
   },
   rooms: {
     color: "#0ea5e9",
     bg: "#e0f2fe",
     svg: <MdMeetingRoom size={22} color="#0ea5e9" />,
   },
+  activeSemester: {
+    color: "#dc2626",
+    bg: "#fee2e2",
+    svg: <IoCalendar size={22} color="#dc2626" />,
+  },
 };
 
 const MinistryDashboard = () => {
+  const [students, setStudents] = useState([]);
+  const [teachers, setTeachers] = useState([]);
+  const [departments, setDepartments] = useState([]);
   const [subjects, setSubjects] = useState([]);
+  const [courses, setCourses] = useState([]);
   const [rooms, setRooms] = useState([]);
+  const [activeSemester, setActiveSemester] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
 
-  const fetchSubjects = async () => {
+  const fetchDashboardStats = async () => {
     try {
-      const r = await subjectsAPI.getAll();
-      setSubjects(r.data);
+      const [
+        studentsRes,
+        teachersRes,
+        departmentsRes,
+        subjectsRes,
+        coursesRes,
+        roomsRes,
+        semestersRes,
+      ] = await Promise.all([
+        studentsAPI.getAll(),
+        teachersAPI.getAll(),
+        departmentsAPI.getAll(),
+        subjectsAPI.getAll(),
+        coursesAPI.getAll(),
+        roomsAPI.getAll(),
+        semestersAPI.getAll(),
+      ]);
+
+      setStudents(studentsRes.data || []);
+      setTeachers(teachersRes.data || []);
+      setDepartments(departmentsRes.data || []);
+      setSubjects(subjectsRes.data || []);
+      setCourses(coursesRes.data || []);
+      setRooms(roomsRes.data || []);
+      setActiveSemester(
+        (semestersRes.data || []).find((semester) => semester.is_active) ||
+          null,
+      );
     } catch {
-      toast.error("Không thể tải dữ liệu");
-    }
-  };
-  const fetchRooms = async () => {
-    try {
-      const r = await roomsAPI.getAll();
-      setRooms(r.data);
-    } catch {
-      toast.error("Không thể tải dữ liệu phòng học");
+      toast.error("Không thể tải dữ liệu tổng quan");
     }
   };
 
   useEffect(() => {
-    fetchSubjects();
-    fetchRooms();
+    fetchDashboardStats();
   }, []);
 
   const isActive = (path) => location.pathname.split("/").includes(path);
@@ -297,87 +352,86 @@ const MinistryDashboard = () => {
       </div>
 
       <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
-        {/* Subjects */}
-        <div className="edu-stat-card">
-          <div
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: 10,
-              background: STAT_ICONS.subjects.bg,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            {STAT_ICONS.subjects.svg}
-          </div>
-          <div>
+        {[
+          {
+            key: "students",
+            label: "SỐ LƯỢNG SINH VIÊN",
+            value: students.length,
+          },
+          {
+            key: "teachers",
+            label: "SỐ LƯỢNG GIẢNG VIÊN",
+            value: teachers.length,
+          },
+          {
+            key: "departments",
+            label: "SỐ LƯỢNG KHOA",
+            value: departments.length,
+          },
+          {
+            key: "subjects",
+            label: "SỐ LƯỢNG MÔN HỌC",
+            value: subjects.length,
+          },
+          {
+            key: "courses",
+            label: "SỐ LƯỢNG KHÓA HỌC",
+            value: courses.length,
+          },
+          {
+            key: "rooms",
+            label: "SỐ LƯỢNG PHÒNG HỌC",
+            value: rooms.length,
+          },
+          {
+            key: "activeSemester",
+            label: "KỲ HỌC HIỆN TẠI",
+            value: activeSemester
+              ? `${activeSemester.name} ${activeSemester.school_year}`
+              : "Chưa set",
+            isText: true,
+          },
+        ].map((stat) => (
+          <div className="edu-stat-card" key={stat.key}>
             <div
               style={{
-                fontSize: 11,
-                fontWeight: 700,
-                color: "#94a3b8",
-                letterSpacing: "0.08em",
-                textTransform: "uppercase",
-                marginBottom: 4,
+                width: 44,
+                height: 44,
+                borderRadius: 10,
+                background: STAT_ICONS[stat.key].bg,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
               }}
             >
-              MÔN HỌC HIỆN CÓ
+              {STAT_ICONS[stat.key].svg}
             </div>
-            <div
-              style={{
-                fontSize: 34,
-                fontWeight: 800,
-                color: "#1e293b",
-                lineHeight: 1,
-              }}
-            >
-              {subjects.length}
-            </div>
-          </div>
-        </div>
-
-        {/* Rooms */}
-        <div className="edu-stat-card">
-          <div
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: 10,
-              background: STAT_ICONS.rooms.bg,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            {STAT_ICONS.rooms.svg}
-          </div>
-          <div>
-            <div
-              style={{
-                fontSize: 11,
-                fontWeight: 700,
-                color: "#94a3b8",
-                letterSpacing: "0.08em",
-                textTransform: "uppercase",
-                marginBottom: 4,
-              }}
-            >
-              SỐ LƯỢNG PHÒNG HỌC
-            </div>
-            <div
-              style={{
-                fontSize: 34,
-                fontWeight: 800,
-                color: "#1e293b",
-                lineHeight: 1,
-              }}
-            >
-              {rooms.length}
+            <div>
+              <div
+                style={{
+                  fontSize: 11,
+                  fontWeight: 700,
+                  color: "#94a3b8",
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                  marginBottom: 4,
+                }}
+              >
+                {stat.label}
+              </div>
+              <div
+                style={{
+                  fontSize: stat.isText ? 22 : 34,
+                  fontWeight: 800,
+                  color: "#1e293b",
+                  lineHeight: 1.15,
+                }}
+              >
+                {stat.value}
+              </div>
             </div>
           </div>
-        </div>
+        ))}
       </div>
     </div>
   );

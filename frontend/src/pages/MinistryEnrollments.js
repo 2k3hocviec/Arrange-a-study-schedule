@@ -6,7 +6,7 @@ import {
   semestersAPI,
 } from "../services/api";
 import toast from "react-hot-toast";
-import { FiPlus, FiTrash2 } from "react-icons/fi";
+import { FiPlus } from "react-icons/fi";
 
 const PAGE_SIZE = 10;
 

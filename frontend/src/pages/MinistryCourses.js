@@ -1,9 +1,21 @@
 ﻿import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { coursesAPI, subjectsAPI, teachersAPI, semestersAPI, schedulesAPI } from "../services/api";
+import {
+  coursesAPI,
+  subjectsAPI,
+  teachersAPI,
+  semestersAPI,
+  schedulesAPI,
+} from "../services/api";
 import toast from "react-hot-toast";
 import { MdMenuBook } from "react-icons/md";
-import { FiCalendar, FiEdit2, FiPlus, FiSearch, FiTrash2 } from "react-icons/fi";
+import {
+  FiCalendar,
+  FiEdit2,
+  FiPlus,
+  FiSearch,
+  FiTrash2,
+} from "react-icons/fi";
 
 const PAGE_SIZE = 10;
 
@@ -133,8 +145,9 @@ const MinistryCourses = () => {
     try {
       const response = await semestersAPI.getAll();
       setSemesters(response.data);
-      setSelectedSemesterId((current) =>
-        current || response.data.find((s) => s.is_active)?.semester_id || "",
+      setSelectedSemesterId(
+        (current) =>
+          current || response.data.find((s) => s.is_active)?.semester_id || "",
       );
     } catch (e) {
       toast.error("KhÃ´ng thá»ƒ táº£i danh sÃ¡ch ká»³ há»c");
@@ -184,7 +197,9 @@ const MinistryCourses = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (repair && scheduledCourseIds.has(formData.course_id)) {
-      toast.error("KhÃ´ng thá»ƒ cáº­p nháº­t vÃ¬ khÃ³a há»c Ä‘Ã£ Ä‘Æ°á»£c xáº¿p lá»‹ch.");
+      toast.error(
+        "KhÃ´ng thá»ƒ cáº­p nháº­t vÃ¬ khÃ³a há»c Ä‘Ã£ Ä‘Æ°á»£c xáº¿p lá»‹ch.",
+      );
       return;
     }
 
@@ -224,7 +239,8 @@ const MinistryCourses = () => {
   };
 
   const scheduledCourseIds = new Set(schedules.map((s) => s.course_id));
-  const isScheduledRepair = repair && scheduledCourseIds.has(formData.course_id);
+  const isScheduledRepair =
+    repair && scheduledCourseIds.has(formData.course_id);
   const selectedSubject = subjects.find(
     (subject) => subject.subject_id === formData.subject_id,
   );
@@ -241,8 +257,10 @@ const MinistryCourses = () => {
       const hasSchedule = scheduledCourseIds.has(course.course_id);
       if (scheduleFilter === "scheduled") return hasSchedule;
       if (scheduleFilter === "unscheduled") return !hasSchedule;
-      if (scheduleFilter === "available") return (course.remaining_capacity ?? 0) > 0;
-      if (scheduleFilter === "full") return (course.remaining_capacity ?? 0) <= 0;
+      if (scheduleFilter === "available")
+        return (course.remaining_capacity ?? 0) > 0;
+      if (scheduleFilter === "full")
+        return (course.remaining_capacity ?? 0) <= 0;
       return true;
     })
     .filter((course) => {
@@ -259,7 +277,9 @@ const MinistryCourses = () => {
         course.semester?.school_year,
       ]
         .filter(Boolean)
-        .some((value) => String(value).toLowerCase().includes(normalizedKeyword));
+        .some((value) =>
+          String(value).toLowerCase().includes(normalizedKeyword),
+        );
     })
     .sort((a, b) => {
       const aScheduled = scheduledCourseIds.has(a.course_id);
@@ -272,7 +292,9 @@ const MinistryCourses = () => {
         String(b.course_code || b.course_id),
       );
     });
-  const scheduledCount = courses.filter((c) => scheduledCourseIds.has(c.course_id)).length;
+  const scheduledCount = courses.filter((c) =>
+    scheduledCourseIds.has(c.course_id),
+  ).length;
   const unscheduledCount = Math.max(0, courses.length - scheduledCount);
   const totalPages = Math.max(1, Math.ceil(filteredCourses.length / PAGE_SIZE));
   const safePage = Math.min(page, totalPages);
@@ -312,11 +334,15 @@ const MinistryCourses = () => {
             <div style={miniStatRow}>
               <span style={miniStat}>
                 <span style={miniStatDot("#22c55e")} />
-                <span style={miniStatText}>{scheduledCount} Ä‘Ã£ xáº¿p lá»‹ch</span>
+                <span style={miniStatText}>
+                  {scheduledCount} Ä‘Ã£ xáº¿p lá»‹ch
+                </span>
               </span>
               <span style={miniStat}>
                 <span style={miniStatDot("#f97316")} />
-                <span style={miniStatText}>{unscheduledCount} chÆ°a xáº¿p lá»‹ch</span>
+                <span style={miniStatText}>
+                  {unscheduledCount} chÆ°a xáº¿p lá»‹ch
+                </span>
               </span>
             </div>
           </div>
@@ -399,7 +425,10 @@ const MinistryCourses = () => {
                     <option value="">-- Chá»n ká»³ há»c --</option>
 
                     {semesters.map((semester) => (
-                      <option key={semester.semester_id} value={semester.semester_id}>
+                      <option
+                        key={semester.semester_id}
+                        value={semester.semester_id}
+                      >
                         {semester.name} {semester.school_year}
                         {semester.is_active ? " - Hiá»‡n hÃ nh" : ""}
                       </option>
@@ -467,7 +496,8 @@ const MinistryCourses = () => {
 
               {isScheduledRepair && (
                 <div style={lockedNotice}>
-                  KhÃ³a há»c Ä‘Ã£ Ä‘Æ°á»£c xáº¿p lá»‹ch nÃªn khÃ´ng thá»ƒ chá»‰nh sá»­a thÃ´ng tin.
+                  KhÃ³a há»c Ä‘Ã£ Ä‘Æ°á»£c xáº¿p lá»‹ch nÃªn khÃ´ng thá»ƒ
+                  chá»‰nh sá»­a thÃ´ng tin.
                 </div>
               )}
 
@@ -568,7 +598,8 @@ const MinistryCourses = () => {
               {pagedCourses.length === 0 && (
                 <tr>
                   <td colSpan={10} style={emptyCell}>
-                    KhÃ´ng cÃ³ khÃ³a há»c phÃ¹ há»£p vá»›i bá»™ lá»c hiá»‡n táº¡i.
+                    KhÃ´ng cÃ³ khÃ³a há»c phÃ¹ há»£p vá»›i bá»™ lá»c hiá»‡n
+                    táº¡i.
                   </td>
                 </tr>
               )}
@@ -624,7 +655,9 @@ const MinistryCourses = () => {
                           color: hasSchedule ? "#15803d" : "#c2410c",
                         }}
                       >
-                        {hasSchedule ? "ÄÃ£ xáº¿p lá»‹ch" : "ChÆ°a xáº¿p lá»‹ch"}
+                        {hasSchedule
+                          ? "ÄÃ£ xáº¿p lá»‹ch"
+                          : "ChÆ°a xáº¿p lá»‹ch"}
                       </span>
                     </td>
                     <td style={td}>
@@ -732,7 +765,8 @@ const MinistryCourses = () => {
         {false && courses.length > 0 && (
           <div style={tableFooter}>
             <span style={{ color: "#94a3b8", fontSize: "13px" }}>
-              Hiá»ƒn thá»‹ 1â€“{courses.length} trÃªn {courses.length} khÃ³a há»c
+              Hiá»ƒn thá»‹ 1â€“{courses.length} trÃªn {courses.length} khÃ³a
+              há»c
             </span>
           </div>
         )}
@@ -774,15 +808,6 @@ const pageHeaderLeft = {
   alignItems: "center",
   gap: "14px",
 };
-const headerIconWrap = {
-  width: "42px",
-  height: "42px",
-  borderRadius: "10px",
-  background: "#ede9fe",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-};
 const pageTitle = {
   margin: 0,
   fontSize: "20px",
@@ -790,12 +815,6 @@ const pageTitle = {
   color: "#1e293b",
   letterSpacing: "0.3px",
 };
-const pageSubtitle = {
-  margin: "2px 0 0",
-  fontSize: "13px",
-  color: "#94a3b8",
-};
-
 const addBtn = {
   display: "flex",
   alignItems: "center",
@@ -833,8 +852,6 @@ const statNumber = {
   fontWeight: 700,
   lineHeight: 1.1,
 };
-const statFootnote = { margin: 0, fontSize: "13px", opacity: 0.75 };
-const statArrow = { marginRight: "4px" };
 const bannerIconBg = {
   position: "absolute",
   right: "28px",
@@ -934,7 +951,8 @@ const tableTitle = {
 };
 const filterBar = {
   display: "grid",
-  gridTemplateColumns: "minmax(260px, 1fr) minmax(200px, 260px) minmax(180px, 220px)",
+  gridTemplateColumns:
+    "minmax(260px, 1fr) minmax(200px, 260px) minmax(180px, 220px)",
   gap: "12px",
   marginTop: "14px",
 };
@@ -1158,5 +1176,3 @@ const formCard = {
 };
 
 export default MinistryCourses;
-
-

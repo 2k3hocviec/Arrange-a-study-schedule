@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { teachersAPI } from "../services/api";
 import toast from "react-hot-toast";
+import "../styles/TeacherSchedule.css";
 import {
   FaCalendarAlt,
   FaBook,
@@ -140,18 +141,18 @@ const TeacherSchedule = ({ teacherInfo }) => {
   const todayEnum = todayDow === 0 ? "8" : String(todayDow + 1);
 
   return (
-    <div style={S.page}>
+    <div className="teacher-schedule">
       {/* ── Header ── */}
-      <div style={S.header}>
+      <div className="teacher-schedule__header">
         <div>
-          <h2 style={S.title}>
-            <FaCalendarAlt style={{ color: "#3a4db7", marginRight: 10 }} />
+          <h2 className="teacher-schedule__title">
+            <FaCalendarAlt className="teacher-schedule__title-icon" />
             Lịch Giảng Dạy Chi Tiết
           </h2>
           {teacherInfo && (
-            <p style={S.subtitle}>
+            <p className="teacher-schedule__subtitle">
               {teacherInfo.name}&nbsp;·&nbsp;
-              <span style={{ color: "#3a4db7", fontWeight: 700 }}>
+              <span className="teacher-schedule__teacher-id">
                 {teacherInfo.teacher_id}
               </span>
             </p>
@@ -160,20 +161,20 @@ const TeacherSchedule = ({ teacherInfo }) => {
       </div>
 
       {/* Week bar */}
-      <div style={S.weekBar}>
-        <button style={S.navBtn} onClick={() => shiftWeek(-1)}>
+      <div className="teacher-schedule__week-bar">
+        <button className="teacher-schedule__nav-btn" onClick={() => shiftWeek(-1)}>
           <FaChevronLeft />
         </button>
 
-        <div style={S.weekCenter}>
-          <span style={S.weekLabel}>
+        <div className="teacher-schedule__week-center">
+          <span className="teacher-schedule__week-label">
             {weekStart && weekEnd
               ? `${fmtDate(weekStart)} – ${fmtDate(weekEnd)}`
               : "Chọn tuần"}
           </span>
           <input
             type="date"
-            style={S.dateInput}
+            className="teacher-schedule__date-input"
             value={weekStart ? weekStart.toISOString().split("T")[0] : ""}
             onChange={(e) =>
               setWeekStart(getWeekStart(new Date(e.target.value)))
@@ -181,12 +182,12 @@ const TeacherSchedule = ({ teacherInfo }) => {
           />
         </div>
 
-        <button style={S.navBtn} onClick={() => shiftWeek(1)}>
+        <button className="teacher-schedule__nav-btn" onClick={() => shiftWeek(1)}>
           <FaChevronRight />
         </button>
 
         <button
-          style={S.todayBtn}
+          className="teacher-schedule__today-btn"
           onClick={() => setWeekStart(getWeekStart(new Date()))}
         >
           Hôm nay
@@ -194,29 +195,22 @@ const TeacherSchedule = ({ teacherInfo }) => {
       </div>
 
       {/* ── Table ── */}
-      <div style={S.tableCard}>
-        <div style={{ overflowX: "auto" }}>
-          <table style={S.table}>
+      <div className="teacher-schedule__table-card">
+        <div className="teacher-schedule__table-scroll">
+          <table className="teacher-schedule__table">
             <thead>
               <tr>
-                <th style={S.thSlot}>TIẾT</th>
+                <th className="teacher-schedule__th-slot">TIẾT</th>
                 {DAY_ENUMS.map((de, i) => {
                   const isToday = de === todayEnum;
                   return (
                     <th
                       key={de}
-                      style={{ ...S.th, ...(isToday ? S.thToday : {}) }}
+                      className={`teacher-schedule__th${isToday ? " teacher-schedule__th--today" : ""}`}
                     >
                       <div>{DAY_LABELS[i]}</div>
                       {weekStart && (
-                        <div
-                          style={{
-                            fontSize: 11,
-                            fontWeight: 400,
-                            opacity: 0.7,
-                            marginTop: 2,
-                          }}
-                        >
+                        <div className="teacher-schedule__day-date">
                           {new Date(
                             weekStart.getTime() + i * 86400000,
                           ).toLocaleDateString("vi-VN", {
@@ -232,38 +226,38 @@ const TeacherSchedule = ({ teacherInfo }) => {
             </thead>
             <tbody>
               {SLOTS.map((slot) => (
-                <tr key={slot} style={S.tr}>
-                  <td style={S.tdSlot}>
-                    <span style={S.slotNum}>Tiết {slot}</span>
-                    <span style={S.slotTime}>{SLOT_TIMES[slot]}</span>
+                <tr key={slot} className="teacher-schedule__tr">
+                  <td className="teacher-schedule__td-slot">
+                    <span className="teacher-schedule__slot-num">Tiết {slot}</span>
+                    <span className="teacher-schedule__slot-time">{SLOT_TIMES[slot]}</span>
                   </td>
                   {DAY_ENUMS.map((de, idx) => {
                     const item = getSlotItem(de, slot);
                     if (item) {
                       if (item.start_slot !== slot) {
-                        return <td key={idx} style={S.tdEmpty} />;
+                        return <td key={idx} className="teacher-schedule__td-empty" />;
                       }
                       const span = item.end_slot - item.start_slot + 1;
                       const c = pal(paletteMap[item.courseId]);
                       return (
                         <td
                           key={idx}
-                          style={S.tdClass}
+                          className="teacher-schedule__td-class"
                           onClick={() => setSelectedClass(item)}
                         >
                           <div
+                            className="teacher-schedule__class-block"
                             style={{
-                              ...S.classBlock,
                               height: span * SLOT_ROW_HEIGHT - 8,
                               background: c.bg,
                               borderLeft: `3px solid ${c.border}`,
                             }}
                           >
-                            <div style={{ ...S.dot, background: c.dot }} />
-                            <div style={{ ...S.cName, color: c.text }}>
+                            <div className="teacher-schedule__class-dot" style={{ background: c.dot }} />
+                            <div className="teacher-schedule__class-name" style={{ color: c.text }}>
                               {item.subjectName}
                             </div>
-                            <div style={{ ...S.cInfo, color: c.text }}>
+                            <div className="teacher-schedule__class-info" style={{ color: c.text }}>
                               <FaDoorOpen size={10} />
                               &nbsp;{item.room}
                             </div>
@@ -271,7 +265,7 @@ const TeacherSchedule = ({ teacherInfo }) => {
                         </td>
                       );
                     }
-                    return <td key={idx} style={S.tdEmpty} />;
+                    return <td key={idx} className="teacher-schedule__td-empty" />;
                   })}
                 </tr>
               ))}
@@ -282,14 +276,14 @@ const TeacherSchedule = ({ teacherInfo }) => {
 
       {/* ── Legend ── */}
       {scheduleData.length > 0 && (
-        <div style={S.legend}>
+        <div className="teacher-schedule__legend">
           {[...new Map(scheduleData.map((s) => [s.courseId, s])).values()].map(
             (s) => {
               const c = pal(paletteMap[s.courseId]);
               return (
-                <div key={s.courseId} style={S.legendItem}>
-                  <span style={{ ...S.legendDot, background: c.dot }} />
-                  <span style={{ fontSize: 12, color: "#475569" }}>
+                <div key={s.courseId} className="teacher-schedule__legend-item">
+                  <span className="teacher-schedule__legend-dot" style={{ background: c.dot }} />
+                  <span className="teacher-schedule__legend-text">
                     {s.subjectName}
                   </span>
                 </div>
@@ -300,12 +294,12 @@ const TeacherSchedule = ({ teacherInfo }) => {
       )}
 
       {scheduleData.length === 0 && (
-        <div style={S.empty}>
+        <div className="teacher-schedule__empty">
           <FaCalendarAlt
             size={40}
-            style={{ color: "#c7d2fe", marginBottom: 12 }}
+            className="teacher-schedule__empty-icon"
           />
-          <p style={{ color: "#94a3b8", margin: 0 }}>
+          <p className="teacher-schedule__empty-text">
             Chưa có lịch giảng dạy trong tuần này
           </p>
         </div>
@@ -313,30 +307,19 @@ const TeacherSchedule = ({ teacherInfo }) => {
 
       {/* ── Modal ── */}
       {selectedClass && (
-        <div style={S.overlay} onClick={() => setSelectedClass(null)}>
-          <div style={S.modal} onClick={(e) => e.stopPropagation()}>
+        <div className="teacher-schedule__overlay" onClick={() => setSelectedClass(null)}>
+          <div className="teacher-schedule__modal" onClick={(e) => e.stopPropagation()}>
             <div
-              style={{
-                ...S.modalHeader,
-                background: `linear-gradient(135deg, #3a4db7, #6c3fc5)`,
-              }}
+              className="teacher-schedule__modal-header"
             >
-              <span
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
-                  fontWeight: 700,
-                  fontSize: 15,
-                }}
-              >
+              <span className="teacher-schedule__modal-title">
                 <FaBook /> Chi tiết lớp dạy
               </span>
-              <button style={S.closeBtn} onClick={() => setSelectedClass(null)}>
+              <button className="teacher-schedule__close-btn" onClick={() => setSelectedClass(null)}>
                 <FaTimes />
               </button>
             </div>
-            <div style={S.modalBody}>
+            <div className="teacher-schedule__modal-body">
               {[
                 [
                   <FaBook />,
@@ -372,30 +355,24 @@ const TeacherSchedule = ({ teacherInfo }) => {
                   null,
                 ],
               ].map(([icon, label, val, vc], i) => (
-                <div key={i} style={S.mRow}>
-                  <span style={{ color: "#a5b4fc", width: 16, flexShrink: 0 }}>
+                <div key={i} className="teacher-schedule__modal-row">
+                  <span className="teacher-schedule__modal-icon">
                     {icon}
                   </span>
                   <span
-                    style={{ color: "#64748b", fontSize: 13, minWidth: 140 }}
+                    className="teacher-schedule__modal-label"
                   >
                     {label}:
                   </span>
-                  <span
-                    style={{
-                      fontWeight: 600,
-                      fontSize: 13,
-                      color: vc || "#1e293b",
-                    }}
-                  >
+                  <span className="teacher-schedule__modal-value" style={{ color: vc || "#1e293b" }}>
                     {val}
                   </span>
                 </div>
               ))}
             </div>
-            <div style={{ padding: "0 24px 20px" }}>
+            <div className="teacher-schedule__modal-footer">
               <button
-                style={S.modalCloseBtn}
+                className="teacher-schedule__modal-close-btn"
                 onClick={() => setSelectedClass(null)}
               >
                 Đóng thông tin
@@ -407,238 +384,6 @@ const TeacherSchedule = ({ teacherInfo }) => {
     </div>
   );
 };
-
-// ── Styles ────────────────────────────────────────────────────
-const S = {
-  page: {
-    fontFamily: "'Be Vietnam Pro','Segoe UI',sans-serif",
-    color: "#1e293b",
-  },
-  header: {
-    marginBottom: 12,
-    display: "flex",
-    alignItems: "flex-start",
-    justifyContent: "space-between",
-    flexWrap: "wrap",
-    gap: 12,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: 800,
-    margin: 0,
-    display: "flex",
-    alignItems: "center",
-  },
-  subtitle: { margin: "4px 0 0", fontSize: 12, color: "#64748b" },
-  weekBar: {
-    display: "flex",
-    alignItems: "center",
-    gap: 10,
-    background: "#fff",
-    borderRadius: 10,
-    padding: "10px 14px",
-    marginBottom: 12,
-    boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-    flexWrap: "wrap",
-  },
-  weekCenter: {
-    flex: 1,
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    gap: 4,
-    minWidth: 180,
-  },
-  weekLabel: { fontSize: 13, fontWeight: 700, color: "#3a4db7" },
-  dateInput: {
-    border: "1.5px solid #e2e8f0",
-    borderRadius: 8,
-    padding: "4px 8px",
-    fontSize: 12,
-    color: "#1e293b",
-    outline: "none",
-    background: "#f8fafc",
-    cursor: "pointer",
-  },
-  navBtn: {
-    background: "#f1f5f9",
-    border: "none",
-    borderRadius: 8,
-    padding: "7px 10px",
-    cursor: "pointer",
-    color: "#475569",
-    fontSize: 14,
-    display: "flex",
-    alignItems: "center",
-  },
-  todayBtn: {
-    background: "#3a4db7",
-    color: "#fff",
-    border: "none",
-    borderRadius: 8,
-    padding: "7px 12px",
-    fontSize: 12,
-    fontWeight: 700,
-    cursor: "pointer",
-  },
-  tableCard: {
-    background: "#fff",
-    borderRadius: 10,
-    boxShadow: "0 1px 6px rgba(0,0,0,0.07)",
-    overflow: "hidden",
-    marginBottom: 16,
-  },
-  table: {
-    width: "100%",
-    borderCollapse: "collapse",
-    minWidth: 640,
-    tableLayout: "fixed",
-  },
-  th: {
-    padding: "8px 6px",
-    fontSize: 11,
-    fontWeight: 700,
-    color: "#475569",
-    background: "#f8fafc",
-    borderBottom: "2px solid #e8eaef",
-    textAlign: "center",
-    letterSpacing: "0.04em",
-  },
-  thSlot: {
-    padding: "8px 12px",
-    fontSize: 11,
-    fontWeight: 700,
-    color: "#475569",
-    background: "#f8fafc",
-    borderBottom: "2px solid #e8eaef",
-    textAlign: "left",
-    width: 90,
-    whiteSpace: "nowrap",
-  },
-  thToday: { color: "#3a4db7", background: "#eef1ff" },
-  tr: { borderBottom: "1px solid #f1f5f9" },
-  tdSlot: {
-    padding: "6px 12px",
-    background: "#fafafa",
-    borderRight: "1px solid #f1f5f9",
-    verticalAlign: "middle",
-    whiteSpace: "nowrap",
-    height: SLOT_ROW_HEIGHT,
-    boxSizing: "border-box",
-  },
-  slotNum: {
-    display: "block",
-    fontSize: 12,
-    fontWeight: 700,
-    color: "#334155",
-  },
-  slotTime: { display: "block", fontSize: 10, color: "#94a3b8", marginTop: 1 },
-  tdEmpty: {
-    border: "1px solid #f8fafc",
-    height: SLOT_ROW_HEIGHT,
-    boxSizing: "border-box",
-  },
-  tdClass: {
-    border: "1px solid #f1f5f9",
-    padding: 0,
-    verticalAlign: "top",
-    cursor: "pointer",
-    transition: "filter 0.15s",
-    position: "relative",
-    height: SLOT_ROW_HEIGHT,
-    boxSizing: "border-box",
-    overflow: "visible",
-  },
-  classBlock: {
-    position: "absolute",
-    top: 3,
-    left: 0,
-    right: 0,
-    zIndex: 2,
-    padding: "6px 8px",
-    boxSizing: "border-box",
-    overflow: "hidden",
-  },
-  dot: { width: 6, height: 6, borderRadius: "50%", marginBottom: 3 },
-  cName: {
-    fontSize: 11,
-    fontWeight: 700,
-    lineHeight: 1.2,
-    marginBottom: 2,
-    display: "-webkit-box",
-    WebkitLineClamp: 2,
-    WebkitBoxOrient: "vertical",
-    overflow: "hidden",
-  },
-  cInfo: { fontSize: 10, display: "flex", alignItems: "center", opacity: 0.8 },
-  legend: {
-    display: "flex",
-    flexWrap: "wrap",
-    gap: 12,
-    background: "#fff",
-    borderRadius: 12,
-    padding: "12px 18px",
-    boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
-  },
-  legendItem: { display: "flex", alignItems: "center", gap: 6 },
-  legendDot: { width: 10, height: 10, borderRadius: "50%", flexShrink: 0 },
-  empty: {
-    textAlign: "center",
-    padding: "60px 20px",
-    background: "#fff",
-    borderRadius: 16,
-    boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
-  },
-  overlay: {
-    position: "fixed",
-    inset: 0,
-    background: "rgba(10,15,40,0.45)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    zIndex: 1000,
-    backdropFilter: "blur(4px)",
-  },
-  modal: {
-    background: "#fff",
-    borderRadius: 20,
-    width: 460,
-    maxWidth: "95vw",
-    boxShadow: "0 20px 60px rgba(0,0,0,0.2)",
-    overflow: "hidden",
-  },
-  modalHeader: {
-    color: "#fff",
-    padding: "18px 24px",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  closeBtn: {
-    background: "none",
-    border: "none",
-    color: "#fff",
-    fontSize: 16,
-    cursor: "pointer",
-  },
-  modalBody: {
-    padding: "20px 24px",
-    display: "flex",
-    flexDirection: "column",
-    gap: 10,
-  },
-  mRow: { display: "flex", alignItems: "center", gap: 10, fontSize: 14 },
-  modalCloseBtn: {
-    width: "100%",
-    padding: 11,
-    background: "#f1f5f9",
-    color: "#1e293b",
-    border: "none",
-    borderRadius: 10,
-    fontWeight: 700,
-    fontSize: 14,
-    cursor: "pointer",
-  },
-};
-
+
 export default TeacherSchedule;
+
