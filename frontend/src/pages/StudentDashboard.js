@@ -1,387 +1,261 @@
 import React, { useContext, useEffect, useState } from "react";
-import {
-  Routes,
-  Route,
-  Link,
-  useLocation,
-  useNavigate,
-} from "react-router-dom";
+import { Routes, Route, Link, useLocation, useNavigate } from "react-router-dom";
 import StudentTimetable from "./StudentTimetable";
 import StudentRegister from "./StudentRegister";
 import { studentsAPI, enrollmentsAPI } from "../services/api";
 import { AuthContext } from "../contexts/AuthContext";
-import {
-  useMobileMenu,
-  MobileMenuButton,
-  MobileMenuOverlay,
-} from "../utils/responsiveHelpers";
-import {
-  FaCalendarAlt,
-  FaHome,
-  FaUserCircle,
-  FaSignOutAlt,
-  FaBell,
-  FaClipboardList,
-  FaBookOpen,
-  FaLock,
-} from "react-icons/fa";
+import { useMobileMenu, MobileMenuButton, MobileMenuOverlay } from "../utils/responsiveHelpers";
+import { FaCalendarAlt, FaHome, FaUserCircle, FaSignOutAlt, FaBell, FaClipboardList, FaBookOpen, FaLock } from "react-icons/fa";
 import ChangePassword from "./ChangePassword";
-
-const NAV = [
-  {
-    path: "/student/dashboard",
-    key: "dashboard",
-    icon: <FaHome />,
-    label: "Dashboard",
-  },
-  {
-    path: "/student/timetable",
-    key: "timetable",
-    icon: <FaCalendarAlt />,
-    label: "Thời khóa biểu",
-  },
-  {
-    path: "/student/register",
-    key: "register",
-    icon: <FaClipboardList />,
-    label: "Đăng ký môn học",
-  },
-  {
-    path: "/student/notifications",
-    key: "notifications",
-    icon: <FaLock />,
-    label: "Đổi mật khẩu",
-  },
-];
-
+import "../styles/StudentDashboard.css";
+const NAV = [{
+  path: "/student/dashboard",
+  key: "dashboard",
+  icon: <FaHome />,
+  label: "Dashboard"
+}, {
+  path: "/student/timetable",
+  key: "timetable",
+  icon: <FaCalendarAlt />,
+  label: "Thời khóa biểu"
+}, {
+  path: "/student/register",
+  key: "register",
+  icon: <FaClipboardList />,
+  label: "Đăng ký môn học"
+}, {
+  path: "/student/notifications",
+  key: "notifications",
+  icon: <FaLock />,
+  label: "Đổi mật khẩu"
+}];
 const StudentDashboard = () => {
-  const { user, logout } = useContext(AuthContext);
+  const {
+    user,
+    logout
+  } = useContext(AuthContext);
   const [studentInfo, setStudentInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [registeredIds, setRegisteredIds] = useState([]);
   const navigate = useNavigate();
   const location = useLocation();
-  const { isMobileMenuOpen, toggleMobileMenu, closeMobileMenu } =
-    useMobileMenu();
-
+  const {
+    isMobileMenuOpen,
+    toggleMobileMenu,
+    closeMobileMenu
+  } = useMobileMenu();
   useEffect(() => {
     if (!user) return;
     setLoading(true);
-    studentsAPI
-      .getMe()
-      .then((res) => {
-        setStudentInfo(res.data);
-        setError(null);
-      })
-      .catch(() => setError("Không thể tải thông tin sinh viên"))
-      .finally(() => setLoading(false));
+    studentsAPI.getMe().then(res => {
+      setStudentInfo(res.data);
+      setError(null);
+    }).catch(() => setError("Không thể tải thông tin sinh viên")).finally(() => setLoading(false));
   }, [user]);
-
   useEffect(() => {
     if (!studentInfo?.student_id) return;
-    enrollmentsAPI
-      .getByStudentId(studentInfo.student_id)
-      .then((res) => {
-        if (res.data && Array.isArray(res.data))
-          setRegisteredIds(res.data.map((e) => e.course_id));
-      })
-      .catch(console.error);
+    enrollmentsAPI.getByStudentId(studentInfo.student_id).then(res => {
+      if (res.data && Array.isArray(res.data)) setRegisteredIds(res.data.map(e => e.course_id));
+    }).catch(console.error);
   }, [studentInfo]);
-
-  const isActive = (key) =>
-    location.pathname.includes(key) ||
-    (key === "dashboard" &&
-      (location.pathname === "/student" || location.pathname === "/student/"));
+  const isActive = key => location.pathname.includes(key) || key === "dashboard" && (location.pathname === "/student" || location.pathname === "/student/");
 
   // ── Home page ─────────────────────────────────────────────────
-  const HomePage = (
-    <div style={S.homePage}>
+  const HomePage = <div className="student-dashboard__home-page">
       {/* Welcome banner */}
-      <div style={S.banner}>
+      <div className="student-dashboard__banner">
         <div>
-          <h1 style={S.bannerTitle}>
+          <h1 className="student-dashboard__banner-title">
             Xin chào, {loading ? "..." : studentInfo?.name || "Sinh viên"} 👋
           </h1>
-          <p style={S.bannerSub}>
+          <p className="student-dashboard__banner-sub">
             Mã sinh viên:{" "}
-            <strong style={{ color: "#818cf8" }}>
+            <strong className="student-dashboard__inline-108">
               {studentInfo?.student_id || "N/A"}
             </strong>
           </p>
         </div>
-        <FaBookOpen size={48} style={{ opacity: 0.15, color: "#fff" }} />
+        <FaBookOpen size={48} className="student-dashboard__inline-113" />
       </div>
 
       {/* Stat cards */}
-      <div style={S.statsRow}>
-        {[
-          {
-            icon: <FaClipboardList />,
-            val: registeredIds.length,
-            label: "Môn đã đăng ký",
-            color: "#6366f1",
-          },
-          {
-            icon: <FaCalendarAlt />,
-            val: 18,
-            label: "Tín chỉ tối đa",
-            color: "#22c55e",
-          },
-          {
-            icon: <FaBell />,
-            val: 0,
-            label: "Thông báo mới",
-            color: "#f97316",
-          },
-        ].map((c, i) => (
-          <div
-            key={i}
-            style={{ ...S.statCard, borderTop: `4px solid ${c.color}` }}
-          >
-            <span style={{ fontSize: 24, color: c.color }}>{c.icon}</span>
+      <div className="student-dashboard__stats-row">
+        {[{
+        icon: <FaClipboardList />,
+        val: registeredIds.length,
+        label: "Môn đã đăng ký",
+        color: "#6366f1"
+      }, {
+        icon: <FaCalendarAlt />,
+        val: 18,
+        label: "Tín chỉ tối đa",
+        color: "#22c55e"
+      }, {
+        icon: <FaBell />,
+        val: 0,
+        label: "Thông báo mới",
+        color: "#f97316"
+      }].map((c, i) => <div key={i} style={{
+        borderTop: `4px solid ${c.color}`
+      }} className="student-dashboard__stat-card">
+        
+            <span style={{
+          color: c.color
+        }} className="student-dashboard__inline-142">{c.icon}</span>
             <div>
-              <div
-                style={{
-                  fontSize: 28,
-                  fontWeight: 800,
-                  color: c.color,
-                  lineHeight: 1,
-                }}
-              >
+              <div style={{
+            color: c.color
+          }} className="student-dashboard__inline-144">
+            
                 {c.val}
               </div>
-              <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 3 }}>
+              <div className="student-dashboard__inline-154">
                 {c.label}
               </div>
             </div>
-          </div>
-        ))}
+          </div>)}
       </div>
 
       {/* Quick nav tiles */}
-      <h3
-        style={{
-          fontSize: 14,
-          fontWeight: 700,
-          color: "#94a3b8",
-          letterSpacing: "0.06em",
-          marginBottom: 12,
-        }}
-      >
+      <h3 className="student-dashboard__inline-163">
+
+
+
+
+
+
+
+      
         TRUY CẬP NHANH
       </h3>
-      <div style={S.tilesRow}>
-        {NAV.filter((n) => n.key !== "dashboard").map((n) => (
-          <Link
-            key={n.key}
-            to={n.path}
-            style={S.tile}
-            onClick={closeMobileMenu}
-          >
-            <span style={{ fontSize: 24, color: "#6366f1" }}>{n.icon}</span>
-            <span
-              style={{
-                fontSize: 13,
-                fontWeight: 600,
-                color: "#1e293b",
-                marginTop: 8,
-              }}
-            >
+      <div className="student-dashboard__tiles-row">
+        {NAV.filter(n => n.key !== "dashboard").map(n => <Link key={n.key} to={n.path} onClick={closeMobileMenu} className="student-dashboard__tile">
+        
+            <span className="student-dashboard__inline-182">{n.icon}</span>
+            <span className="student-dashboard__inline-183">
+
+
+
+
+
+
+          
               {n.label}
             </span>
-          </Link>
-        ))}
+          </Link>)}
       </div>
 
       {/* Notice */}
-      <div style={S.notice}>
+      <div className="student-dashboard__notice">
         <strong>📌 Quy định sinh viên:</strong>
-        <p
-          style={{
-            margin: "6px 0 0",
-            color: "#475569",
-            lineHeight: 1.7,
-            fontSize: 14,
-          }}
-        >
+        <p className="student-dashboard__inline-200">
+
+
+
+
+
+
+        
           Sinh viên chỉ được xem thời khóa biểu cá nhân, đăng ký môn trong thời
           gian mở đăng ký, không đăng ký trùng giờ và không vượt quá số tín chỉ
           tối đa cho phép.
         </p>
       </div>
-    </div>
-  );
-
-  return (
-    <div style={S.root}>
+    </div>;
+  return <div className="student-dashboard__root">
       <MobileMenuOverlay isOpen={isMobileMenuOpen} onClick={closeMobileMenu} />
 
       {/* ── SIDEBAR ── */}
-      <aside
-        className={`sidebar ${isMobileMenuOpen ? "active" : ""}`}
-        style={S.sidebar}
-      >
+      <aside className={`sidebar ${isMobileMenuOpen ? "active" : ""} student-dashboard__sidebar`}>
+
+        
         {/* Brand */}
-        <div style={S.brand}>
-          <div style={S.brandIcon}>
+        <div className="student-dashboard__brand">
+          <div className="student-dashboard__brand-icon">
             <FaUserCircle size={22} />
           </div>
           <div>
-            <div style={S.brandTitle}>Cổng Sinh Viên</div>
-            <div style={S.brandSub}>
+            <div className="student-dashboard__brand-title">Cổng Sinh Viên</div>
+            <div className="student-dashboard__brand-sub">
               {loading ? "Đang tải..." : studentInfo?.student_id || "N/A"}
             </div>
           </div>
         </div>
 
         {/* Avatar area */}
-        {studentInfo && (
-          <div style={S.userArea}>
-            <div style={S.avatarCircle}>
+        {studentInfo && <div className="student-dashboard__user-area">
+            <div className="student-dashboard__avatar-circle">
               {studentInfo.name?.charAt(0) || "S"}
             </div>
-            <div style={S.userName}>{studentInfo.name}</div>
-            <div style={S.userRole}>Sinh viên</div>
-          </div>
-        )}
+            <div className="student-dashboard__user-name">{studentInfo.name}</div>
+            <div className="student-dashboard__user-role">Sinh viên</div>
+          </div>}
 
-        <hr style={S.divider} />
+        <hr className="student-dashboard__divider" />
 
         {/* Nav */}
-        <nav style={{ flex: 1 }}>
-          {NAV.map((n) => (
-            <Link
-              key={n.key}
-              to={n.path}
-              style={{ textDecoration: "none" }}
-              onClick={closeMobileMenu}
-            >
+        <nav className="student-dashboard__inline-252">
+          {NAV.map(n => <Link key={n.key} to={n.path} onClick={closeMobileMenu} className="student-dashboard__inline-254">
+            
               <div style={S.navItem(isActive(n.key))}>
-                <span
-                  style={{ fontSize: 15, opacity: isActive(n.key) ? 1 : 0.7 }}
-                >
+                <span style={{
+              opacity: isActive(n.key) ? 1 : 0.7
+            }} className="student-dashboard__inline-261">
+                
                   {n.icon}
                 </span>
                 {n.label}
               </div>
-            </Link>
-          ))}
+            </Link>)}
         </nav>
 
         {/* Logout */}
-        <button
-          style={S.logoutBtn}
-          onClick={() => {
-            logout();
-            navigate("/login");
-          }}
-        >
+        <button onClick={() => {
+        logout();
+        navigate("/login");
+      }} className="student-dashboard__logout-btn">
+          
           <FaSignOutAlt /> Đăng xuất
         </button>
       </aside>
 
       {/* ── MAIN ── */}
-      <main style={S.main}>
-        <MobileMenuButton
-          onClick={toggleMobileMenu}
-          isOpen={isMobileMenuOpen}
-        />
+      <main className="student-dashboard__main">
+        <MobileMenuButton onClick={toggleMobileMenu} isOpen={isMobileMenuOpen} />
+        
 
         {/* Topbar */}
-        <header style={S.topbar}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <span style={{ fontSize: 18, color: "#6366f1" }}>
-              {NAV.find((n) => isActive(n.key))?.icon || <FaHome />}
+        <header className="student-dashboard__topbar">
+          <div className="student-dashboard__inline-293">
+            <span className="student-dashboard__inline-294">
+              {NAV.find(n => isActive(n.key))?.icon || <FaHome />}
             </span>
-            <h2 style={S.pageTitle}>
-              {NAV.find((n) => isActive(n.key))?.label || "Dashboard"}
+            <h2 className="student-dashboard__page-title">
+              {NAV.find(n => isActive(n.key))?.label || "Dashboard"}
             </h2>
           </div>
         </header>
 
-        <div style={S.content}>
+        <div className="student-dashboard__content">
           <Routes>
             <Route path="/" element={HomePage} />
             <Route path="dashboard" element={HomePage} />
-            <Route
-              path="timetable"
-              element={<StudentTimetable studentInfo={studentInfo} />}
-            />
-            <Route
-              path="register"
-              element={
-                <StudentRegister
-                  registeredIds={registeredIds}
-                  setRegisteredIds={setRegisteredIds}
-                  studentInfo={studentInfo}
-                />
-              }
-            />
-            <Route
-              path="notifications"
-              element={<ChangePassword registeredIds={registeredIds} />}
-            />
+            <Route path="timetable" element={<StudentTimetable studentInfo={studentInfo} />} />
+            
+            <Route path="register" element={<StudentRegister registeredIds={registeredIds} setRegisteredIds={setRegisteredIds} studentInfo={studentInfo} />} />
+            
+            <Route path="notifications" element={<ChangePassword registeredIds={registeredIds} />} />
+            
           </Routes>
         </div>
       </main>
-    </div>
-  );
+    </div>;
 };
 
 // ── Styles ────────────────────────────────────────────────────
 const S = {
-  root: {
-    display: "flex",
-    height: "100vh",
-    minHeight: "100vh",
-    fontFamily: "'Be Vietnam Pro','Segoe UI',sans-serif",
-    background: "#f0f2f7",
-    overflow: "hidden",
-  },
-  sidebar: {
-    width: 250,
-    height: "100vh",
-    background: "#18181b",
-    color: "#fff",
-    display: "flex",
-    flexDirection: "column",
-    padding: "20px 12px",
-    flexShrink: 0,
-    transition: "all 0.3s",
-  },
-  brand: {
-    display: "flex",
-    alignItems: "center",
-    gap: 10,
-    padding: "0 8px 16px",
-    borderBottom: "1px solid #27272a",
-  },
-  brandIcon: { color: "#818cf8", fontSize: 22 },
-  brandTitle: { fontSize: 14, fontWeight: 800, color: "#e2e8f0" },
-  brandSub: { fontSize: 11, color: "#71717a", marginTop: 1 },
-  userArea: { textAlign: "center", padding: "16px 8px" },
-  avatarCircle: {
-    width: 48,
-    height: 48,
-    borderRadius: "50%",
-    background: "linear-gradient(135deg,#6366f1,#8b5cf6)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontSize: 20,
-    fontWeight: 800,
-    color: "#fff",
-    margin: "0 auto 8px",
-  },
-  userName: { fontSize: 13, fontWeight: 700, color: "#e2e8f0" },
-  userRole: { fontSize: 11, color: "#71717a", marginTop: 2 },
-  divider: {
-    border: "none",
-    borderTop: "1px solid #27272a",
-    margin: "8px 0 12px",
-  },
-  navItem: (a) => ({
+  navItem: a => ({
     display: "flex",
     alignItems: "center",
     gap: 10,
@@ -394,100 +268,7 @@ const S = {
     marginBottom: 2,
     cursor: "pointer",
     transition: "all 0.15s",
-    textDecoration: "none",
-  }),
-  logoutBtn: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    margin: "12px 0 0",
-    width: "100%",
-    padding: "11px",
-    background: "#3f1212",
-    color: "#fca5a5",
-    border: "none",
-    borderRadius: 10,
-    fontWeight: 700,
-    fontSize: 13,
-    cursor: "pointer",
-  },
-  main: {
-    flex: 1,
-    display: "flex",
-    flexDirection: "column",
-    minWidth: 0,
-    minHeight: 0,
-  },
-  topbar: {
-    background: "#fff",
-    borderBottom: "1px solid #e8eaef",
-    padding: "14px 28px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    flexShrink: 0,
-  },
-  pageTitle: { fontSize: 16, fontWeight: 800, color: "#1e293b", margin: 0 },
-  content: {
-    flex: 1,
-    minHeight: 0,
-    padding: "24px 28px",
-    overflowY: "auto",
-  },
-  homePage: { maxWidth: "100%" },
-  banner: {
-    background: "linear-gradient(135deg,#4f46e5 0%,#7c3aed 100%)",
-    borderRadius: 20,
-    padding: "28px 32px",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 24,
-    boxShadow: "0 4px 20px rgba(79,70,229,0.3)",
-  },
-  bannerTitle: {
-    fontSize: 22,
-    fontWeight: 800,
-    color: "#fff",
-    margin: "0 0 6px",
-  },
-  bannerSub: { fontSize: 13, color: "rgba(255,255,255,0.75)", margin: 0 },
-  statsRow: { display: "flex", gap: 16, marginBottom: 24, flexWrap: "wrap" },
-  statCard: {
-    flex: "1 1 140px",
-    background: "#fff",
-    padding: "12px 16px",
-    borderRadius: 14,
-    padding: "20px",
-    display: "flex",
-    alignItems: "center",
-    gap: 14,
-    boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-  },
-  tilesRow: { display: "flex", gap: 14, marginBottom: 24, flexWrap: "wrap" },
-  tile: {
-    flex: "1 1 120px",
-    background: "#fff",
-    borderRadius: 14,
-    padding: "16px 12px",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    textDecoration: "none",
-    boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-    transition: "box-shadow 0.15s",
-    cursor: "pointer",
-  },
-  notice: {
-    background: "#fff",
-    borderRadius: 14,
-    padding: "20px 24px",
-    borderLeft: "5px solid #6366f1",
-    boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-    fontSize: 14,
-    color: "#1e293b",
-  },
+    textDecoration: "none"
+  })
 };
-
 export default StudentDashboard;

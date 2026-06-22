@@ -1,0 +1,265 @@
+.ministry-teacher-busy-schedules__pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.ministry-teacher-busy-schedules__approved {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.ministry-teacher-busy-schedules__rejected {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.ministry-teacher-busy-schedules__page {
+  padding: 24px 32px;
+  font-family: 'Segoe UI', sans-serif;
+  background: #f8fafc;
+  min-height: 100vh;
+}
+
+.ministry-teacher-busy-schedules__breadcrumb {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 18px;
+  font-size: 13px;
+}
+
+.ministry-teacher-busy-schedules__breadcrumb-home {
+  color: #94a3b8;
+}
+
+.ministry-teacher-busy-schedules__breadcrumb-sep {
+  color: #cbd5e1;
+}
+
+.ministry-teacher-busy-schedules__breadcrumb-current {
+  color: #4f46e5;
+  font-weight: 700;
+}
+
+.ministry-teacher-busy-schedules__header {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 18px 22px;
+  margin-bottom: 16px;
+}
+
+.ministry-teacher-busy-schedules__title {
+  margin: 0px;
+  font-size: 20px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.ministry-teacher-busy-schedules__subtitle {
+  margin: 6px 0 0;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.ministry-teacher-busy-schedules__filter-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.ministry-teacher-busy-schedules__filter-btn {
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  color: #475569;
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.ministry-teacher-busy-schedules__filter-btn-active {
+  background: #4f46e5;
+  color: #fff;
+  border-color: #4f46e5;
+}
+
+.ministry-teacher-busy-schedules__filter-count {
+  margin-left: 8px;
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.ministry-teacher-busy-schedules__search-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 16px;
+}
+
+.ministry-teacher-busy-schedules__search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0 12px;
+  min-width: 360px;
+  background: #fff;
+}
+
+.ministry-teacher-busy-schedules__search-input {
+  border: none;
+  outline: none;
+  padding: 10px 0;
+  font-size: 14px;
+  width: 100%;
+}
+
+.ministry-teacher-busy-schedules__table-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.ministry-teacher-busy-schedules__table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 1040px;
+}
+
+.ministry-teacher-busy-schedules__th {
+  padding: 12px 14px;
+  text-align: left;
+  font-size: 12px;
+  color: #64748b;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+.ministry-teacher-busy-schedules__td {
+  padding: 13px 14px;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 13px;
+  color: #334155;
+  vertical-align: middle;
+}
+
+.ministry-teacher-busy-schedules__teacher-name {
+  font-weight: 800;
+  color: #1e293b;
+}
+
+.ministry-teacher-busy-schedules__teacher-meta {
+  font-size: 12px;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+.ministry-teacher-busy-schedules__badge {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 4px 9px;
+  font-weight: 800;
+  font-size: 12px;
+}
+
+.ministry-teacher-busy-schedules__action-group {
+  display: flex;
+  gap: 6px;
+}
+
+.ministry-teacher-busy-schedules__approve-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 7px;
+  background: #dcfce7;
+  color: #15803d;
+  cursor: pointer;
+}
+
+.ministry-teacher-busy-schedules__reject-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 7px;
+  background: #fee2e2;
+  color: #dc2626;
+  cursor: pointer;
+}
+
+.ministry-teacher-busy-schedules__locked-text {
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.ministry-teacher-busy-schedules__empty-td {
+  padding: 26px;
+  text-align: center;
+  color: #94a3b8;
+}
+
+.ministry-teacher-busy-schedules__modal {
+  width: 420px;
+  max-width: 92vw;
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 20px 50px rgba(15,23,42,0.2);
+}
+
+.ministry-teacher-busy-schedules__modal-title {
+  margin: 0 0 14px;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.ministry-teacher-busy-schedules__label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.ministry-teacher-busy-schedules__textarea {
+  width: 100%;
+  min-height: 110px;
+  resize: vertical;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 14px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.ministry-teacher-busy-schedules__modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.ministry-teacher-busy-schedules__cancel-btn {
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  border-radius: 8px;
+  padding: 9px 13px;
+  cursor: pointer;
+}
+
+.ministry-teacher-busy-schedules__confirm-reject-btn {
+  border: none;
+  background: #dc2626;
+  color: #fff;
+  border-radius: 8px;
+  padding: 9px 13px;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.ministry-teacher-busy-schedules__inline-171 {
+  overflow-x: auto;
+}

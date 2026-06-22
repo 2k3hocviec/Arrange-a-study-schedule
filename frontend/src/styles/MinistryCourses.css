@@ -1,0 +1,487 @@
+.ministry-courses__page-wrapper {
+  padding: 28px 32px;
+  font-family: 'Segoe UI', sans-serif;
+  background: #f8fafc;
+  min-height: 100vh;
+}
+
+.ministry-courses__breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 20px;
+  font-size: 13px;
+}
+
+.ministry-courses__breadcrumb-home {
+  color: #94a3b8;
+  cursor: pointer;
+}
+
+.ministry-courses__breadcrumb-sep {
+  color: #cbd5e1;
+}
+
+.ministry-courses__breadcrumb-current {
+  color: #4f46e5;
+  font-weight: 600;
+}
+
+.ministry-courses__page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.ministry-courses__page-header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.ministry-courses__page-title {
+  margin: 0px;
+  font-size: 20px;
+  font-weight: 800;
+  color: #1e293b;
+  letter-spacing: 0.3px;
+}
+
+.ministry-courses__add-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 20px;
+  background: #4f46e5;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.ministry-courses__stat-banner {
+  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+  border-radius: 14px;
+  padding: 24px 28px;
+  margin-bottom: 24px;
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+.ministry-courses__stat-banner-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.ministry-courses__stat-label {
+  margin: 0px;
+  font-size: 13px;
+  opacity: 0.85;
+}
+
+.ministry-courses__stat-number {
+  margin: 4px 0;
+  font-size: 42px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.ministry-courses__banner-icon-bg {
+  position: absolute;
+  right: 28px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.ministry-courses__mini-stat-row {
+  display: flex;
+  gap: 24px;
+}
+
+.ministry-courses__mini-stat {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ministry-courses__mini-stat-text {
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+.ministry-courses__form-title {
+  margin: 0 0 20px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.ministry-courses__form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+.ministry-courses__field-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.ministry-courses__field-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 6px;
+}
+
+.ministry-courses__field-input {
+  padding: 9px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 7px;
+  font-size: 14px;
+  color: #1e293b;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.ministry-courses__field-input--disabled {
+  background: #f1f5f9;
+  cursor: not-allowed;
+  color: #94a3b8;
+}
+
+.ministry-courses__locked-notice {
+  margin-top: 14px;
+  padding: 10px 12px;
+  border: 1px solid #fde68a;
+  border-radius: 8px;
+  background: #fffbeb;
+  color: #92400e;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.ministry-courses__submit-btn {
+  margin-top: 16px;
+  padding: 10px 24px;
+  color: white;
+  border: none;
+  border-radius: 7px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.ministry-courses__disabled-submit-btn {
+  background: #cbd5e1;
+  cursor: not-allowed;
+  opacity: 0.75;
+}
+
+.ministry-courses__table-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+}
+
+.ministry-courses__table-header {
+  padding: 18px 24px 14px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.ministry-courses__table-title {
+  margin: 0px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.ministry-courses__filter-bar {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) minmax(200px, 260px) minmax(180px, 220px);
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.ministry-courses__search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.ministry-courses__search-input {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: #1e293b;
+  font-size: 14px;
+}
+
+.ministry-courses__filter-select {
+  padding: 9px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fff;
+  color: #1e293b;
+  font-size: 14px;
+  outline: none;
+}
+
+.ministry-courses__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ministry-courses__thead-row {
+  background: #f8fafc;
+}
+
+.ministry-courses__th {
+  padding: 11px 16px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  color: #94a3b8;
+  letter-spacing: 0.6px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.ministry-courses__tbody-row {
+  border-bottom: 1px solid #f1f5f9;
+  transition: background 0.15s;
+}
+
+.ministry-courses__td {
+  padding: 14px 16px;
+  font-size: 14px;
+  color: #334155;
+}
+
+.ministry-courses__capacity-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  background: #ede9fe;
+  color: #4f46e5;
+}
+
+.ministry-courses__room-type-badge {
+  display: inline-block;
+  min-width: 72px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.ministry-courses__schedule-badge {
+  display: inline-block;
+  min-width: 92px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.ministry-courses__schedule-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-right: 6px;
+  padding: 5px 12px;
+  background: #dcfce7;
+  color: #15803d;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.ministry-courses__edit-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-right: 6px;
+  padding: 5px 12px;
+  background: #ede9fe;
+  color: #4f46e5;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.ministry-courses__empty-cell {
+  padding: 36px 16px;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+.ministry-courses__delete-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  background: #fee2e2;
+  color: #ef4444;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.ministry-courses__table-footer {
+  padding: 14px 24px;
+  border-top: 1px solid #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.ministry-courses__pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ministry-courses__page-btn {
+  min-width: 32px;
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 7px;
+  background: #fff;
+  color: #334155;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.ministry-courses__page-btn-active {
+  background: #4f46e5;
+  color: #fff;
+  border: 1px solid #4f46e5;
+}
+
+.ministry-courses__page-btn-disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.ministry-courses__modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.ministry-courses__modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.ministry-courses__modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15,23,42,0.45);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+}
+
+.ministry-courses__close-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: none;
+  background: #f1f5f9;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.ministry-courses__cancel-btn {
+  padding: 10px 18px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  color: #475569;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.ministry-courses__form-card {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  width: 100%;
+  max-width: 850px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+  border: 1px solid #e2e8f0;
+}
+
+.ministry-courses__inline-486 {
+  background: #f1f5f9;
+  cursor: not-allowed;
+  color: #94a3b8;
+}
+
+.ministry-courses__inline-589 {
+  overflow-x: auto;
+}
+
+.ministry-courses__inline-627 {
+  color: #94a3b8;
+}
+
+.ministry-courses__inline-646 {
+  font-weight: 600;
+  color: #4f46e5;
+}
+
+.ministry-courses__inline-689 {
+  white-space: nowrap;
+}
+
+.ministry-courses__inline-727 {
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+.ministry-courses__inline-774 {
+  color: #94a3b8;
+  font-size: 13px;
+}

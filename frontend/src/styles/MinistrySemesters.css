@@ -1,0 +1,254 @@
+.ministry-semesters__page {
+  padding: 28px 32px;
+  background: #f8fafc;
+  min-height: 100vh;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.ministry-semesters__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 22px;
+}
+
+.ministry-semesters__breadcrumb {
+  color: #94a3b8;
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+.ministry-semesters__title {
+  margin: 0px;
+  color: #1e293b;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.ministry-semesters__add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: #4f46e5;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 18px;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.ministry-semesters__modal-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 24px;
+  width: 100%;
+  max-width: 760px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+}
+
+.ministry-semesters__modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.ministry-semesters__modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.ministry-semesters__close-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: none;
+  background: #f1f5f9;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.ministry-semesters__form-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #1e293b;
+  font-weight: 700;
+  margin: 0px;
+}
+
+.ministry-semesters__form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+}
+
+.ministry-semesters__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: #475569;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.ministry-semesters__input {
+  padding: 9px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 7px;
+  font-size: 14px;
+}
+
+.ministry-semesters__checkbox-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #475569;
+  font-weight: 600;
+  font-size: 13px;
+  padding-top: 24px;
+}
+
+.ministry-semesters__submit-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: #4f46e5;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 18px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.ministry-semesters__cancel-btn {
+  background: #fff;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 10px 18px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.ministry-semesters__table-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.ministry-semesters__table-header {
+  padding: 16px 22px;
+  border-bottom: 1px solid #f1f5f9;
+  color: #1e293b;
+  font-weight: 700;
+}
+
+.ministry-semesters__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ministry-semesters__th {
+  text-align: left;
+  padding: 12px 14px;
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.ministry-semesters__tr {
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.ministry-semesters__td {
+  padding: 13px 14px;
+  color: #334155;
+  font-size: 14px;
+}
+
+.ministry-semesters__badge {
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: #f1f5f9;
+  color: #64748b;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.ministry-semesters__active-badge {
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: #dcfce7;
+  color: #16a34a;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.ministry-semesters__modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15,23,42,0.45);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+}
+
+.ministry-semesters__activate-btn {
+  margin-right: 6px;
+  padding: 6px 10px;
+  border: none;
+  border-radius: 6px;
+  background: #dcfce7;
+  color: #15803d;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.ministry-semesters__edit-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-right: 6px;
+  padding: 6px 10px;
+  border: none;
+  border-radius: 6px;
+  background: #ede9fe;
+  color: #4f46e5;
+  cursor: pointer;
+}
+
+.ministry-semesters__delete-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 10px;
+  border: none;
+  border-radius: 6px;
+  background: #fee2e2;
+  color: #ef4444;
+  cursor: pointer;
+}
+
+.ministry-semesters__empty {
+  padding: 28px;
+  text-align: center;
+  color: #94a3b8;
+}
+
+.ministry-semesters__inline-292 {
+  overflow-x: auto;
+}

@@ -1,97 +1,56 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  coursesAPI,
-  subjectsAPI,
-  teachersAPI,
-  semestersAPI,
-  schedulesAPI,
-} from "../services/api";
+import { coursesAPI, subjectsAPI, teachersAPI, semestersAPI, schedulesAPI } from "../services/api";
 import toast from "react-hot-toast";
 import { MdMenuBook } from "react-icons/md";
-import {
-  FiCalendar,
-  FiEdit2,
-  FiPlus,
-  FiSearch,
-  FiTrash2,
-} from "react-icons/fi";
-
+import { FiCalendar, FiEdit2, FiPlus, FiSearch, FiTrash2 } from "react-icons/fi";
+import "../styles/MinistryCourses.css";
 const PAGE_SIZE = 10;
-
 const getCourseErrorMessage = (err, action = "save") => {
   const rawMessage = err?.response?.data?.message || err?.message || "";
-  const message = Array.isArray(rawMessage)
-    ? rawMessage.join(" ")
-    : String(rawMessage);
+  const message = Array.isArray(rawMessage) ? rawMessage.join(" ") : String(rawMessage);
   const lowerMessage = message.toLowerCase();
-
-  if (
-    lowerMessage.includes("unique") ||
-    lowerMessage.includes("duplicate") ||
-    lowerMessage.includes("p2002") ||
-    lowerMessage.includes("course_code")
-  ) {
+  if (lowerMessage.includes("unique") || lowerMessage.includes("duplicate") || lowerMessage.includes("p2002") || lowerMessage.includes("course_code")) {
     return "Mã lớp học phần đã tồn tại. Vui lòng kiểm tra lại mã khóa học.";
   }
-
   if (lowerMessage.includes("required room type")) {
     return "Vui lòng chọn loại phòng yêu cầu.";
   }
-
-  if (
-    lowerMessage.includes("not teacher") ||
-    lowerMessage.includes("not subject") ||
-    lowerMessage.includes("not semester")
-  ) {
+  if (lowerMessage.includes("not teacher") || lowerMessage.includes("not subject") || lowerMessage.includes("not semester")) {
     return "Giáo viên, môn học hoặc kỳ học không tồn tại. Vui lòng kiểm tra lại.";
   }
-
-  if (
-    lowerMessage.includes(
-      "teacher department does not match subject major department",
-    )
-  ) {
+  if (lowerMessage.includes("teacher department does not match subject major department")) {
     return "Giáo viên không thuộc khoa của chuyên ngành môn học. Vui lòng chọn giáo viên phù hợp.";
   }
-
   if (lowerMessage.includes("capacity must be at least")) {
     return "Sĩ số tối đa không được nhỏ hơn số sinh viên đã đăng ký.";
   }
-
   if (lowerMessage.includes("cannot update course that has schedule")) {
     return "Không thể cập nhật vì khóa học đã được xếp lịch.";
   }
-
-  if (
-    lowerMessage.includes("cannot move course to this semester") ||
-    lowerMessage.includes("outside the semester date range")
-  ) {
+  if (lowerMessage.includes("cannot move course to this semester") || lowerMessage.includes("outside the semester date range")) {
     return "Không thể chuyển khóa học sang kỳ này vì đã có lịch học nằm ngoài khoảng thời gian của kỳ mới.";
   }
-
   if (lowerMessage.includes("cannot delete course that has schedules")) {
     return "Không thể xóa khóa học vì đã có lịch học.";
   }
-
   if (lowerMessage.includes("cannot delete course that has enrollments")) {
     return "Không thể xóa khóa học vì đã có sinh viên đăng ký.";
   }
-
   if (action === "delete") {
     return "Không thể xóa khóa học.";
   }
-
   return "Thao tác thất bại. Vui lòng kiểm tra lại dữ liệu.";
 };
-
 const MinistryCourses = () => {
   const navigate = useNavigate();
-  const roomTypeOptions = [
-    { value: "Theory", label: "Lý thuyết" },
-    { value: "Practice", label: "Thực hành" },
-  ];
-
+  const roomTypeOptions = [{
+    value: "Theory",
+    label: "Lý thuyết"
+  }, {
+    value: "Practice",
+    label: "Thực hành"
+  }];
   const [teachers, setTeachers] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [semesters, setSemesters] = useState([]);
@@ -103,15 +62,13 @@ const MinistryCourses = () => {
   const [keyword, setKeyword] = useState("");
   const [selectedSemesterId, setSelectedSemesterId] = useState("");
   const [scheduleFilter, setScheduleFilter] = useState("all");
-
   const [formData, setFormData] = useState({
     subject_id: "",
     teacher_id: "",
     semester_id: "",
     capacity: "",
-    required_room_type: "Theory",
+    required_room_type: "Theory"
   });
-
   const fetchCourses = async () => {
     try {
       const response = await coursesAPI.getAll();
@@ -121,7 +78,6 @@ const MinistryCourses = () => {
       toast.error("Không thể tải dữ liệu khóa học");
     }
   };
-
   const fetchSchedules = async () => {
     try {
       const response = await schedulesAPI.getAll();
@@ -130,7 +86,6 @@ const MinistryCourses = () => {
       toast.error("Không thể tải dữ liệu lịch học");
     }
   };
-
   const fetchTeachers = async () => {
     try {
       const response = await teachersAPI.getAllIds();
@@ -139,7 +94,6 @@ const MinistryCourses = () => {
       toast.error("Không thể tải danh sách giáo viên");
     }
   };
-
   const fetchSubjects = async () => {
     try {
       const response = await subjectsAPI.getAllIds();
@@ -148,20 +102,15 @@ const MinistryCourses = () => {
       toast.error("Không thể tải danh sách môn học");
     }
   };
-
   const fetchSemesters = async () => {
     try {
       const response = await semestersAPI.getAll();
       setSemesters(response.data);
-      setSelectedSemesterId(
-        (current) =>
-          current || response.data.find((s) => s.is_active)?.semester_id || "",
-      );
+      setSelectedSemesterId(current => current || response.data.find(s => s.is_active)?.semester_id || "");
     } catch (e) {
       toast.error("Không thể tải danh sách kỳ học");
     }
   };
-
   useEffect(() => {
     fetchCourses();
     fetchTeachers();
@@ -169,48 +118,44 @@ const MinistryCourses = () => {
     fetchSemesters();
     fetchSchedules();
   }, []);
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
+  const handleInputChange = e => {
+    const {
+      name,
+      value
+    } = e.target;
     setFormData({
       ...formData,
-      [name]: name === "capacity" ? (value ? Number(value) : "") : value,
+      [name]: name === "capacity" ? value ? Number(value) : "" : value
     });
   };
-
   const handleClickCreateCourse = () => {
     setFormData({
       subject_id: "",
       teacher_id: "",
-      semester_id: semesters.find((s) => s.is_active)?.semester_id || "",
+      semester_id: semesters.find(s => s.is_active)?.semester_id || "",
       capacity: "",
-      required_room_type: "Theory",
+      required_room_type: "Theory"
     });
     setRepair(false);
     setShowForm(!showForm);
   };
-
-  const handleOpenFormUpdate = (course) => {
+  const handleOpenFormUpdate = course => {
     setFormData({
       ...course,
       subject_id: course.subject_id || course.subject?.subject_id || "",
       teacher_id: course.teacher_id || course.teacher?.teacher_id || "",
       semester_id: course.semester_id || course.semester?.semester_id || "",
-      required_room_type: course.required_room_type || "Theory",
+      required_room_type: course.required_room_type || "Theory"
     });
     setRepair(true);
     setShowForm(true);
   };
-
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
     if (repair && scheduledCourseIds.has(formData.course_id)) {
-      toast.error(
-        "Không thể cập nhật vì khóa học đã được xếp lịch.",
-      );
+      toast.error("Không thể cập nhật vì khóa học đã được xếp lịch.");
       return;
     }
-
     try {
       if (repair) {
         await coursesAPI.update(formData.course_id, formData);
@@ -226,16 +171,10 @@ const MinistryCourses = () => {
       toast.error(getCourseErrorMessage(err));
     }
   };
-
-  const handleDeleteCourse = async (course) => {
-    if (
-      !window.confirm(
-        `Bạn có chắc muốn xóa khóa học ${course.course_code || course.course_id}?`,
-      )
-    ) {
+  const handleDeleteCourse = async course => {
+    if (!window.confirm(`Bạn có chắc muốn xóa khóa học ${course.course_code || course.course_id}?`)) {
       return;
     }
-
     try {
       await coursesAPI.delete(course.course_id);
       toast.success("Xóa khóa học thành công!");
@@ -245,338 +184,228 @@ const MinistryCourses = () => {
       toast.error(getCourseErrorMessage(err, "delete"));
     }
   };
-
-  const scheduledCourseIds = new Set(schedules.map((s) => s.course_id));
-  const isScheduledRepair =
-    repair && scheduledCourseIds.has(formData.course_id);
-  const selectedSubject = subjects.find(
-    (subject) => subject.subject_id === formData.subject_id,
-  );
+  const scheduledCourseIds = new Set(schedules.map(s => s.course_id));
+  const isScheduledRepair = repair && scheduledCourseIds.has(formData.course_id);
+  const selectedSubject = subjects.find(subject => subject.subject_id === formData.subject_id);
   const selectedSubjectDepartmentId = selectedSubject?.major?.department_id;
-  const availableTeachers = selectedSubject
-    ? teachers.filter(
-        (teacher) => teacher.department_id === selectedSubjectDepartmentId,
-      )
-    : teachers;
-  const filteredCourses = courses
-    .filter((course) =>
-      selectedSemesterId ? course.semester_id === selectedSemesterId : true,
-    )
-    .filter((course) => {
-      const hasSchedule = scheduledCourseIds.has(course.course_id);
-      if (scheduleFilter === "scheduled") return hasSchedule;
-      if (scheduleFilter === "unscheduled") return !hasSchedule;
-      if (scheduleFilter === "available")
-        return (course.remaining_capacity ?? 0) > 0;
-      if (scheduleFilter === "full")
-        return (course.remaining_capacity ?? 0) <= 0;
-      return true;
-    })
-    .filter((course) => {
-      const normalizedKeyword = keyword.trim().toLowerCase();
-      if (!normalizedKeyword) return true;
-      return [
-        course.course_code,
-        course.course_id,
-        course.subject_id,
-        course.subject?.name,
-        course.teacher_id,
-        course.teacher?.name,
-        course.semester?.name,
-        course.semester?.school_year,
-      ]
-        .filter(Boolean)
-        .some((value) =>
-          String(value).toLowerCase().includes(normalizedKeyword),
-        );
-    })
-    .sort((a, b) => {
-      const aScheduled = scheduledCourseIds.has(a.course_id);
-      const bScheduled = scheduledCourseIds.has(b.course_id);
-      if (aScheduled !== bScheduled) return aScheduled ? 1 : -1;
-      const aActive = a.semester?.is_active ? 0 : 1;
-      const bActive = b.semester?.is_active ? 0 : 1;
-      if (aActive !== bActive) return aActive - bActive;
-      return String(a.course_code || a.course_id).localeCompare(
-        String(b.course_code || b.course_id),
-      );
-    });
-  const scheduledCount = courses.filter((c) =>
-    scheduledCourseIds.has(c.course_id),
-  ).length;
+  const availableTeachers = selectedSubject ? teachers.filter(teacher => teacher.department_id === selectedSubjectDepartmentId) : teachers;
+  const filteredCourses = courses.filter(course => selectedSemesterId ? course.semester_id === selectedSemesterId : true).filter(course => {
+    const hasSchedule = scheduledCourseIds.has(course.course_id);
+    if (scheduleFilter === "scheduled") return hasSchedule;
+    if (scheduleFilter === "unscheduled") return !hasSchedule;
+    if (scheduleFilter === "available") return (course.remaining_capacity ?? 0) > 0;
+    if (scheduleFilter === "full") return (course.remaining_capacity ?? 0) <= 0;
+    return true;
+  }).filter(course => {
+    const normalizedKeyword = keyword.trim().toLowerCase();
+    if (!normalizedKeyword) return true;
+    return [course.course_code, course.course_id, course.subject_id, course.subject?.name, course.teacher_id, course.teacher?.name, course.semester?.name, course.semester?.school_year].filter(Boolean).some(value => String(value).toLowerCase().includes(normalizedKeyword));
+  }).sort((a, b) => {
+    const aScheduled = scheduledCourseIds.has(a.course_id);
+    const bScheduled = scheduledCourseIds.has(b.course_id);
+    if (aScheduled !== bScheduled) return aScheduled ? 1 : -1;
+    const aActive = a.semester?.is_active ? 0 : 1;
+    const bActive = b.semester?.is_active ? 0 : 1;
+    if (aActive !== bActive) return aActive - bActive;
+    return String(a.course_code || a.course_id).localeCompare(String(b.course_code || b.course_id));
+  });
+  const scheduledCount = courses.filter(c => scheduledCourseIds.has(c.course_id)).length;
   const unscheduledCount = Math.max(0, courses.length - scheduledCount);
   const totalPages = Math.max(1, Math.ceil(filteredCourses.length / PAGE_SIZE));
   const safePage = Math.min(page, totalPages);
-  const pagedCourses = filteredCourses.slice(
-    (safePage - 1) * PAGE_SIZE,
-    safePage * PAGE_SIZE,
-  );
-
-  return (
-    <div style={pageWrapper}>
+  const pagedCourses = filteredCourses.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+  return <div className="ministry-courses__page-wrapper">
       {/* BREADCRUMB */}
-      <div style={breadcrumb}>
-        <span style={breadcrumbHome}>Dashboard</span>
-        <span style={breadcrumbSep}>/</span>
-        <span style={breadcrumbCurrent}>Quản lý khóa học</span>
+      <div className="ministry-courses__breadcrumb">
+        <span className="ministry-courses__breadcrumb-home">Dashboard</span>
+        <span className="ministry-courses__breadcrumb-sep">/</span>
+        <span className="ministry-courses__breadcrumb-current">Quản lý khóa học</span>
       </div>
 
       {/* PAGE HEADER */}
-      <div style={pageHeader}>
-        <div style={pageHeaderLeft}>
+      <div className="ministry-courses__page-header">
+        <div className="ministry-courses__page-header-left">
           <div>
-            <h1 style={pageTitle}>QUẢN LÝ KHÓA HỌC</h1>
+            <h1 className="ministry-courses__page-title">QUẢN LÝ KHÓA HỌC</h1>
           </div>
         </div>
-        <button onClick={handleClickCreateCourse} style={addBtn}>
+        <button onClick={handleClickCreateCourse} className="ministry-courses__add-btn">
           <FiPlus size={16} />
           {showForm ? "Đóng Form" : "Thêm khóa học mới"}
         </button>
       </div>
 
       {/* STAT BANNER */}
-      <div style={statBanner}>
-        <div style={statBannerInner}>
+      <div className="ministry-courses__stat-banner">
+        <div className="ministry-courses__stat-banner-inner">
           <div>
-            <p style={statLabel}>Tổng số khóa học</p>
-            <p style={statNumber}>{courses.length}</p>
-            <div style={miniStatRow}>
-              <span style={miniStat}>
+            <p className="ministry-courses__stat-label">Tổng số khóa học</p>
+            <p className="ministry-courses__stat-number">{courses.length}</p>
+            <div className="ministry-courses__mini-stat-row">
+              <span className="ministry-courses__mini-stat">
                 <span style={miniStatDot("#22c55e")} />
-                <span style={miniStatText}>
+                <span className="ministry-courses__mini-stat-text">
                   {scheduledCount} đã xếp lịch
                 </span>
               </span>
-              <span style={miniStat}>
+              <span className="ministry-courses__mini-stat">
                 <span style={miniStatDot("#f97316")} />
-                <span style={miniStatText}>
+                <span className="ministry-courses__mini-stat-text">
                   {unscheduledCount} chưa xếp lịch
                 </span>
               </span>
             </div>
           </div>
-          <div style={bannerIconBg}>
+          <div className="ministry-courses__banner-icon-bg">
             <MdMenuBook size={48} color="rgba(255,255,255,0.25)" />
           </div>
         </div>
       </div>
 
       {/* FORM MODAL */}
-      {showForm && (
-        <div style={modalOverlay}>
-          <div style={formCard}>
+      {showForm && <div className="ministry-courses__modal-overlay">
+          <div className="ministry-courses__form-card">
             {/* HEADER */}
-            <div style={modalHeader}>
-              <h3 style={formTitle}>
+            <div className="ministry-courses__modal-header">
+              <h3 className="ministry-courses__form-title">
                 {repair ? "Cập nhật khóa học" : "Thêm khóa học mới"}
               </h3>
 
-              <button onClick={() => setShowForm(false)} style={closeBtn}>
+              <button onClick={() => setShowForm(false)} className="ministry-courses__close-btn">
                 ×
               </button>
             </div>
 
             <form onSubmit={handleSubmit}>
-              <div style={formGrid}>
-                <div style={fieldGroup}>
-                  <label style={fieldLabel}>Mã môn học</label>
+              <div className="ministry-courses__form-grid">
+                <div className="ministry-courses__field-group">
+                  <label className="ministry-courses__field-label">Mã môn học</label>
 
-                  <select
-                    name="subject_id"
-                    value={formData.subject_id}
-                    onChange={handleInputChange}
-                    disabled={isScheduledRepair}
-                    style={isScheduledRepair ? disabledFieldInput : fieldInput}
-                    required
-                  >
+                  <select name="subject_id" value={formData.subject_id} onChange={handleInputChange} disabled={isScheduledRepair} className={`ministry-courses__field-input ${isScheduledRepair ? "ministry-courses__field-input--disabled" : ""}`} required>
+                  
                     <option value="">-- Chọn môn học --</option>
 
-                    {subjects.map((s) => (
-                      <option key={s.subject_id} value={s.subject_id}>
+                    {subjects.map(s => <option key={s.subject_id} value={s.subject_id}>
                         {s.subject_id}
-                      </option>
-                    ))}
+                      </option>)}
                   </select>
                 </div>
 
-                <div style={fieldGroup}>
-                  <label style={fieldLabel}>Mã giáo viên</label>
+                <div className="ministry-courses__field-group">
+                  <label className="ministry-courses__field-label">Mã giáo viên</label>
 
-                  <select
-                    name="teacher_id"
-                    value={formData.teacher_id}
-                    onChange={handleInputChange}
-                    disabled={isScheduledRepair}
-                    style={isScheduledRepair ? disabledFieldInput : fieldInput}
-                    required
-                  >
+                  <select name="teacher_id" value={formData.teacher_id} onChange={handleInputChange} disabled={isScheduledRepair} className={`ministry-courses__field-input ${isScheduledRepair ? "ministry-courses__field-input--disabled" : ""}`} required>
+                  
                     <option value="">-- Chọn giáo viên --</option>
 
-                    {availableTeachers.map((t) => (
-                      <option key={t.teacher_id} value={t.teacher_id}>
+                    {availableTeachers.map(t => <option key={t.teacher_id} value={t.teacher_id}>
                         {t.teacher_id}
-                      </option>
-                    ))}
+                      </option>)}
                   </select>
                 </div>
 
-                <div style={fieldGroup}>
-                  <label style={fieldLabel}>Kỳ học</label>
+                <div className="ministry-courses__field-group">
+                  <label className="ministry-courses__field-label">Kỳ học</label>
 
-                  <select
-                    name="semester_id"
-                    value={formData.semester_id}
-                    onChange={handleInputChange}
-                    disabled={isScheduledRepair}
-                    style={isScheduledRepair ? disabledFieldInput : fieldInput}
-                    required
-                  >
+                  <select name="semester_id" value={formData.semester_id} onChange={handleInputChange} disabled={isScheduledRepair} className={`ministry-courses__field-input ${isScheduledRepair ? "ministry-courses__field-input--disabled" : ""}`} required>
+                  
                     <option value="">-- Chọn kỳ học --</option>
 
-                    {semesters.map((semester) => (
-                      <option
-                        key={semester.semester_id}
-                        value={semester.semester_id}
-                      >
+                    {semesters.map(semester => <option key={semester.semester_id} value={semester.semester_id}>
+                    
                         {semester.name} {semester.school_year}
                         {semester.is_active ? " - Hiện hành" : ""}
-                      </option>
-                    ))}
+                      </option>)}
                   </select>
                 </div>
 
-                <div style={fieldGroup}>
-                  <label style={fieldLabel}>Số chỗ tối đa</label>
+                <div className="ministry-courses__field-group">
+                  <label className="ministry-courses__field-label">Số chỗ tối đa</label>
 
-                  <input
-                    type="number"
-                    name="capacity"
-                    value={formData.capacity}
-                    onChange={handleInputChange}
-                    disabled={isScheduledRepair}
-                    style={isScheduledRepair ? disabledFieldInput : fieldInput}
-                    placeholder="Nhập số lượng sinh viên tối đa"
-                    min="1"
-                    required
-                  />
+                  <input type="number" name="capacity" value={formData.capacity} onChange={handleInputChange} disabled={isScheduledRepair} className={`ministry-courses__field-input ${isScheduledRepair ? "ministry-courses__field-input--disabled" : ""}`} placeholder="Nhập số lượng sinh viên tối đa" min="1" required />
+                
                 </div>
 
-                <div style={fieldGroup}>
-                  <label style={fieldLabel}>Loại phòng yêu cầu</label>
+                <div className="ministry-courses__field-group">
+                  <label className="ministry-courses__field-label">Loại phòng yêu cầu</label>
 
-                  <select
-                    name="required_room_type"
-                    value={formData.required_room_type}
-                    onChange={handleInputChange}
-                    disabled={isScheduledRepair}
-                    style={isScheduledRepair ? disabledFieldInput : fieldInput}
-                    required
-                  >
-                    {roomTypeOptions.map((type) => (
-                      <option key={type.value} value={type.value}>
+                  <select name="required_room_type" value={formData.required_room_type} onChange={handleInputChange} disabled={isScheduledRepair} className={`ministry-courses__field-input ${isScheduledRepair ? "ministry-courses__field-input--disabled" : ""}`} required>
+                  
+                    {roomTypeOptions.map(type => <option key={type.value} value={type.value}>
                         {type.label}
-                      </option>
-                    ))}
+                      </option>)}
                   </select>
                 </div>
 
-                <div style={fieldGroup}>
-                  <label style={fieldLabel}>Chỗ còn lại</label>
+                <div className="ministry-courses__field-group">
+                  <label className="ministry-courses__field-label">Chỗ còn lại</label>
 
-                  <input
-                    type="text"
-                    value={
-                      repair
-                        ? formData.remaining_capacity !== undefined
-                          ? formData.remaining_capacity
-                          : formData.capacity || 0
-                        : formData.capacity || 0
-                    }
-                    disabled
-                    style={{
-                      ...fieldInput,
-                      background: "#f1f5f9",
-                      cursor: "not-allowed",
-                      color: "#94a3b8",
-                    }}
-                  />
+                  <input type="text" value={repair ? formData.remaining_capacity !== undefined ? formData.remaining_capacity : formData.capacity || 0 : formData.capacity || 0} disabled className="ministry-courses__field-input ministry-courses__inline-486" />
+
+
+
+
+
+
+                
                 </div>
               </div>
 
-              {isScheduledRepair && (
-                <div style={lockedNotice}>
+              {isScheduledRepair && <div className="ministry-courses__locked-notice">
                   Khóa học đã được xếp lịch nên không thể chỉnh sửa thông tin.
-                </div>
-              )}
+                </div>}
 
               {/* FOOTER */}
-              <div style={modalFooter}>
-                <button
-                  type="button"
-                  onClick={() => setShowForm(false)}
-                  style={cancelBtn}
-                >
+              <div className="ministry-courses__modal-footer">
+                <button type="button" onClick={() => setShowForm(false)} className="ministry-courses__cancel-btn">
+
+                
                   Hủy
                 </button>
 
-                <button
-                  type="submit"
-                  disabled={isScheduledRepair}
-                  style={{
-                    ...submitBtn,
-                    background: repair ? "#4f46e5" : "#16a34a",
-                    ...(isScheduledRepair ? disabledSubmitBtn : {}),
-                  }}
-                >
+                <button type="submit" disabled={isScheduledRepair} style={{
+              background: repair ? "#4f46e5" : "#16a34a"
+            }} className={"ministry-courses__submit-btn" + (isScheduledRepair ? " ministry-courses__disabled-submit-btn" : "")}>
+                
                   {repair ? "Cập nhật dữ liệu" : "Lưu khóa học"}
                 </button>
               </div>
             </form>
           </div>
-        </div>
-      )}
+        </div>}
 
       {/* TABLE SECTION */}
-      <div style={tableCard}>
-        <div style={tableHeader}>
-          <h3 style={tableTitle}>Danh sách khóa học hiện tại</h3>
-          <div style={filterBar}>
-            <div style={searchWrap}>
+      <div className="ministry-courses__table-card">
+        <div className="ministry-courses__table-header">
+          <h3 className="ministry-courses__table-title">Danh sách khóa học hiện tại</h3>
+          <div className="ministry-courses__filter-bar">
+            <div className="ministry-courses__search-wrap">
               <FiSearch size={15} color="#94a3b8" />
-              <input
-                value={keyword}
-                onChange={(e) => {
-                  setKeyword(e.target.value);
-                  setPage(1);
-                }}
-                placeholder="Tìm mã lớp, môn học, giảng viên..."
-                style={searchInput}
-              />
+              <input value={keyword} onChange={e => {
+              setKeyword(e.target.value);
+              setPage(1);
+            }} placeholder="Tìm mã lớp, môn học, giảng viên..." className="ministry-courses__search-input" />
+
+              
             </div>
-            <select
-              value={selectedSemesterId}
-              onChange={(e) => {
-                setSelectedSemesterId(e.target.value);
-                setPage(1);
-              }}
-              style={filterSelect}
-            >
+            <select value={selectedSemesterId} onChange={e => {
+            setSelectedSemesterId(e.target.value);
+            setPage(1);
+          }} className="ministry-courses__filter-select">
+
+              
               <option value="">Tất cả kỳ học</option>
-              {semesters.map((semester) => (
-                <option key={semester.semester_id} value={semester.semester_id}>
+              {semesters.map(semester => <option key={semester.semester_id} value={semester.semester_id}>
                   {semester.name} {semester.school_year}
                   {semester.is_active ? " - Hiện hành" : ""}
-                </option>
-              ))}
+                </option>)}
             </select>
-            <select
-              value={scheduleFilter}
-              onChange={(e) => {
-                setScheduleFilter(e.target.value);
-                setPage(1);
-              }}
-              style={filterSelect}
-            >
+            <select value={scheduleFilter} onChange={e => {
+            setScheduleFilter(e.target.value);
+            setPage(1);
+          }} className="ministry-courses__filter-select">
+
+              
               <option value="all">Tất cả trạng thái</option>
               <option value="unscheduled">Chưa xếp lịch</option>
               <option value="scheduled">Đã xếp lịch</option>
@@ -586,599 +415,156 @@ const MinistryCourses = () => {
           </div>
         </div>
 
-        <div style={{ overflowX: "auto" }}>
-          <table style={table}>
+        <div className="ministry-courses__inline-589">
+          <table className="ministry-courses__table">
             <thead>
-              <tr style={theadRow}>
-                <th style={th}>STT</th>
-                <th style={th}>LOẠI PHÒNG</th>
-                <th style={th}>MÃ CODE</th>
-                <th style={th}>TÊN MÔN HỌC</th>
-                <th style={th}>KỲ HỌC</th>
-                <th style={th}>LỊCH</th>
-                <th style={th}>GIÁO VIÊN</th>
-                <th style={th}>TỐI ĐA</th>
-                <th style={th}>CÒN LẠI</th>
-                <th style={th}>THAO TÁC</th>
+              <tr className="ministry-courses__thead-row">
+                <th className="ministry-courses__th">STT</th>
+                <th className="ministry-courses__th">LOẠI PHÒNG</th>
+                <th className="ministry-courses__th">MÃ CODE</th>
+                <th className="ministry-courses__th">TÊN MÔN HỌC</th>
+                <th className="ministry-courses__th">KỲ HỌC</th>
+                <th className="ministry-courses__th">LỊCH</th>
+                <th className="ministry-courses__th">GIÁO VIÊN</th>
+                <th className="ministry-courses__th">TỐI ĐA</th>
+                <th className="ministry-courses__th">CÒN LẠI</th>
+                <th className="ministry-courses__th">THAO TÁC</th>
               </tr>
             </thead>
             <tbody>
-              {pagedCourses.length === 0 && (
-                <tr>
-                  <td colSpan={10} style={emptyCell}>
+              {pagedCourses.length === 0 && <tr>
+                  <td colSpan={10} className="ministry-courses__empty-cell">
                     Không có khóa học phù hợp với bộ lọc hiện tại.
                   </td>
-                </tr>
-              )}
+                </tr>}
               {pagedCourses.map((course, index) => {
-                const capacity = course.capacity || 0;
-                const remainingCapacity =
-                  course.remaining_capacity !== undefined
-                    ? course.remaining_capacity
-                    : capacity;
-                const roomType = course.required_room_type || "Theory";
-                const roomTypeLabel =
-                  roomTypeOptions.find((type) => type.value === roomType)
-                    ?.label || roomType;
-                const hasSchedule = scheduledCourseIds.has(course.course_id);
-
-                return (
-                  <tr key={course.course_id} style={tbodyRow}>
-                    <td style={{ ...td, color: "#94a3b8" }}>
-                      {String((safePage - 1) * PAGE_SIZE + index + 1).padStart(
-                        2,
-                        "0",
-                      )}
+              const capacity = course.capacity || 0;
+              const remainingCapacity = course.remaining_capacity !== undefined ? course.remaining_capacity : capacity;
+              const roomType = course.required_room_type || "Theory";
+              const roomTypeLabel = roomTypeOptions.find(type => type.value === roomType)?.label || roomType;
+              const hasSchedule = scheduledCourseIds.has(course.course_id);
+              return <tr key={course.course_id} className="ministry-courses__tbody-row">
+                    <td className="ministry-courses__td ministry-courses__inline-627">
+                      {String((safePage - 1) * PAGE_SIZE + index + 1).padStart(2, "0")}
                     </td>
-                    <td style={td}>
-                      <span
-                        style={{
-                          ...roomTypeBadge,
-                          background:
-                            roomType === "Practice" ? "#e0f2fe" : "#ede9fe",
-                          color:
-                            roomType === "Practice" ? "#0369a1" : "#4f46e5",
-                        }}
-                      >
+                    <td className="ministry-courses__td">
+                      <span style={{
+                    background: roomType === "Practice" ? "#e0f2fe" : "#ede9fe",
+                    color: roomType === "Practice" ? "#0369a1" : "#4f46e5"
+                  }} className="ministry-courses__room-type-badge">
+                        
                         {roomTypeLabel}
                       </span>
                     </td>
-                    <td style={{ ...td, fontWeight: 600, color: "#4f46e5" }}>
+                    <td className="ministry-courses__td ministry-courses__inline-646">
                       {course.course_code || course.course_id}
                     </td>
-                    <td style={td}>
+                    <td className="ministry-courses__td">
                       {course.subject?.name || course.subject_id}
                     </td>
-                    <td style={td}>
-                      {course.semester
-                        ? `${course.semester.name} ${course.semester.school_year}`
-                        : course.semester_id || "-"}
+                    <td className="ministry-courses__td">
+                      {course.semester ? `${course.semester.name} ${course.semester.school_year}` : course.semester_id || "-"}
                     </td>
-                    <td style={td}>
-                      <span
-                        style={{
-                          ...scheduleBadge,
-                          background: hasSchedule ? "#dcfce7" : "#fff7ed",
-                          color: hasSchedule ? "#15803d" : "#c2410c",
-                        }}
-                      >
-                        {hasSchedule
-                          ? "Đã xếp lịch"
-                          : "Chưa xếp lịch"}
+                    <td className="ministry-courses__td">
+                      <span style={{
+                    background: hasSchedule ? "#dcfce7" : "#fff7ed",
+                    color: hasSchedule ? "#15803d" : "#c2410c"
+                  }} className="ministry-courses__schedule-badge">
+                        
+                        {hasSchedule ? "Đã xếp lịch" : "Chưa xếp lịch"}
                       </span>
                     </td>
-                    <td style={td}>
+                    <td className="ministry-courses__td">
                       {course.teacher?.name || course.teacher_id}
                     </td>
-                    <td style={td}>
-                      <span style={capacityBadge}>{capacity}</span>
+                    <td className="ministry-courses__td">
+                      <span className="ministry-courses__capacity-badge">{capacity}</span>
                     </td>
-                    <td style={td}>
-                      <span
-                        style={{
-                          ...capacityBadge,
-                          background:
-                            remainingCapacity === 0 ? "#fee2e2" : "#dcfce7",
-                          color:
-                            remainingCapacity === 0 ? "#ef4444" : "#16a34a",
-                        }}
-                      >
+                    <td className="ministry-courses__td">
+                      <span style={{
+                    background: remainingCapacity === 0 ? "#fee2e2" : "#dcfce7",
+                    color: remainingCapacity === 0 ? "#ef4444" : "#16a34a"
+                  }} className="ministry-courses__capacity-badge">
+                        
                         {remainingCapacity}
                       </span>
                     </td>
-                    <td style={{ ...td, whiteSpace: "nowrap" }}>
-                      {!hasSchedule && (
-                        <button
-                          onClick={() =>
-                            navigate("/ministry/schedule", {
-                              state: {
-                                courseId: course.course_id,
-                                semesterId: course.semester_id,
-                              },
-                            })
-                          }
-                          style={scheduleBtn}
-                        >
+                    <td className="ministry-courses__td ministry-courses__inline-689">
+                      {!hasSchedule && <button onClick={() => navigate("/ministry/schedule", {
+                    state: {
+                      courseId: course.course_id,
+                      semesterId: course.semester_id
+                    }
+                  })} className="ministry-courses__schedule-btn">
+
+                        
                           <FiCalendar size={13} /> Xếp lịch
-                        </button>
-                      )}
-                      <button
-                        onClick={() => handleOpenFormUpdate(course)}
-                        style={editBtn}
-                      >
+                        </button>}
+                      <button onClick={() => handleOpenFormUpdate(course)} className="ministry-courses__edit-btn">
+
+                        
                         <FiEdit2 size={13} /> Sửa
                       </button>
-                      <button
-                        onClick={() => handleDeleteCourse(course)}
-                        style={deleteBtn}
-                      >
+                      <button onClick={() => handleDeleteCourse(course)} className="ministry-courses__delete-btn">
+
+                        
                         <FiTrash2 size={13} /> Xóa
                       </button>
                     </td>
-                  </tr>
-                );
-              })}
+                  </tr>;
+            })}
             </tbody>
           </table>
         </div>
 
-        {filteredCourses.length > 0 && (
-          <div style={tableFooter}>
-            <span style={{ color: "#94a3b8", fontSize: "13px" }}>
+        {filteredCourses.length > 0 && <div className="ministry-courses__table-footer">
+            <span className="ministry-courses__inline-727">
               Hiển thị {(safePage - 1) * PAGE_SIZE + 1}-
               {Math.min(safePage * PAGE_SIZE, filteredCourses.length)} trên{" "}
               {filteredCourses.length} khóa học
             </span>
-            <div style={paginationControls}>
-              <button
-                style={{
-                  ...pageBtn,
-                  ...(safePage === 1 ? pageBtnDisabled : {}),
-                }}
-                disabled={safePage === 1}
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-              >
+            <div className="ministry-courses__pagination-controls">
+              <button disabled={safePage === 1} onClick={() => setPage(p => Math.max(1, p - 1))} className={"ministry-courses__page-btn" + (safePage === 1 ? " ministry-courses__page-btn-disabled" : "")}>
+              
                 ‹
               </button>
-              {Array.from({ length: totalPages }, (_, index) => {
-                const pageNumber = index + 1;
-                return (
-                  <button
-                    key={pageNumber}
-                    style={{
-                      ...pageBtn,
-                      ...(safePage === pageNumber ? pageBtnActive : {}),
-                    }}
-                    onClick={() => setPage(pageNumber)}
-                  >
+              {Array.from({
+            length: totalPages
+          }, (_, index) => {
+            const pageNumber = index + 1;
+            return <button key={pageNumber} onClick={() => setPage(pageNumber)} className={"ministry-courses__page-btn" + (safePage === pageNumber ? " ministry-courses__page-btn-active" : "")}>
+                  
                     {pageNumber}
-                  </button>
-                );
-              })}
-              <button
-                style={{
-                  ...pageBtn,
-                  ...(safePage === totalPages ? pageBtnDisabled : {}),
-                }}
-                disabled={safePage === totalPages}
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              >
+                  </button>;
+          })}
+              <button disabled={safePage === totalPages} onClick={() => setPage(p => Math.min(totalPages, p + 1))} className={"ministry-courses__page-btn" + (safePage === totalPages ? " ministry-courses__page-btn-disabled" : "")}>
+              
                 ›
               </button>
             </div>
-          </div>
-        )}
+          </div>}
 
-        {false && courses.length > 0 && (
-          <div style={tableFooter}>
-            <span style={{ color: "#94a3b8", fontSize: "13px" }}>
+        {false && courses.length > 0 && <div className="ministry-courses__table-footer">
+            <span className="ministry-courses__inline-774">
               Hiển thị 1-{courses.length} trên {courses.length} khóa học
             </span>
-          </div>
-        )}
+          </div>}
       </div>
-    </div>
-  );
+    </div>;
 };
 
 // STYLES
 
-const pageWrapper = {
-  padding: "28px 32px",
-  fontFamily: "'Segoe UI', sans-serif",
-  background: "#f8fafc",
-  minHeight: "100vh",
-};
-
-const breadcrumb = {
-  display: "flex",
-  alignItems: "center",
-  gap: "6px",
-  marginBottom: "20px",
-  fontSize: "13px",
-};
-const breadcrumbHome = { color: "#94a3b8", cursor: "pointer" };
-const breadcrumbSep = { color: "#cbd5e1" };
-const breadcrumbCurrent = { color: "#4f46e5", fontWeight: 600 };
-
-const pageHeader = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  marginBottom: "24px",
-  flexWrap: "wrap",
-  gap: "12px",
-};
-const pageHeaderLeft = {
-  display: "flex",
-  alignItems: "center",
-  gap: "14px",
-};
-const pageTitle = {
-  margin: 0,
-  fontSize: "20px",
-  fontWeight: 800,
-  color: "#1e293b",
-  letterSpacing: "0.3px",
-};
-const addBtn = {
-  display: "flex",
-  alignItems: "center",
-  gap: "7px",
-  padding: "10px 20px",
-  background: "#4f46e5",
-  color: "white",
-  border: "none",
-  borderRadius: "8px",
-  cursor: "pointer",
-  fontWeight: 600,
-  fontSize: "14px",
-};
-
 // Stat banner
-const statBanner = {
-  background: "linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)",
-  borderRadius: "14px",
-  padding: "24px 28px",
-  marginBottom: "24px",
-  color: "white",
-  position: "relative",
-  overflow: "hidden",
-};
-const statBannerInner = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-  marginBottom: "16px",
-};
-const statLabel = { margin: 0, fontSize: "13px", opacity: 0.85 };
-const statNumber = {
-  margin: "4px 0",
-  fontSize: "42px",
-  fontWeight: 700,
-  lineHeight: 1.1,
-};
-const bannerIconBg = {
-  position: "absolute",
-  right: "28px",
-  top: "50%",
-  transform: "translateY(-50%)",
-};
-const miniStatRow = { display: "flex", gap: "24px" };
-const miniStat = { display: "flex", alignItems: "center", gap: "8px" };
-const miniStatDot = (color) => ({
+
+const miniStatDot = color => ({
   display: "inline-block",
   width: "8px",
   height: "8px",
   borderRadius: "50%",
-  background: color,
+  background: color
 });
-const miniStatText = { fontSize: "13px", opacity: 0.9 };
 
 // Form
-const formTitle = {
-  margin: "0 0 20px",
-  fontSize: "16px",
-  fontWeight: 700,
-  color: "#1e293b",
-};
-const formGrid = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-  gap: "16px",
-  marginBottom: "8px",
-};
-const fieldGroup = { display: "flex", flexDirection: "column" };
-const fieldLabel = {
-  fontSize: "13px",
-  fontWeight: 600,
-  color: "#475569",
-  marginBottom: "6px",
-};
-const fieldInput = {
-  padding: "9px 12px",
-  border: "1px solid #e2e8f0",
-  borderRadius: "7px",
-  fontSize: "14px",
-  color: "#1e293b",
-  outline: "none",
-  width: "100%",
-  boxSizing: "border-box",
-};
-const disabledFieldInput = {
-  ...fieldInput,
-  background: "#f1f5f9",
-  cursor: "not-allowed",
-  color: "#94a3b8",
-};
-const lockedNotice = {
-  marginTop: "14px",
-  padding: "10px 12px",
-  border: "1px solid #fde68a",
-  borderRadius: "8px",
-  background: "#fffbeb",
-  color: "#92400e",
-  fontSize: "13px",
-  fontWeight: 600,
-};
-const submitBtn = {
-  marginTop: "16px",
-  padding: "10px 24px",
-  color: "white",
-  border: "none",
-  borderRadius: "7px",
-  cursor: "pointer",
-  fontWeight: 600,
-  fontSize: "14px",
-};
-const disabledSubmitBtn = {
-  background: "#cbd5e1",
-  cursor: "not-allowed",
-  opacity: 0.75,
-};
-
-// Table
-const tableCard = {
-  background: "white",
-  borderRadius: "12px",
-  boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-  border: "1px solid #e2e8f0",
-  overflow: "hidden",
-};
-const tableHeader = {
-  padding: "18px 24px 14px",
-  borderBottom: "1px solid #f1f5f9",
-};
-const tableTitle = {
-  margin: 0,
-  fontSize: "15px",
-  fontWeight: 700,
-  color: "#1e293b",
-};
-const filterBar = {
-  display: "grid",
-  gridTemplateColumns:
-    "minmax(260px, 1fr) minmax(200px, 260px) minmax(180px, 220px)",
-  gap: "12px",
-  marginTop: "14px",
-};
-const searchWrap = {
-  display: "flex",
-  alignItems: "center",
-  gap: "8px",
-  padding: "9px 12px",
-  border: "1px solid #e2e8f0",
-  borderRadius: "8px",
-  background: "#f8fafc",
-};
-const searchInput = {
-  width: "100%",
-  border: "none",
-  outline: "none",
-  background: "transparent",
-  color: "#1e293b",
-  fontSize: "14px",
-};
-const filterSelect = {
-  padding: "9px 12px",
-  border: "1px solid #e2e8f0",
-  borderRadius: "8px",
-  background: "#fff",
-  color: "#1e293b",
-  fontSize: "14px",
-  outline: "none",
-};
-const table = {
-  width: "100%",
-  borderCollapse: "collapse",
-};
-const theadRow = {
-  background: "#f8fafc",
-};
-const th = {
-  padding: "11px 16px",
-  textAlign: "left",
-  fontSize: "11px",
-  fontWeight: 700,
-  color: "#94a3b8",
-  letterSpacing: "0.6px",
-  borderBottom: "1px solid #e2e8f0",
-};
-const tbodyRow = {
-  borderBottom: "1px solid #f1f5f9",
-  transition: "background 0.15s",
-};
-const td = {
-  padding: "14px 16px",
-  fontSize: "14px",
-  color: "#334155",
-};
-const capacityBadge = {
-  display: "inline-block",
-  padding: "3px 10px",
-  borderRadius: "20px",
-  fontSize: "13px",
-  fontWeight: 600,
-  background: "#ede9fe",
-  color: "#4f46e5",
-};
-const roomTypeBadge = {
-  display: "inline-block",
-  minWidth: "72px",
-  padding: "4px 10px",
-  borderRadius: "20px",
-  fontSize: "12px",
-  fontWeight: 700,
-  textAlign: "center",
-};
-const scheduleBadge = {
-  display: "inline-block",
-  minWidth: "92px",
-  padding: "4px 10px",
-  borderRadius: "20px",
-  fontSize: "12px",
-  fontWeight: 700,
-  textAlign: "center",
-};
-const scheduleBtn = {
-  display: "inline-flex",
-  alignItems: "center",
-  gap: "5px",
-  marginRight: "6px",
-  padding: "5px 12px",
-  background: "#dcfce7",
-  color: "#15803d",
-  border: "none",
-  borderRadius: "6px",
-  cursor: "pointer",
-  fontSize: "13px",
-  fontWeight: 600,
-};
-const editBtn = {
-  display: "inline-flex",
-  alignItems: "center",
-  gap: "5px",
-  marginRight: "6px",
-  padding: "5px 12px",
-  background: "#ede9fe",
-  color: "#4f46e5",
-  border: "none",
-  borderRadius: "6px",
-  cursor: "pointer",
-  fontSize: "13px",
-  fontWeight: 500,
-};
-const emptyCell = {
-  padding: "36px 16px",
-  textAlign: "center",
-  color: "#94a3b8",
-  fontSize: "14px",
-};
-const deleteBtn = {
-  display: "inline-flex",
-  alignItems: "center",
-  gap: "5px",
-  padding: "5px 12px",
-  background: "#fee2e2",
-  color: "#ef4444",
-  border: "none",
-  borderRadius: "6px",
-  cursor: "pointer",
-  fontSize: "13px",
-  fontWeight: 500,
-};
-const tableFooter = {
-  padding: "14px 24px",
-  borderTop: "1px solid #f1f5f9",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  gap: "12px",
-  flexWrap: "wrap",
-};
-const paginationControls = {
-  display: "flex",
-  alignItems: "center",
-  gap: "4px",
-};
-const pageBtn = {
-  minWidth: "32px",
-  height: "32px",
-  padding: "0 10px",
-  border: "1px solid #e2e8f0",
-  borderRadius: "7px",
-  background: "#fff",
-  color: "#334155",
-  cursor: "pointer",
-  fontSize: "13px",
-  fontWeight: 600,
-};
-const pageBtnActive = {
-  background: "#4f46e5",
-  color: "#fff",
-  border: "1px solid #4f46e5",
-};
-const pageBtnDisabled = {
-  opacity: 0.45,
-  cursor: "not-allowed",
-};
-
-const modalOverlay = {
-  position: "fixed",
-  inset: 0,
-  background: "rgba(15,23,42,0.45)",
-  backdropFilter: "blur(4px)",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  zIndex: 9999,
-  padding: "20px",
-};
-
-const modalHeader = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  marginBottom: "20px",
-};
-
-const modalFooter = {
-  display: "flex",
-  justifyContent: "flex-end",
-  gap: "12px",
-  marginTop: "24px",
-};
-
-const closeBtn = {
-  width: "34px",
-  height: "34px",
-  borderRadius: "8px",
-  border: "none",
-  background: "#f1f5f9",
-  cursor: "pointer",
-  fontSize: "16px",
-  fontWeight: "700",
-  color: "#64748b",
-};
-
-const cancelBtn = {
-  padding: "10px 18px",
-  borderRadius: "8px",
-  border: "1px solid #cbd5e1",
-  background: "#fff",
-  color: "#475569",
-  cursor: "pointer",
-  fontWeight: "600",
-};
-
-const formCard = {
-  background: "white",
-  borderRadius: "16px",
-  padding: "24px",
-  width: "100%",
-  maxWidth: "850px",
-  boxShadow: "0 20px 60px rgba(0,0,0,0.18)",
-  border: "1px solid #e2e8f0",
-};
 
 export default MinistryCourses;

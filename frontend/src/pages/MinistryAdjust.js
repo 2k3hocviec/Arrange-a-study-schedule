@@ -1,47 +1,37 @@
 import React from "react";
-
+import "../styles/MinistryAdjust.css";
 const MinistryAdjust = () => {
-  return (
-    <div>
+  return <div>
       <h2>🛠️ ĐIỀU CHỈNH LỊCH HỌC (MẪU BMCL)</h2>
-      <div
-        style={{ background: "white", padding: "20px", borderRadius: "8px" }}
-      >
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: "15px",
-          }}
-        >
-          <input type="text" placeholder="Mã lớp học" style={inputStyle} />
-          <input
-            type="text"
-            placeholder="Giảng viên thay thế"
-            style={inputStyle}
-          />
-          <input type="text" placeholder="Phòng học mới" style={inputStyle} />
-          <input type="date" placeholder="Ngày học mới" style={inputStyle} />
+      <div className="ministry-adjust__inline-7">
+
+        
+        <div className="ministry-adjust__inline-10">
+
+
+
+
+
+          
+          <input type="text" placeholder="Mã lớp học" className="ministry-adjust__input" />
+          <input type="text" placeholder="Giảng viên thay thế" className="ministry-adjust__input" />
+
+          
+          <input type="text" placeholder="Phòng học mới" className="ministry-adjust__input" />
+          <input type="date" placeholder="Ngày học mới" className="ministry-adjust__input" />
         </div>
-        <button
-          style={{
-            marginTop: "20px",
-            padding: "10px 20px",
-            background: "#8e44ad",
-            color: "white",
-            border: "none",
-          }}
-        >
+        <button className="ministry-adjust__inline-26">
+
+
+
+
+
+
+
+          
           Cập nhật lịch học
         </button>
       </div>
-    </div>
-  );
-};
-
-const inputStyle = {
-  padding: "10px",
-  border: "1px solid #ddd",
-  borderRadius: "4px",
+    </div>;
 };
 export default MinistryAdjust;

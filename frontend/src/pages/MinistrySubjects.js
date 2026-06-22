@@ -3,16 +3,12 @@ import { majorsAPI, subjectsAPI } from "../services/api";
 import toast from "react-hot-toast";
 import { MdMenuBook } from "react-icons/md";
 import { FiPlus, FiEdit2, FiTrash2, FiSearch } from "react-icons/fi";
-
+import "../styles/MinistrySubjects.css";
 const PAGE_SIZE = 5;
-
 const getSubjectErrorMessage = (err, action = "save") => {
   const rawMessage = err?.response?.data?.message || err?.message || "";
-  const message = Array.isArray(rawMessage)
-    ? rawMessage.join(" ")
-    : String(rawMessage);
+  const message = Array.isArray(rawMessage) ? rawMessage.join(" ") : String(rawMessage);
   const lowerMessage = message.toLowerCase();
-
   if (lowerMessage.includes("cannot delete subject that has courses")) {
     return "Không thể xóa môn học vì đã có khóa học thuộc môn này.";
   }
@@ -22,7 +18,6 @@ const getSubjectErrorMessage = (err, action = "save") => {
   if (action === "delete") return "Không thể xóa môn học.";
   return "Thao tác thất bại. Vui lòng kiểm tra lại dữ liệu.";
 };
-
 const MinistrySubjects = () => {
   const [subjects, setSubjects] = useState([]);
   const [majors, setMajors] = useState([]);
@@ -36,9 +31,8 @@ const MinistrySubjects = () => {
     credits: 0,
     major_id: "",
     allow_same_major: false,
-    allow_same_department: false,
+    allow_same_department: false
   });
-
   const fetchSubjects = async () => {
     try {
       const response = await subjectsAPI.getAll();
@@ -47,7 +41,6 @@ const MinistrySubjects = () => {
       toast.error("Không thể tải dữ liệu môn học");
     }
   };
-
   const fetchMajors = async () => {
     try {
       const response = await majorsAPI.getAll();
@@ -56,25 +49,22 @@ const MinistrySubjects = () => {
       toast.error("Không thể tải danh sách chuyên ngành");
     }
   };
-
   useEffect(() => {
     fetchSubjects();
     fetchMajors();
   }, []);
-
-  const handleInputChange = (e) => {
-    const { name, value, checked, type } = e.target;
+  const handleInputChange = e => {
+    const {
+      name,
+      value,
+      checked,
+      type
+    } = e.target;
     setFormData({
       ...formData,
-      [name]:
-        type === "checkbox"
-          ? checked
-          : name === "credits"
-            ? Number(value)
-            : value,
+      [name]: type === "checkbox" ? checked : name === "credits" ? Number(value) : value
     });
   };
-
   const handleClickCreateSubject = () => {
     setFormData({
       subject_id: "",
@@ -82,20 +72,14 @@ const MinistrySubjects = () => {
       credits: 0,
       major_id: "",
       allow_same_major: false,
-      allow_same_department: false,
+      allow_same_department: false
     });
     setRepair(false);
     setShowForm(!showForm);
   };
-
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
-    if (
-      !formData.subject_id ||
-      !formData.name ||
-      formData.credits === 0 ||
-      !formData.major_id
-    ) {
+    if (!formData.subject_id || !formData.name || formData.credits === 0 || !formData.major_id) {
       toast.error("Vui lòng điền đầy đủ thông tin.");
       return;
     }
@@ -107,7 +91,7 @@ const MinistrySubjects = () => {
         credits: 0,
         major_id: "",
         allow_same_major: false,
-        allow_same_department: false,
+        allow_same_department: false
       });
       setShowForm(false);
       await fetchSubjects();
@@ -116,15 +100,9 @@ const MinistrySubjects = () => {
       toast.error(getSubjectErrorMessage(err));
     }
   };
-
-  const handleSubmitUpdate = async (e) => {
+  const handleSubmitUpdate = async e => {
     e.preventDefault();
-    if (
-      !formData.subject_id ||
-      !formData.name ||
-      formData.credits === 0 ||
-      !formData.major_id
-    ) {
+    if (!formData.subject_id || !formData.name || formData.credits === 0 || !formData.major_id) {
       toast.error("Vui lòng điền đầy đủ thông tin.");
       return;
     }
@@ -136,7 +114,7 @@ const MinistrySubjects = () => {
         credits: 0,
         major_id: "",
         allow_same_major: false,
-        allow_same_department: false,
+        allow_same_department: false
       });
       setShowForm(false);
       setRepair(false);
@@ -146,22 +124,15 @@ const MinistrySubjects = () => {
       toast.error(getSubjectErrorMessage(err));
     }
   };
-
-  const handleOpenFormUpdateSubject = (subject) => {
+  const handleOpenFormUpdateSubject = subject => {
     setFormData(subject);
     setRepair(true);
     setShowForm(true);
   };
-
-  const handleDeleteSubject = async (subject) => {
-    if (
-      !window.confirm(
-        `Bạn có chắc muốn xóa môn học ${subject.subject_id} - ${subject.name}?`,
-      )
-    ) {
+  const handleDeleteSubject = async subject => {
+    if (!window.confirm(`Bạn có chắc muốn xóa môn học ${subject.subject_id} - ${subject.name}?`)) {
       return;
     }
-
     try {
       await subjectsAPI.delete(subject.subject_id);
       await fetchSubjects();
@@ -170,64 +141,39 @@ const MinistrySubjects = () => {
       toast.error(getSubjectErrorMessage(err, "delete"));
     }
   };
-
   const normalizedKeyword = keyword.trim().toLowerCase();
-  const filteredSubjects = normalizedKeyword
-    ? subjects.filter((subject) =>
-        [
-          subject.subject_id,
-          subject.name,
-          subject.credits,
-          subject.major_id,
-          subject.major?.name,
-          subject.major?.department_id,
-          subject.major?.department?.name,
-          subject.allow_same_major ? "same major cung nganh" : "public",
-          subject.allow_same_department ? "same department cung khoa" : "public",
-        ]
-          .filter((value) => value !== undefined && value !== null)
-          .join(" ")
-          .toLowerCase()
-          .includes(normalizedKeyword),
-      )
-    : subjects;
-
+  const filteredSubjects = normalizedKeyword ? subjects.filter(subject => [subject.subject_id, subject.name, subject.credits, subject.major_id, subject.major?.name, subject.major?.department_id, subject.major?.department?.name, subject.allow_same_major ? "same major cung nganh" : "public", subject.allow_same_department ? "same department cung khoa" : "public"].filter(value => value !== undefined && value !== null).join(" ").toLowerCase().includes(normalizedKeyword)) : subjects;
   const totalPages = Math.max(1, Math.ceil(filteredSubjects.length / PAGE_SIZE));
-  const paginatedSubjects = filteredSubjects.slice(
-    (page - 1) * PAGE_SIZE,
-    page * PAGE_SIZE,
-  );
-
-  return (
-    <div style={pageWrapper}>
+  const paginatedSubjects = filteredSubjects.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  return <div className="ministry-subjects__page-wrapper">
       {/* BREADCRUMB */}
-      <div style={breadcrumb}>
-        <span style={breadcrumbHome}>Dashboard</span>
-        <span style={breadcrumbSep}>/</span>
-        <span style={breadcrumbCurrent}>QUẢN LÝ MÔN HỌC</span>
+      <div className="ministry-subjects__breadcrumb">
+        <span className="ministry-subjects__breadcrumb-home">Dashboard</span>
+        <span className="ministry-subjects__breadcrumb-sep">/</span>
+        <span className="ministry-subjects__breadcrumb-current">QUẢN LÝ MÔN HỌC</span>
       </div>
 
       {/* PAGE HEADER */}
-      <div style={pageHeader}>
-        <div style={pageHeaderLeft}>
+      <div className="ministry-subjects__page-header">
+        <div className="ministry-subjects__page-header-left">
           <div>
-            <h1 style={pageTitle}>QUẢN LÝ DANH SÁCH MÔN HỌC</h1>
+            <h1 className="ministry-subjects__page-title">QUẢN LÝ DANH SÁCH MÔN HỌC</h1>
           </div>
         </div>
-        <button onClick={handleClickCreateSubject} style={addBtn}>
+        <button onClick={handleClickCreateSubject} className="ministry-subjects__add-btn">
           <FiPlus size={16} />
           {showForm ? "Đóng Form" : "Thêm môn học mới"}
         </button>
       </div>
 
       {/* STAT BANNER */}
-      <div style={statBanner}>
-        <div style={statBannerInner}>
+      <div className="ministry-subjects__stat-banner">
+        <div className="ministry-subjects__stat-banner-inner">
           <div>
-            <p style={statLabel}>Tổng số môn học</p>
-            <p style={statNumber}>{subjects.length}</p>
+            <p className="ministry-subjects__stat-label">Tổng số môn học</p>
+            <p className="ministry-subjects__stat-number">{subjects.length}</p>
           </div>
-          <div style={bannerIconBg}>
+          <div className="ministry-subjects__banner-icon-bg">
             <MdMenuBook size={48} color="rgba(255,255,255,0.25)" />
           </div>
         </div>
@@ -235,529 +181,207 @@ const MinistrySubjects = () => {
 
       {/* FORM */}
       {/* MODAL FORM */}
-      {showForm && (
-        <div style={modalOverlay}>
+      {showForm && <div style={modalOverlay}>
           <div style={modalContainer}>
-            <div style={formCard}>
-              <h3 style={formTitle}>
+            <div className="ministry-subjects__form-card">
+              <h3 className="ministry-subjects__form-title">
                 {repair ? "Cập nhật môn học" : "Thêm môn học mới"}
               </h3>
 
               <form onSubmit={repair ? handleSubmitUpdate : handleSubmit}>
-                <div style={formGrid}>
-                  <div style={fieldGroup}>
-                    <label style={fieldLabel}>Mã Môn Học</label>
+                <div className="ministry-subjects__form-grid">
+                  <div className="ministry-subjects__field-group">
+                    <label className="ministry-subjects__field-label">Mã Môn Học</label>
 
-                    <input
-                      type="text"
-                      name="subject_id"
-                      placeholder="Nhập mã môn (VD: INT1306)"
-                      value={formData.subject_id}
-                      onChange={handleInputChange}
-                      required
-                      disabled={repair}
-                      style={{
-                        ...fieldInput,
-                        ...(repair
-                          ? {
-                              background: "#f1f5f9",
-                              cursor: "not-allowed",
-                              color: "#94a3b8",
-                            }
-                          : {}),
-                      }}
-                    />
+                    <input type="text" name="subject_id" placeholder="Nhập mã môn (VD: INT1306)" value={formData.subject_id} onChange={handleInputChange} required disabled={repair} style={{
+                  ...(repair ? {
+                    background: "#f1f5f9",
+                    cursor: "not-allowed",
+                    color: "#94a3b8"
+                  } : {})
+                }} className="ministry-subjects__field-input" />
+                  
                   </div>
 
-                  <div style={fieldGroup}>
-                    <label style={fieldLabel}>Tên Môn Học</label>
+                  <div className="ministry-subjects__field-group">
+                    <label className="ministry-subjects__field-label">Tên Môn Học</label>
 
-                    <input
-                      type="text"
-                      name="name"
-                      placeholder="Nhập tên môn học"
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      required
-                      style={fieldInput}
-                    />
+                    <input type="text" name="name" placeholder="Nhập tên môn học" value={formData.name} onChange={handleInputChange} required className="ministry-subjects__field-input" />
+
+                  
                   </div>
 
-                  <div style={fieldGroup}>
-                    <label style={fieldLabel}>Số Tín Chỉ</label>
+                  <div className="ministry-subjects__field-group">
+                    <label className="ministry-subjects__field-label">Số Tín Chỉ</label>
 
-                    <input
-                      type="number"
-                      name="credits"
-                      placeholder="Nhập số tín chỉ"
-                      value={formData.credits}
-                      onChange={handleInputChange}
-                      required
-                      min="1"
-                      max="10"
-                      style={fieldInput}
-                    />
+                    <input type="number" name="credits" placeholder="Nhập số tín chỉ" value={formData.credits} onChange={handleInputChange} required min="1" max="10" className="ministry-subjects__field-input" />
+
+                  
                   </div>
-                  <div style={fieldGroup}>
-                    <label style={fieldLabel}>Chuyên ngành</label>
-                    <select
-                      name="major_id"
-                      value={formData.major_id || ""}
-                      onChange={handleInputChange}
-                      required
-                      style={fieldInput}
-                    >
+                  <div className="ministry-subjects__field-group">
+                    <label className="ministry-subjects__field-label">Chuyên ngành</label>
+                    <select name="major_id" value={formData.major_id || ""} onChange={handleInputChange} required className="ministry-subjects__field-input">
+
+                    
                       <option value="">-- Chọn chuyên ngành --</option>
-                      {majors.map((major) => (
-                        <option key={major.major_id} value={major.major_id}>
+                      {majors.map(major => <option key={major.major_id} value={major.major_id}>
                           {major.major_id} - {major.name}
-                        </option>
-                      ))}
+                        </option>)}
                     </select>
                   </div>
 
-                  <label
-                    style={{
-                      ...fieldGroup,
-                      flexDirection: "row",
-                      alignItems: "center",
-                      gap: 8,
-                      marginTop: 26,
-                    }}
-                  >
-                    <input
-                      type="checkbox"
-                      name="allow_same_major"
-                      checked={!!formData.allow_same_major}
-                      onChange={handleInputChange}
-                    />
+                  <label className="ministry-subjects__field-group ministry-subjects__inline-319">
+
+
+
+
+
+
+
+                  
+                    <input type="checkbox" name="allow_same_major" checked={!!formData.allow_same_major} onChange={handleInputChange} />
+                  
                     Cho phép cùng chuyên ngành đăng ký
                   </label>
 
-                  <label
-                    style={{
-                      ...fieldGroup,
-                      flexDirection: "row",
-                      alignItems: "center",
-                      gap: 8,
-                      marginTop: 26,
-                    }}
-                  >
-                    <input
-                      type="checkbox"
-                      name="allow_same_department"
-                      checked={!!formData.allow_same_department}
-                      onChange={handleInputChange}
-                    />
+                  <label className="ministry-subjects__field-group ministry-subjects__inline-337">
+
+
+
+
+
+
+
+                  
+                    <input type="checkbox" name="allow_same_department" checked={!!formData.allow_same_department} onChange={handleInputChange} />
+                  
                     Cho phép cùng khoa đăng ký
                   </label>
                 </div>
 
-                <div
-                  style={{
-                    display: "flex",
-                    gap: "10px",
-                    marginTop: "20px",
-                  }}
-                >
-                  <button
-                    type="submit"
-                    style={{
-                      ...submitBtn,
-                      background: repair ? "#4f46e5" : "#16a34a",
-                      marginTop: 0,
-                    }}
-                  >
+                <div className="ministry-subjects__inline-356">
+
+
+
+
+
+                
+                  <button type="submit" style={{
+                background: repair ? "#4f46e5" : "#16a34a"
+              }} className="ministry-subjects__submit-btn ministry-subjects__inline-363">
+                  
                     {repair ? "Cập nhật Môn Học" : "Tạo Môn Học"}
                   </button>
 
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowForm(false);
-                      setRepair(false);
-                    }}
-                    style={cancelBtn}
-                  >
+                  <button type="button" onClick={() => {
+                setShowForm(false);
+                setRepair(false);
+              }} className="ministry-subjects__cancel-btn">
+
+                  
                     Hủy
                   </button>
                 </div>
               </form>
             </div>
           </div>
-        </div>
-      )}
+        </div>}
       {/* TABLE */}
-      <div style={tableCard}>
-        <div style={tableHeader}>
-          <h3 style={tableTitle}>Danh sách môn học hiện tại</h3>
-          <div style={searchWrap}>
+      <div className="ministry-subjects__table-card">
+        <div className="ministry-subjects__table-header">
+          <h3 className="ministry-subjects__table-title">Danh sách môn học hiện tại</h3>
+          <div className="ministry-subjects__search-wrap">
             <FiSearch size={15} color="#94a3b8" />
-            <input
-              value={keyword}
-              onChange={(e) => {
-                setKeyword(e.target.value);
-                setPage(1);
-              }}
-              placeholder="Tim ma mon, ten mon, khoa, chuyen nganh..."
-              style={searchInput}
-            />
+            <input value={keyword} onChange={e => {
+            setKeyword(e.target.value);
+            setPage(1);
+          }} placeholder="Tim ma mon, ten mon, khoa, chuyen nganh..." className="ministry-subjects__search-input" />
+
+            
           </div>
         </div>
 
-        <div style={{ overflowX: "auto" }}>
-          <table style={table}>
+        <div className="ministry-subjects__inline-408">
+          <table className="ministry-subjects__table">
             <thead>
-              <tr style={theadRow}>
-                <th style={th}>STT</th>
-                <th style={th}>MÃ MÔN</th>
-                <th style={th}>TÊN MÔN HỌC</th>
-                <th style={th}>SỐ TÍN CHỈ</th>
-                <th style={th}>CHUYÊN NGÀNH</th>
-                <th style={th}>KHOA</th>
-                <th style={th}>CÙNG NGÀNH</th>
-                <th style={th}>CÙNG KHOA</th>
-                <th style={th}>THAO TÁC</th>
+              <tr className="ministry-subjects__thead-row">
+                <th className="ministry-subjects__th">STT</th>
+                <th className="ministry-subjects__th">MÃ MÔN</th>
+                <th className="ministry-subjects__th">TÊN MÔN HỌC</th>
+                <th className="ministry-subjects__th">SỐ TÍN CHỈ</th>
+                <th className="ministry-subjects__th">CHUYÊN NGÀNH</th>
+                <th className="ministry-subjects__th">KHOA</th>
+                <th className="ministry-subjects__th">CÙNG NGÀNH</th>
+                <th className="ministry-subjects__th">CÙNG KHOA</th>
+                <th className="ministry-subjects__th">THAO TÁC</th>
               </tr>
             </thead>
             <tbody>
-              {paginatedSubjects.map((subject, index) => (
-                <tr key={subject.subject_id} style={tbodyRow}>
-                  <td style={{ ...td, color: "#94a3b8" }}>
-                    {String((page - 1) * PAGE_SIZE + index + 1).padStart(
-                      2,
-                      "0",
-                    )}
+              {paginatedSubjects.map((subject, index) => <tr key={subject.subject_id} className="ministry-subjects__tbody-row">
+                  <td className="ministry-subjects__td ministry-subjects__inline-426">
+                    {String((page - 1) * PAGE_SIZE + index + 1).padStart(2, "0")}
                   </td>
-                  <td style={{ ...td, fontWeight: 600, color: "#4f46e5" }}>
+                  <td className="ministry-subjects__td ministry-subjects__inline-432">
                     {subject.subject_id}
                   </td>
-                  <td style={td}>{subject.name}</td>
-                  <td style={td}>
-                    <span style={creditBadge}>{subject.credits}</span>
+                  <td className="ministry-subjects__td">{subject.name}</td>
+                  <td className="ministry-subjects__td">
+                    <span className="ministry-subjects__credit-badge">{subject.credits}</span>
                   </td>
-                  <td style={td}>
-                    {subject.major
-                      ? `${subject.major.major_id} - ${subject.major.name}`
-                      : subject.major_id || "-"}
+                  <td className="ministry-subjects__td">
+                    {subject.major ? `${subject.major.major_id} - ${subject.major.name}` : subject.major_id || "-"}
                   </td>
-                  <td style={td}>
-                    {subject.major?.department
-                      ? `${subject.major.department.department_id} - ${subject.major.department.name}`
-                      : "-"}
+                  <td className="ministry-subjects__td">
+                    {subject.major?.department ? `${subject.major.department.department_id} - ${subject.major.department.name}` : "-"}
                   </td>
-                  <td style={td}>
+                  <td className="ministry-subjects__td">
                     {subject.allow_same_major ? "Có" : "Không"}
                   </td>
-                  <td style={td}>
+                  <td className="ministry-subjects__td">
                     {subject.allow_same_department ? "Có" : "Không"}
                   </td>
-                  <td style={{ ...td, whiteSpace: "nowrap" }}>
-                    <button
-                      onClick={() => handleOpenFormUpdateSubject(subject)}
-                      style={editBtn}
-                    >
+                  <td className="ministry-subjects__td ministry-subjects__inline-455">
+                    <button onClick={() => handleOpenFormUpdateSubject(subject)} className="ministry-subjects__edit-btn">
+
+                    
                       <FiEdit2 size={13} /> Sửa
                     </button>
-                    <button
-                      onClick={() => handleDeleteSubject(subject)}
-                      style={deleteBtn}
-                    >
+                    <button onClick={() => handleDeleteSubject(subject)} className="ministry-subjects__delete-btn">
+
+                    
                       <FiTrash2 size={13} /> Xóa
                     </button>
                   </td>
-                </tr>
-              ))}
+                </tr>)}
             </tbody>
           </table>
         </div>
 
-        {filteredSubjects.length > 0 && (
-          <div style={tableFooter}>
-            <span style={{ color: "#94a3b8", fontSize: "13px" }}>
+        {filteredSubjects.length > 0 && <div className="ministry-subjects__table-footer">
+            <span className="ministry-subjects__inline-477">
               Hiển thị {(page - 1) * PAGE_SIZE + 1}-
               {Math.min(page * PAGE_SIZE, filteredSubjects.length)} trên{" "}
               {filteredSubjects.length} môn học
             </span>
-            <div style={pageControls}>
-              <button
-                style={{ ...pageBtn, ...(page === 1 ? pageBtnDisabled : {}) }}
-                disabled={page === 1}
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-              >
+            <div className="ministry-subjects__page-controls">
+              <button disabled={page === 1} onClick={() => setPage(p => Math.max(1, p - 1))} className={"ministry-subjects__page-btn" + (page === 1 ? " ministry-subjects__page-btn-disabled" : "")}>
+              
                 Trước
               </button>
-              <span style={pageInfo}>
+              <span className="ministry-subjects__page-info">
                 {page} / {totalPages}
               </span>
-              <button
-                style={{
-                  ...pageBtn,
-                  ...(page === totalPages ? pageBtnDisabled : {}),
-                }}
-                disabled={page === totalPages}
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              >
+              <button disabled={page === totalPages} onClick={() => setPage(p => Math.min(totalPages, p + 1))} className={"ministry-subjects__page-btn" + (page === totalPages ? " ministry-subjects__page-btn-disabled" : "")}>
+              
                 Tiếp
               </button>
             </div>
-          </div>
-        )}
+          </div>}
       </div>
-    </div>
-  );
+    </div>;
 };
 
 // STYLES
-
-const pageWrapper = {
-  padding: "28px 32px",
-  fontFamily: "'Segoe UI', sans-serif",
-  background: "#f8fafc",
-  minHeight: "100vh",
-};
-
-const breadcrumb = {
-  display: "flex",
-  alignItems: "center",
-  gap: "6px",
-  marginBottom: "20px",
-  fontSize: "13px",
-};
-const breadcrumbHome = { color: "#94a3b8", cursor: "pointer" };
-const breadcrumbSep = { color: "#cbd5e1" };
-const breadcrumbCurrent = { color: "#4f46e5", fontWeight: 600 };
-
-const pageHeader = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  marginBottom: "24px",
-  flexWrap: "wrap",
-  gap: "12px",
-};
-const pageHeaderLeft = {
-  display: "flex",
-  alignItems: "center",
-  gap: "14px",
-};
-const pageTitle = {
-  margin: 0,
-  fontSize: "20px",
-  fontWeight: 800,
-  color: "#1e293b",
-  letterSpacing: "0.3px",
-};
-const addBtn = {
-  display: "flex",
-  alignItems: "center",
-  gap: "7px",
-  padding: "10px 20px",
-  background: "#4f46e5",
-  color: "white",
-  border: "none",
-  borderRadius: "8px",
-  cursor: "pointer",
-  fontWeight: 600,
-  fontSize: "14px",
-};
-
-const statBanner = {
-  background: "linear-gradient(135deg, #4f46e5 0%, #6366f1 100%)",
-  borderRadius: "14px",
-  padding: "24px 28px",
-  marginBottom: "24px",
-  color: "white",
-  position: "relative",
-  overflow: "hidden",
-};
-const statBannerInner = {
-  display: "flex",
-  justifyContent: "space-between",
-  alignItems: "center",
-};
-const statLabel = { margin: 0, fontSize: "13px", opacity: 0.85 };
-const statNumber = {
-  margin: "4px 0",
-  fontSize: "42px",
-  fontWeight: 700,
-  lineHeight: 1.1,
-};
-const bannerIconBg = {
-  position: "absolute",
-  right: "28px",
-  top: "50%",
-  transform: "translateY(-50%)",
-};
-
-const formCard = {
-  background: "white",
-  borderRadius: "12px",
-  padding: "24px",
-  marginBottom: "24px",
-  boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-  border: "1px solid #e2e8f0",
-};
-const formTitle = {
-  margin: "0 0 20px",
-  fontSize: "16px",
-  fontWeight: 700,
-  color: "#1e293b",
-};
-const formGrid = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-  gap: "16px",
-  marginBottom: "8px",
-};
-const fieldGroup = { display: "flex", flexDirection: "column" };
-const fieldLabel = {
-  fontSize: "13px",
-  fontWeight: 600,
-  color: "#475569",
-  marginBottom: "6px",
-};
-const fieldInput = {
-  padding: "9px 12px",
-  border: "1px solid #e2e8f0",
-  borderRadius: "7px",
-  fontSize: "14px",
-  color: "#1e293b",
-  outline: "none",
-  width: "100%",
-  boxSizing: "border-box",
-};
-const submitBtn = {
-  marginTop: "16px",
-  padding: "10px 24px",
-  color: "white",
-  border: "none",
-  borderRadius: "7px",
-  cursor: "pointer",
-  fontWeight: 600,
-  fontSize: "14px",
-};
-
-const tableCard = {
-  background: "white",
-  borderRadius: "12px",
-  boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-  border: "1px solid #e2e8f0",
-  overflow: "hidden",
-};
-const tableHeader = {
-  padding: "18px 24px 14px",
-  borderBottom: "1px solid #f1f5f9",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  gap: "12px",
-  flexWrap: "wrap",
-};
-const tableTitle = {
-  margin: 0,
-  fontSize: "15px",
-  fontWeight: 700,
-  color: "#1e293b",
-};
-const searchWrap = {
-  display: "flex",
-  alignItems: "center",
-  gap: 8,
-  border: "1px solid #e2e8f0",
-  borderRadius: 8,
-  padding: "0 12px",
-  minWidth: 320,
-  background: "#fff",
-};
-const searchInput = {
-  border: "none",
-  outline: "none",
-  padding: "10px 0",
-  fontSize: 14,
-  width: "100%",
-};
-const table = {
-  width: "100%",
-  borderCollapse: "collapse",
-};
-const theadRow = { background: "#f8fafc" };
-const th = {
-  padding: "11px 16px",
-  textAlign: "left",
-  fontSize: "11px",
-  fontWeight: 700,
-  color: "#94a3b8",
-  letterSpacing: "0.6px",
-  borderBottom: "1px solid #e2e8f0",
-};
-const tbodyRow = { borderBottom: "1px solid #f1f5f9" };
-const td = {
-  padding: "14px 16px",
-  fontSize: "14px",
-  color: "#334155",
-};
-const creditBadge = {
-  display: "inline-block",
-  padding: "3px 10px",
-  borderRadius: "20px",
-  fontSize: "13px",
-  fontWeight: 600,
-  background: "#ede9fe",
-  color: "#4f46e5",
-};
-const editBtn = {
-  display: "inline-flex",
-  alignItems: "center",
-  gap: "5px",
-  marginRight: "6px",
-  padding: "5px 12px",
-  background: "#ede9fe",
-  color: "#4f46e5",
-  border: "none",
-  borderRadius: "6px",
-  cursor: "pointer",
-  fontSize: "13px",
-  fontWeight: 500,
-};
-const deleteBtn = {
-  display: "inline-flex",
-  alignItems: "center",
-  gap: "5px",
-  padding: "5px 12px",
-  background: "#fee2e2",
-  color: "#ef4444",
-  border: "none",
-  borderRadius: "6px",
-  cursor: "pointer",
-  fontSize: "13px",
-  fontWeight: 500,
-};
-const tableFooter = {
-  padding: "14px 24px",
-  borderTop: "1px solid #f1f5f9",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  gap: "12px",
-  flexWrap: "wrap",
-};
-const pageControls = { display: "flex", alignItems: "center", gap: "8px" };
-const pageInfo = { color: "#334155", fontWeight: 600, fontSize: "13px" };
-const pageBtn = {
-  padding: "6px 12px",
-  border: "1px solid #cbd5e1",
-  borderRadius: "7px",
-  background: "#fff",
-  color: "#334155",
-  cursor: "pointer",
-  fontWeight: 600,
-  fontSize: "13px",
-};
-const pageBtnDisabled = {
-  opacity: 0.45,
-  cursor: "not-allowed",
-};
 
 const modalOverlay = {
   position: "fixed",
@@ -768,24 +392,11 @@ const modalOverlay = {
   justifyContent: "center",
   alignItems: "center",
   zIndex: 999,
-  padding: "20px",
+  padding: "20px"
 };
-
 const modalContainer = {
   width: "100%",
   maxWidth: "700px",
-  animation: "fadeIn 0.2s ease",
+  animation: "fadeIn 0.2s ease"
 };
-
-const cancelBtn = {
-  padding: "10px 24px",
-  background: "#e2e8f0",
-  color: "#334155",
-  border: "none",
-  borderRadius: "7px",
-  cursor: "pointer",
-  fontWeight: 600,
-  fontSize: "14px",
-};
-
 export default MinistrySubjects;

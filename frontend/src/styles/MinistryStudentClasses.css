@@ -1,0 +1,189 @@
+.ministry-student-classes__wrapper {
+  padding: 0 4px;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.ministry-student-classes__header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.ministry-student-classes__title {
+  color: #2c3e50;
+  margin: 0px;
+  font-size: 22px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+}
+
+.ministry-student-classes__add-btn {
+  padding: 10px 18px;
+  background: #4f63d2;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.ministry-student-classes__modal-content {
+  background: white;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 480px;
+  padding: 24px 28px;
+  position: relative;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+}
+
+.ministry-student-classes__close-btn {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  font-size: 28px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #888;
+  line-height: 1;
+}
+
+.ministry-student-classes__form-title {
+  margin: 0 0 20px 0;
+  font-size: 18px;
+  color: #2c3e50;
+  font-weight: 600;
+  text-align: center;
+}
+
+.ministry-student-classes__field-group {
+  margin-bottom: 16px;
+}
+
+.ministry-student-classes__label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  font-size: 13.5px;
+  color: #444;
+}
+
+.ministry-student-classes__input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid #cdd3e0;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.ministry-student-classes__submit-btn {
+  width: 100%;
+  padding: 12px;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 15px;
+  margin-top: 10px;
+  background: #27ae60;
+}
+
+.ministry-student-classes__table-wrapper {
+  background: white;
+  border-radius: 10px;
+  border: 1px solid #e4e9f4;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.ministry-student-classes__table-header {
+  padding: 16px;
+  border-bottom: 1px solid #eef2f7;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.ministry-student-classes__search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0 12px;
+  min-width: 300px;
+  background: #fff;
+}
+
+.ministry-student-classes__search-input {
+  border: none;
+  outline: none;
+  padding: 10px 0;
+  font-size: 14px;
+  width: 100%;
+}
+
+.ministry-student-classes__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ministry-student-classes__th {
+  padding: 13px 16px;
+  color: #767982;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: left;
+}
+
+.ministry-student-classes__tbody-row {
+  border-bottom: 1px solid #eef0f7;
+}
+
+.ministry-student-classes__td {
+  padding: 12px 16px;
+  font-size: 14px;
+  color: #333;
+}
+
+.ministry-student-classes__empty-cell {
+  text-align: center;
+  padding: 32px;
+  color: #aaa;
+  font-size: 14px;
+}
+
+.ministry-student-classes__edit-btn {
+  margin-right: 8px;
+  padding: 5px 14px;
+  background: #f0f3ff;
+  color: #4f63d2;
+  border: 1px solid #c5cdf5;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.ministry-student-classes__delete-btn {
+  padding: 5px 14px;
+  background: #fff0f0;
+  color: #e74c3c;
+  border: 1px solid #f5c5c5;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.ministry-student-classes__inline-165 {
+  margin-right: 10px;
+}
+
+.ministry-student-classes__inline-296 {
+  color: #4f63d2;
+  font-weight: 700;
+}

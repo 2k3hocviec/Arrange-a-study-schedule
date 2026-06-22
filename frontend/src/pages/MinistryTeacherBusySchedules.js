@@ -3,113 +3,90 @@ import toast from "react-hot-toast";
 import { FaCheck, FaTimes } from "react-icons/fa";
 import { FiSearch } from "react-icons/fi";
 import { teacherBusySchedulesAPI } from "../services/api";
-
-const FILTERS = [
-  { value: "pending", label: "Cần duyệt" },
-  { value: "approved", label: "Đã duyệt" },
-  { value: "rejected", label: "Từ chối" },
-  { value: "all", label: "Tất cả" },
-];
-
+import "../styles/MinistryTeacherBusySchedules.css";
+const FILTERS = [{
+  value: "pending",
+  label: "Cần duyệt"
+}, {
+  value: "approved",
+  label: "Đã duyệt"
+}, {
+  value: "rejected",
+  label: "Từ chối"
+}, {
+  value: "all",
+  label: "Tất cả"
+}];
 const STATUS_LABEL = {
   pending: "Cần duyệt",
   approved: "Đã duyệt",
-  rejected: "Từ chối",
+  rejected: "Từ chối"
 };
 const STATUS_STYLE = {
-  pending: { background: "#fef3c7", color: "#92400e" },
-  approved: { background: "#dcfce7", color: "#166534" },
-  rejected: { background: "#fee2e2", color: "#991b1b" },
+  pending: {
+    background: "#fef3c7",
+    color: "#92400e"
+  },
+  approved: {
+    background: "#dcfce7",
+    color: "#166534"
+  },
+  rejected: {
+    background: "#fee2e2",
+    color: "#991b1b"
+  }
 };
-
-const getErrorMessage = (err) => {
+const getErrorMessage = err => {
   const rawMessage = err?.response?.data?.message || err?.message || "";
-  const message = Array.isArray(rawMessage)
-    ? rawMessage.join(" ")
-    : String(rawMessage);
-
+  const message = Array.isArray(rawMessage) ? rawMessage.join(" ") : String(rawMessage);
   if (message.includes("already been finalized")) {
     return "Đơn này đã được chuyển trạng thái, không thể đổi lại.";
   }
-
   if (message.includes("teaching schedule")) {
     return "Không thể duyệt vì giáo viên đã có lịch dạy trong khoảng tiết này.";
   }
-
   return "Thao tác thất bại. Vui lòng thử lại.";
 };
-
 const MinistryTeacherBusySchedules = () => {
   const [items, setItems] = useState([]);
   const [status, setStatus] = useState("pending");
   const [keyword, setKeyword] = useState("");
   const [rejectingId, setRejectingId] = useState(null);
   const [rejectReason, setRejectReason] = useState("");
-
-  const fetchData = useCallback(() =>
-    teacherBusySchedulesAPI
-      .getAll("all")
-      .then((res) => setItems(res.data || []))
-      .catch(() => toast.error("Không thể tải danh sách lịch bận.")),
-    [],
-  );
-
+  const fetchData = useCallback(() => teacherBusySchedulesAPI.getAll("all").then(res => setItems(res.data || [])).catch(() => toast.error("Không thể tải danh sách lịch bận.")), []);
   useEffect(() => {
     fetchData();
   }, [fetchData]);
-
   const counts = useMemo(() => {
-    return items.reduce(
-      (acc, item) => {
-        acc[item.status] = (acc[item.status] || 0) + 1;
-        acc.all += 1;
-        return acc;
-      },
-      { pending: 0, approved: 0, rejected: 0, all: 0 },
-    );
+    return items.reduce((acc, item) => {
+      acc[item.status] = (acc[item.status] || 0) + 1;
+      acc.all += 1;
+      return acc;
+    }, {
+      pending: 0,
+      approved: 0,
+      rejected: 0,
+      all: 0
+    });
   }, [items]);
-
-  const displayedItems = useMemo(
-    () => {
-      const statusItems =
-        status === "all" ? items : items.filter((item) => item.status === status);
-      const normalizedKeyword = keyword.trim().toLowerCase();
-      if (!normalizedKeyword) return statusItems;
-
-      return statusItems.filter((item) =>
-        [
-          item.busy_id,
-          item.teacher_id,
-          item.teacher?.name,
-          item.teacher?.user?.email,
-          item.busy_date ? new Date(item.busy_date).toLocaleDateString("vi-VN") : "",
-          item.start_slot,
-          item.end_slot,
-          item.reason,
-          STATUS_LABEL[item.status],
-          item.status,
-          item.reject_reason,
-        ]
-          .filter((value) => value !== undefined && value !== null)
-          .join(" ")
-          .toLowerCase()
-          .includes(normalizedKeyword),
-      );
-    },
-    [items, status, keyword],
-  );
-
-  const approve = async (busyId) => {
+  const displayedItems = useMemo(() => {
+    const statusItems = status === "all" ? items : items.filter(item => item.status === status);
+    const normalizedKeyword = keyword.trim().toLowerCase();
+    if (!normalizedKeyword) return statusItems;
+    return statusItems.filter(item => [item.busy_id, item.teacher_id, item.teacher?.name, item.teacher?.user?.email, item.busy_date ? new Date(item.busy_date).toLocaleDateString("vi-VN") : "", item.start_slot, item.end_slot, item.reason, STATUS_LABEL[item.status], item.status, item.reject_reason].filter(value => value !== undefined && value !== null).join(" ").toLowerCase().includes(normalizedKeyword));
+  }, [items, status, keyword]);
+  const approve = async busyId => {
     try {
       await teacherBusySchedulesAPI.approve(busyId);
       toast.success("Đã duyệt đơn lịch bận.");
       fetchData();
     } catch (err) {
-      toast.error(getErrorMessage(err), { id: "ministry-busy-error" });
+      toast.error(getErrorMessage(err), {
+        id: "ministry-busy-error"
+      });
     }
   };
-
-  const reject = async (busyId) => {
+  const reject = async busyId => {
     try {
       await teacherBusySchedulesAPI.reject(busyId, rejectReason);
       toast.success("Đã từ chối đơn lịch bận.");
@@ -117,279 +94,135 @@ const MinistryTeacherBusySchedules = () => {
       setRejectReason("");
       fetchData();
     } catch (err) {
-      toast.error(getErrorMessage(err), { id: "ministry-busy-error" });
+      toast.error(getErrorMessage(err), {
+        id: "ministry-busy-error"
+      });
     }
   };
-
-  return (
-    <div style={S.page}>
-      <div style={S.breadcrumb}>
-        <span style={S.breadcrumbHome}>Dashboard Overview</span>
-        <span style={S.breadcrumbSep}>/</span>
-        <span style={S.breadcrumbCurrent}>Duyệt lịch bận</span>
+  return <div className="ministry-teacher-busy-schedules__page">
+      <div className="ministry-teacher-busy-schedules__breadcrumb">
+        <span className="ministry-teacher-busy-schedules__breadcrumb-home">Dashboard Overview</span>
+        <span className="ministry-teacher-busy-schedules__breadcrumb-sep">/</span>
+        <span className="ministry-teacher-busy-schedules__breadcrumb-current">Duyệt lịch bận</span>
       </div>
 
-      <div style={S.header}>
+      <div className="ministry-teacher-busy-schedules__header">
         <div>
-          <h2 style={S.title}>Duyệt lịch bận giáo viên</h2>
-          <p style={S.subtitle}>
+          <h2 className="ministry-teacher-busy-schedules__title">Duyệt lịch bận giáo viên</h2>
+          <p className="ministry-teacher-busy-schedules__subtitle">
             Chỉ đơn đã duyệt mới có hiệu lực chặn xếp lịch học.
           </p>
         </div>
       </div>
 
-      <div style={S.filterRow}>
-        {FILTERS.map((filter) => (
-          <button
-            key={filter.value}
-            type="button"
-            onClick={() => setStatus(filter.value)}
-            style={{
-              ...S.filterBtn,
-              ...(status === filter.value ? S.filterBtnActive : {}),
-            }}
-          >
+      <div className="ministry-teacher-busy-schedules__filter-row">
+        {FILTERS.map(filter => <button key={filter.value} type="button" onClick={() => setStatus(filter.value)} style={{
+        ...(status === filter.value ? S.filterBtnActive : {})
+      }} className="ministry-teacher-busy-schedules__filter-btn">
+          
             {filter.label}
-            <span style={S.filterCount}>{counts[filter.value] || 0}</span>
-          </button>
-        ))}
+            <span className="ministry-teacher-busy-schedules__filter-count">{counts[filter.value] || 0}</span>
+          </button>)}
       </div>
 
-      <div style={S.searchRow}>
-        <div style={S.searchWrap}>
+      <div className="ministry-teacher-busy-schedules__search-row">
+        <div className="ministry-teacher-busy-schedules__search-wrap">
           <FiSearch size={15} color="#94a3b8" />
-          <input
-            value={keyword}
-            onChange={(e) => setKeyword(e.target.value)}
-            placeholder="Tim giao vien, ngay, tiet, ly do, trang thai..."
-            style={S.searchInput}
-          />
+          <input value={keyword} onChange={e => setKeyword(e.target.value)} placeholder="Tim giao vien, ngay, tiet, ly do, trang thai..." className="ministry-teacher-busy-schedules__search-input" />
+
+          
         </div>
       </div>
 
-      <div style={S.tableCard}>
-        <div style={{ overflowX: "auto" }}>
-          <table style={S.table}>
+      <div className="ministry-teacher-busy-schedules__table-card">
+        <div className="ministry-teacher-busy-schedules__inline-171">
+          <table className="ministry-teacher-busy-schedules__table">
             <thead>
               <tr>
-                <th style={S.th}>Giáo viên</th>
-                <th style={S.th}>Ngày</th>
-                <th style={S.th}>Tiết</th>
-                <th style={S.th}>Lý do</th>
-                <th style={S.th}>Trạng thái</th>
-                <th style={S.th}>Lý do từ chối</th>
-                <th style={S.th}>Thao tác</th>
+                <th className="ministry-teacher-busy-schedules__th">Giáo viên</th>
+                <th className="ministry-teacher-busy-schedules__th">Ngày</th>
+                <th className="ministry-teacher-busy-schedules__th">Tiết</th>
+                <th className="ministry-teacher-busy-schedules__th">Lý do</th>
+                <th className="ministry-teacher-busy-schedules__th">Trạng thái</th>
+                <th className="ministry-teacher-busy-schedules__th">Lý do từ chối</th>
+                <th className="ministry-teacher-busy-schedules__th">Thao tác</th>
               </tr>
             </thead>
             <tbody>
-              {displayedItems.map((item) => (
-                <tr key={item.busy_id}>
-                  <td style={S.td}>
-                    <div style={S.teacherName}>{item.teacher?.name || "-"}</div>
-                    <div style={S.teacherMeta}>
+              {displayedItems.map(item => <tr key={item.busy_id}>
+                  <td className="ministry-teacher-busy-schedules__td">
+                    <div className="ministry-teacher-busy-schedules__teacher-name">{item.teacher?.name || "-"}</div>
+                    <div className="ministry-teacher-busy-schedules__teacher-meta">
                       {item.teacher_id} · {item.teacher?.user?.email || ""}
                     </div>
                   </td>
-                  <td style={S.td}>
+                  <td className="ministry-teacher-busy-schedules__td">
                     {new Date(item.busy_date).toLocaleDateString("vi-VN")}
                   </td>
-                  <td style={S.td}>
+                  <td className="ministry-teacher-busy-schedules__td">
                     Tiết {item.start_slot}-{item.end_slot}
                   </td>
-                  <td style={S.td}>{item.reason || "-"}</td>
-                  <td style={S.td}>
-                    <span style={{ ...S.badge, ...(STATUS_STYLE[item.status] || {}) }}>
+                  <td className="ministry-teacher-busy-schedules__td">{item.reason || "-"}</td>
+                  <td className="ministry-teacher-busy-schedules__td">
+                    <span style={{
+                  ...(STATUS_STYLE[item.status] || {})
+                }} className="ministry-teacher-busy-schedules__badge">
                       {STATUS_LABEL[item.status] || item.status}
                     </span>
                   </td>
-                  <td style={S.td}>{item.reject_reason || "-"}</td>
-                  <td style={S.td}>
-                    {item.status === "pending" ? (
-                      <div style={S.actionGroup}>
-                        <button
-                          type="button"
-                          style={S.approveBtn}
-                          onClick={() => approve(item.busy_id)}
-                          title="Duyệt"
-                        >
+                  <td className="ministry-teacher-busy-schedules__td">{item.reject_reason || "-"}</td>
+                  <td className="ministry-teacher-busy-schedules__td">
+                    {item.status === "pending" ? <div className="ministry-teacher-busy-schedules__action-group">
+                        <button type="button" onClick={() => approve(item.busy_id)} title="Duyệt" className="ministry-teacher-busy-schedules__approve-btn">
+                      
                           <FaCheck />
                         </button>
-                        <button
-                          type="button"
-                          style={S.rejectBtn}
-                          onClick={() => {
-                            setRejectingId(item.busy_id);
-                            setRejectReason("");
-                          }}
-                          title="Từ chối"
-                        >
+                        <button type="button" onClick={() => {
+                    setRejectingId(item.busy_id);
+                    setRejectReason("");
+                  }} title="Từ chối" className="ministry-teacher-busy-schedules__reject-btn">
+                      
                           <FaTimes />
                         </button>
-                      </div>
-                    ) : (
-                      <span style={S.lockedText}>Đã khóa</span>
-                    )}
+                      </div> : <span className="ministry-teacher-busy-schedules__locked-text">Đã khóa</span>}
                   </td>
-                </tr>
-              ))}
-              {displayedItems.length === 0 && (
-                <tr>
-                  <td style={S.emptyTd} colSpan={7}>
+                </tr>)}
+              {displayedItems.length === 0 && <tr>
+                  <td colSpan={7} className="ministry-teacher-busy-schedules__empty-td">
                     Không có đơn lịch bận phù hợp.
                   </td>
-                </tr>
-              )}
+                </tr>}
             </tbody>
           </table>
         </div>
       </div>
 
-      {rejectingId && (
-        <div style={S.overlay} onClick={() => setRejectingId(null)}>
-          <div style={S.modal} onClick={(e) => e.stopPropagation()}>
-            <h3 style={S.modalTitle}>Từ chối đơn lịch bận</h3>
-            <label style={S.label}>Lý do từ chối</label>
-            <textarea
-              value={rejectReason}
-              onChange={(e) => setRejectReason(e.target.value)}
-              style={S.textarea}
-              maxLength={255}
-              placeholder="Nhập lý do để giáo viên biết nguyên nhân"
-            />
-            <div style={S.modalActions}>
-              <button
-                type="button"
-                style={S.cancelBtn}
-                onClick={() => setRejectingId(null)}
-              >
+      {rejectingId && <div style={S.overlay} onClick={() => setRejectingId(null)}>
+          <div onClick={e => e.stopPropagation()} className="ministry-teacher-busy-schedules__modal">
+            <h3 className="ministry-teacher-busy-schedules__modal-title">Từ chối đơn lịch bận</h3>
+            <label className="ministry-teacher-busy-schedules__label">Lý do từ chối</label>
+            <textarea value={rejectReason} onChange={e => setRejectReason(e.target.value)} maxLength={255} placeholder="Nhập lý do để giáo viên biết nguyên nhân" className="ministry-teacher-busy-schedules__textarea" />
+          
+            <div className="ministry-teacher-busy-schedules__modal-actions">
+              <button type="button" onClick={() => setRejectingId(null)} className="ministry-teacher-busy-schedules__cancel-btn">
+              
                 Hủy
               </button>
-              <button
-                type="button"
-                style={S.confirmRejectBtn}
-                onClick={() => reject(rejectingId)}
-              >
+              <button type="button" onClick={() => reject(rejectingId)} className="ministry-teacher-busy-schedules__confirm-reject-btn">
+              
                 Xác nhận từ chối
               </button>
             </div>
           </div>
-        </div>
-      )}
-    </div>
-  );
+        </div>}
+    </div>;
 };
-
 const S = {
-  page: {
-    padding: "24px 32px",
-    fontFamily: "'Segoe UI', sans-serif",
-    background: "#f8fafc",
-    minHeight: "100vh",
+  filterBtnActive: {
+    background: "#4f46e5",
+    color: "#fff",
+    borderColor: "#4f46e5"
   },
-  breadcrumb: { display: "flex", gap: 6, marginBottom: 18, fontSize: 13 },
-  breadcrumbHome: { color: "#94a3b8" },
-  breadcrumbSep: { color: "#cbd5e1" },
-  breadcrumbCurrent: { color: "#4f46e5", fontWeight: 700 },
-  header: {
-    background: "#fff",
-    border: "1px solid #e2e8f0",
-    borderRadius: 12,
-    padding: "18px 22px",
-    marginBottom: 16,
-  },
-  title: { margin: 0, fontSize: 20, fontWeight: 800, color: "#0f172a" },
-  subtitle: { margin: "6px 0 0", color: "#64748b", fontSize: 13 },
-  filterRow: { display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 16 },
-  filterBtn: {
-    border: "1px solid #e2e8f0",
-    background: "#fff",
-    color: "#475569",
-    borderRadius: 8,
-    padding: "9px 12px",
-    fontWeight: 700,
-    cursor: "pointer",
-  },
-  filterBtnActive: { background: "#4f46e5", color: "#fff", borderColor: "#4f46e5" },
-  filterCount: {
-    marginLeft: 8,
-    fontSize: 12,
-    opacity: 0.8,
-  },
-  searchRow: {
-    display: "flex",
-    justifyContent: "flex-end",
-    marginBottom: 16,
-  },
-  searchWrap: {
-    display: "flex",
-    alignItems: "center",
-    gap: 8,
-    border: "1px solid #e2e8f0",
-    borderRadius: 8,
-    padding: "0 12px",
-    minWidth: 360,
-    background: "#fff",
-  },
-  searchInput: {
-    border: "none",
-    outline: "none",
-    padding: "10px 0",
-    fontSize: 14,
-    width: "100%",
-  },
-  tableCard: {
-    background: "#fff",
-    border: "1px solid #e2e8f0",
-    borderRadius: 12,
-    overflow: "hidden",
-  },
-  table: { width: "100%", borderCollapse: "collapse", minWidth: 1040 },
-  th: {
-    padding: "12px 14px",
-    textAlign: "left",
-    fontSize: 12,
-    color: "#64748b",
-    background: "#f8fafc",
-    borderBottom: "1px solid #e2e8f0",
-    whiteSpace: "nowrap",
-  },
-  td: {
-    padding: "13px 14px",
-    borderBottom: "1px solid #f1f5f9",
-    fontSize: 13,
-    color: "#334155",
-    verticalAlign: "middle",
-  },
-  teacherName: { fontWeight: 800, color: "#1e293b" },
-  teacherMeta: { fontSize: 12, color: "#94a3b8", marginTop: 2 },
-  badge: {
-    display: "inline-block",
-    borderRadius: 999,
-    padding: "4px 9px",
-    fontWeight: 800,
-    fontSize: 12,
-  },
-  actionGroup: { display: "flex", gap: 6 },
-  approveBtn: {
-    width: 32,
-    height: 32,
-    border: "none",
-    borderRadius: 7,
-    background: "#dcfce7",
-    color: "#15803d",
-    cursor: "pointer",
-  },
-  rejectBtn: {
-    width: 32,
-    height: 32,
-    border: "none",
-    borderRadius: 7,
-    background: "#fee2e2",
-    color: "#dc2626",
-    cursor: "pointer",
-  },
-  lockedText: { color: "#94a3b8", fontSize: 12 },
-  emptyTd: { padding: 26, textAlign: "center", color: "#94a3b8" },
   overlay: {
     position: "fixed",
     inset: 0,
@@ -397,51 +230,7 @@ const S = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    zIndex: 1000,
-  },
-  modal: {
-    width: 420,
-    maxWidth: "92vw",
-    background: "#fff",
-    borderRadius: 12,
-    padding: 20,
-    boxShadow: "0 20px 50px rgba(15,23,42,0.2)",
-  },
-  modalTitle: { margin: "0 0 14px", fontSize: 18, fontWeight: 800 },
-  label: { display: "block", fontSize: 13, fontWeight: 700, marginBottom: 6 },
-  textarea: {
-    width: "100%",
-    minHeight: 110,
-    resize: "vertical",
-    border: "1px solid #e2e8f0",
-    borderRadius: 8,
-    padding: 10,
-    fontSize: 14,
-    outline: "none",
-    boxSizing: "border-box",
-  },
-  modalActions: {
-    display: "flex",
-    justifyContent: "flex-end",
-    gap: 8,
-    marginTop: 14,
-  },
-  cancelBtn: {
-    border: "1px solid #e2e8f0",
-    background: "#fff",
-    borderRadius: 8,
-    padding: "9px 13px",
-    cursor: "pointer",
-  },
-  confirmRejectBtn: {
-    border: "none",
-    background: "#dc2626",
-    color: "#fff",
-    borderRadius: 8,
-    padding: "9px 13px",
-    cursor: "pointer",
-    fontWeight: 800,
-  },
+    zIndex: 1000
+  }
 };
-
 export default MinistryTeacherBusySchedules;

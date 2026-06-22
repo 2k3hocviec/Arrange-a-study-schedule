@@ -3,14 +3,12 @@ import { studentClassesAPI, studentsAPI, usersAPI } from "../services/api";
 import toast from "react-hot-toast";
 import { PiStudentDuotone } from "react-icons/pi";
 import { FiSearch } from "react-icons/fi";
-
+import "../styles/MinistryStudent.css";
 const ROWS_PER_PAGE = 5;
-
 const getStudentErrorMessage = (err, action = "save") => {
   const rawMessage = err?.response?.data?.message || err?.message || "";
   const message = Array.isArray(rawMessage) ? rawMessage.join(" ") : String(rawMessage);
   const lowerMessage = message.toLowerCase();
-
   if (lowerMessage.includes("cannot delete student that has enrollments")) {
     return "Không thể xóa sinh viên vì sinh viên đã có đăng ký học phần.";
   }
@@ -20,7 +18,6 @@ const getStudentErrorMessage = (err, action = "save") => {
   if (action === "delete") return "Không thể xóa sinh viên.";
   return "Thao tác thất bại. Vui lòng kiểm tra lại dữ liệu.";
 };
-
 const MinistryStudents = () => {
   const [students, setStudents] = useState([]);
   const [studentClasses, setStudentClasses] = useState([]);
@@ -29,14 +26,12 @@ const MinistryStudents = () => {
   const [repair, setRepair] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [keyword, setKeyword] = useState("");
-
   const [formData, setFormData] = useState({
     user_id: "",
     student_id: "",
     name: "",
-    class_id: "",
+    class_id: ""
   });
-
   const fetchStudents = async () => {
     try {
       const response = await studentsAPI.getAll();
@@ -45,7 +40,6 @@ const MinistryStudents = () => {
       toast.error("Tải dữ liệu sinh viên thất bại");
     }
   };
-
   const fetchAvailableUsers = async () => {
     try {
       const response = await usersAPI.getAvailableStudents();
@@ -55,7 +49,6 @@ const MinistryStudents = () => {
       toast.error("Không thể tải danh sách user khả dụng");
     }
   };
-
   const fetchStudentClasses = async () => {
     try {
       const response = await studentClassesAPI.getAll();
@@ -65,44 +58,46 @@ const MinistryStudents = () => {
       toast.error("Không thể tải danh sách lớp học");
     }
   };
-
   useEffect(() => {
     fetchStudents();
     fetchAvailableUsers();
     fetchStudentClasses();
   }, []);
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
+  const handleInputChange = e => {
+    const {
+      name,
+      value
+    } = e.target;
     setFormData({
       ...formData,
-      [name]: name === "user_id" ? Number(value) || "" : value,
+      [name]: name === "user_id" ? Number(value) || "" : value
     });
   };
-
   const handleClickCreate = () => {
-    setFormData({ user_id: "", student_id: "", name: "", class_id: "" });
+    setFormData({
+      user_id: "",
+      student_id: "",
+      name: "",
+      class_id: ""
+    });
     setRepair(false);
     setShowForm(true);
   };
-
-  const handleOpenUpdate = (student) => {
+  const handleOpenUpdate = student => {
     setFormData({
       user_id: student.user_id,
       student_id: student.student_id,
       name: student.name,
-      class_id: student.class_id || "",
+      class_id: student.class_id || ""
     });
     setRepair(true);
     setShowForm(true);
   };
-
   const closeModal = () => {
     setShowForm(false);
     setRepair(false);
   };
-
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
     if (!formData.user_id || !formData.student_id || !formData.name || !formData.class_id) {
       toast.error("Vui lòng điền đầy đủ thông tin.");
@@ -118,8 +113,7 @@ const MinistryStudents = () => {
       toast.error(getStudentErrorMessage(err));
     }
   };
-
-  const handleSubmitUpdate = async (e) => {
+  const handleSubmitUpdate = async e => {
     e.preventDefault();
     if (!formData.student_id || !formData.name || !formData.class_id) {
       toast.error("Vui lòng điền đầy đủ thông tin.");
@@ -134,8 +128,7 @@ const MinistryStudents = () => {
       toast.error(getStudentErrorMessage(err));
     }
   };
-
-  const handleDeleteStudent = async (id) => {
+  const handleDeleteStudent = async id => {
     if (!window.confirm("Bạn có chắc muốn xóa sinh viên này?")) return;
     try {
       await studentsAPI.delete(id);
@@ -146,60 +139,35 @@ const MinistryStudents = () => {
       toast.error(getStudentErrorMessage(error, "delete"));
     }
   };
-
   const normalizedKeyword = keyword.trim().toLowerCase();
-  const filteredStudents = normalizedKeyword
-    ? students.filter((student) =>
-        [
-          student.student_id,
-          student.name,
-          student.user?.email,
-          student.class_id,
-          student.class?.name,
-          student.class?.major_id,
-          student.class?.major?.name,
-          student.class?.major?.department_id,
-          student.class?.major?.department?.name,
-          student.user_id,
-        ]
-          .filter(Boolean)
-          .join(" ")
-          .toLowerCase()
-          .includes(normalizedKeyword),
-      )
-    : students;
+  const filteredStudents = normalizedKeyword ? students.filter(student => [student.student_id, student.name, student.user?.email, student.class_id, student.class?.name, student.class?.major_id, student.class?.major?.name, student.class?.major?.department_id, student.class?.major?.department?.name, student.user_id].filter(Boolean).join(" ").toLowerCase().includes(normalizedKeyword)) : students;
 
   // Pagination
   const totalPages = Math.max(1, Math.ceil(filteredStudents.length / ROWS_PER_PAGE));
-  const paginatedStudents = filteredStudents.slice(
-    (currentPage - 1) * ROWS_PER_PAGE,
-    currentPage * ROWS_PER_PAGE,
-  );
-
-  return (
-    <div style={styles.wrapper}>
+  const paginatedStudents = filteredStudents.slice((currentPage - 1) * ROWS_PER_PAGE, currentPage * ROWS_PER_PAGE);
+  return <div className="ministry-student__wrapper">
       {/* Header row */}
-      <div style={styles.headerRow}>
-        <h2 style={styles.title}>
-          <PiStudentDuotone
-            style={{ marginRight: 10, verticalAlign: "middle" }}
-          />
+      <div className="ministry-student__header-row">
+        <h2 className="ministry-student__title">
+          <PiStudentDuotone className="ministry-student__inline-184" />
+
+          
           QUẢN LÝ SINH VIÊN
         </h2>
-        <button style={styles.addBtn} onClick={handleClickCreate}>
+        <button onClick={handleClickCreate} className="ministry-student__add-btn">
           + Thêm sinh viên mới
         </button>
       </div>
 
       {/* Stat card */}
-      <div style={styles.statRow}>
-        <div style={styles.statCard}>
-          <div style={styles.statIcon}>
+      <div className="ministry-student__stat-row">
+        <div className="ministry-student__stat-card">
+          <div className="ministry-student__stat-icon">
             <PiStudentDuotone size={28} color="#4f63d2" />
           </div>
           <div>
-            <div style={styles.statLabel}>TỔNG</div>
-            <div style={styles.statValue}>
+            <div className="ministry-student__stat-label">TỔNG</div>
+            <div className="ministry-student__stat-value">
               {students.length.toLocaleString()}
             </div>
           </div>
@@ -207,436 +175,159 @@ const MinistryStudents = () => {
       </div>
 
       {/* ==================== MODAL ==================== */}
-      {showForm && (
-        <div style={styles.modalOverlay}>
-          <div style={styles.modalContent}>
-            <button style={styles.closeBtn} onClick={closeModal}>
+      {showForm && <div className="ministry-student__modal-overlay">
+          <div className="ministry-student__modal-content">
+            <button onClick={closeModal} className="ministry-student__close-btn">
               ×
             </button>
 
-            <h3 style={styles.formTitle}>
+            <h3 className="ministry-student__form-title">
               {repair ? "Cập nhật thông tin sinh viên" : "Tạo sinh viên mới"}
             </h3>
 
-            <form
-              onSubmit={repair ? handleSubmitUpdate : handleSubmit}
-              style={styles.form}
-            >
-              {!repair && (
-                <div style={styles.fieldGroup}>
-                  <label style={styles.label}>
+            <form onSubmit={repair ? handleSubmitUpdate : handleSubmit} className="ministry-student__form">
+
+            
+              {!repair && <div className="ministry-student__field-group">
+                  <label className="ministry-student__label">
                     Chọn User (Role: Student - Chưa đăng ký)
                   </label>
-                  <select
-                    name="user_id"
-                    value={formData.user_id}
-                    onChange={handleInputChange}
-                    style={styles.input}
-                    required
-                  >
+                  <select name="user_id" value={formData.user_id} onChange={handleInputChange} required className="ministry-student__input">
+                
                     <option value="">-- Chọn User --</option>
-                    {availableUsers.map((user) => (
-                      <option key={user.id} value={user.id}>
+                    {availableUsers.map(user => <option key={user.id} value={user.id}>
                         {user.username || user.email} (ID: {user.id})
-                      </option>
-                    ))}
+                      </option>)}
                   </select>
-                </div>
-              )}
+                </div>}
 
-              <div style={styles.fieldGroup}>
-                <label style={styles.label}>Mã Sinh Viên</label>
-                <input
-                  type="text"
-                  name="student_id"
-                  placeholder="Nhập mã sinh viên"
-                  value={formData.student_id}
-                  onChange={handleInputChange}
-                  required
-                  disabled={repair}
-                  style={{
-                    ...styles.input,
-                    background: repair ? "#f0f0f0" : "white",
-                  }}
-                />
+              <div className="ministry-student__field-group">
+                <label className="ministry-student__label">Mã Sinh Viên</label>
+                <input type="text" name="student_id" placeholder="Nhập mã sinh viên" value={formData.student_id} onChange={handleInputChange} required disabled={repair} style={{
+              background: repair ? "#f0f0f0" : "white"
+            }} className="ministry-student__input" />
+              
               </div>
 
-              <div style={styles.fieldGroup}>
-                <label style={styles.label}>Họ và Tên</label>
-                <input
-                  type="text"
-                  name="name"
-                  placeholder="Nhập họ tên sinh viên"
-                  value={formData.name}
-                  onChange={handleInputChange}
-                  required
-                  style={styles.input}
-                />
+              <div className="ministry-student__field-group">
+                <label className="ministry-student__label">Họ và Tên</label>
+                <input type="text" name="name" placeholder="Nhập họ tên sinh viên" value={formData.name} onChange={handleInputChange} required className="ministry-student__input" />
+
+              
               </div>
 
-              <div style={styles.fieldGroup}>
-                <label style={styles.label}>Lớp học</label>
-                <select
-                  name="class_id"
-                  value={formData.class_id}
-                  onChange={handleInputChange}
-                  required
-                  style={styles.input}
-                >
+              <div className="ministry-student__field-group">
+                <label className="ministry-student__label">Lớp học</label>
+                <select name="class_id" value={formData.class_id} onChange={handleInputChange} required className="ministry-student__input">
+
+                
                   <option value="">-- Chọn lớp học --</option>
-                  {studentClasses.map((item) => (
-                    <option key={item.class_id} value={item.class_id}>
+                  {studentClasses.map(item => <option key={item.class_id} value={item.class_id}>
                       {item.class_id} - {item.name}
-                    </option>
-                  ))}
+                    </option>)}
                 </select>
               </div>
 
-              <button
-                type="submit"
-                style={{
-                  ...styles.submitBtn,
-                  background: repair ? "#3498db" : "#27ae60",
-                }}
-              >
+              <button type="submit" style={{
+            background: repair ? "#3498db" : "#27ae60"
+          }} className="ministry-student__submit-btn">
+              
                 {repair ? "Cập nhật sinh viên" : "Tạo sinh viên"}
               </button>
             </form>
           </div>
-        </div>
-      )}
+        </div>}
 
       {/* Table */}
-      <div style={styles.tableWrapper}>
-        <div style={styles.tableHeader}>
-          <div style={styles.searchWrap}>
+      <div className="ministry-student__table-wrapper">
+        <div className="ministry-student__table-header">
+          <div className="ministry-student__search-wrap">
             <FiSearch size={15} color="#94a3b8" />
-            <input
-              value={keyword}
-              onChange={(e) => {
-                setKeyword(e.target.value);
-                setCurrentPage(1);
-              }}
-              placeholder="Tim ma, ten, email, lop, chuyen nganh..."
-              style={styles.searchInput}
-            />
+            <input value={keyword} onChange={e => {
+            setKeyword(e.target.value);
+            setCurrentPage(1);
+          }} placeholder="Tim ma, ten, email, lop, chuyen nganh..." className="ministry-student__search-input" />
+
+            
           </div>
         </div>
-        <table style={styles.table}>
+        <table className="ministry-student__table">
           <thead>
-            <tr style={styles.theadRow}>
-              <th style={styles.th}>STT</th>
-              <th style={styles.th}>MÃ SINH VIÊN</th>
-              <th style={styles.th}>HỌ TÊN</th>
-              <th style={styles.th}>TÀI KHOẢN</th>
-              <th style={styles.th}>LỚP HỌC</th>
-              <th style={styles.th}>CHUYÊN NGÀNH</th>
-              <th style={styles.th}>KHOA</th>
-              <th style={styles.th}>USER ID</th>
-              <th style={styles.th}>THAO TÁC</th>
+            <tr className="ministry-student__thead-row">
+              <th className="ministry-student__th">STT</th>
+              <th className="ministry-student__th">MÃ SINH VIÊN</th>
+              <th className="ministry-student__th">HỌ TÊN</th>
+              <th className="ministry-student__th">TÀI KHOẢN</th>
+              <th className="ministry-student__th">LỚP HỌC</th>
+              <th className="ministry-student__th">CHUYÊN NGÀNH</th>
+              <th className="ministry-student__th">KHOA</th>
+              <th className="ministry-student__th">USER ID</th>
+              <th className="ministry-student__th">THAO TÁC</th>
             </tr>
           </thead>
           <tbody>
-            {paginatedStudents.length === 0 ? (
-              <tr>
-                <td colSpan={9} style={styles.emptyCell}>
+            {paginatedStudents.length === 0 ? <tr>
+                <td colSpan={9} className="ministry-student__empty-cell">
                   Không có dữ liệu sinh viên
                 </td>
-              </tr>
-            ) : (
-              paginatedStudents.map((student, idx) => (
-                <tr key={student.student_id} style={styles.tbodyRow}>
-                  <td style={styles.td}>
-                    {String(
-                      (currentPage - 1) * ROWS_PER_PAGE + idx + 1,
-                    ).padStart(2, "0")}
+              </tr> : paginatedStudents.map((student, idx) => <tr key={student.student_id} className="ministry-student__tbody-row">
+                  <td className="ministry-student__td">
+                    {String((currentPage - 1) * ROWS_PER_PAGE + idx + 1).padStart(2, "0")}
                   </td>
-                  <td
-                    style={{ ...styles.td, color: "#4f63d2", fontWeight: 600 }}
-                  >
+                  <td className="ministry-student__td ministry-student__inline-354">
+
+                
                     {student.student_id}
                   </td>
-                  <td style={styles.td}>{student.name}</td>
-                  <td style={styles.td}>{student.user?.email || "-"}</td>
-                  <td style={styles.td}>
-                    {student.class
-                      ? `${student.class.class_id} - ${student.class.name}`
-                      : student.class_id || "-"}
+                  <td className="ministry-student__td">{student.name}</td>
+                  <td className="ministry-student__td">{student.user?.email || "-"}</td>
+                  <td className="ministry-student__td">
+                    {student.class ? `${student.class.class_id} - ${student.class.name}` : student.class_id || "-"}
                   </td>
-                  <td style={styles.td}>
-                    {student.class?.major
-                      ? `${student.class.major.major_id} - ${student.class.major.name}`
-                      : student.class?.major_id || "-"}
+                  <td className="ministry-student__td">
+                    {student.class?.major ? `${student.class.major.major_id} - ${student.class.major.name}` : student.class?.major_id || "-"}
                   </td>
-                  <td style={styles.td}>
-                    {student.class?.major?.department
-                      ? `${student.class.major.department.department_id} - ${student.class.major.department.name}`
-                      : "-"}
+                  <td className="ministry-student__td">
+                    {student.class?.major?.department ? `${student.class.major.department.department_id} - ${student.class.major.department.name}` : "-"}
                   </td>
-                  <td style={styles.td}>{student.user_id}</td>
-                  <td style={styles.td}>
-                    <button
-                      style={styles.editBtn}
-                      onClick={() => handleOpenUpdate(student)}
-                    >
+                  <td className="ministry-student__td">{student.user_id}</td>
+                  <td className="ministry-student__td">
+                    <button onClick={() => handleOpenUpdate(student)} className="ministry-student__edit-btn">
+                  
                       Sửa
                     </button>
-                    <button
-                      style={styles.deleteBtn}
-                      onClick={() => handleDeleteStudent(student.student_id)}
-                    >
+                    <button onClick={() => handleDeleteStudent(student.student_id)} className="ministry-student__delete-btn">
+                  
                       Xóa
                     </button>
                   </td>
-                </tr>
-              ))
-            )}
+                </tr>)}
           </tbody>
         </table>
 
         {/* Pagination */}
-        <div style={styles.pagination}>
-          <span style={styles.pageInfo}>
+        <div className="ministry-student__pagination">
+          <span className="ministry-student__page-info">
             Trang {currentPage} / {totalPages}
           </span>
-          <div style={styles.pageButtons}>
-            <button
-              style={{
-                ...styles.pageBtn,
-                opacity: currentPage === 1 ? 0.4 : 1,
-                cursor: currentPage === 1 ? "not-allowed" : "pointer",
-              }}
-              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-            >
+          <div className="ministry-student__page-buttons">
+            <button style={{
+            opacity: currentPage === 1 ? 0.4 : 1,
+            cursor: currentPage === 1 ? "not-allowed" : "pointer"
+          }} onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="ministry-student__page-btn">
+              
               Trước
             </button>
-            <button
-              style={{
-                ...styles.pageBtn,
-                background: currentPage === totalPages ? "#4f63d2" : "#e9ecf5",
-                color: currentPage === totalPages ? "white" : "#333",
-              }}
-              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages}
-            >
+            <button style={{
+            background: currentPage === totalPages ? "#4f63d2" : "#e9ecf5",
+            color: currentPage === totalPages ? "white" : "#333"
+          }} onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="ministry-student__page-btn">
+              
               Tiếp theo
             </button>
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
-const styles = {
-  wrapper: { padding: "0 4px", fontFamily: "'Segoe UI', sans-serif" },
-  headerRow: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 20,
-  },
-  title: {
-    color: "#2c3e50",
-    margin: 0,
-    fontSize: 22,
-    fontWeight: 700,
-    display: "flex",
-    alignItems: "center",
-  },
-  addBtn: {
-    padding: "10px 18px",
-    background: "#4f63d2",
-    color: "white",
-    border: "none",
-    borderRadius: 6,
-    cursor: "pointer",
-    fontWeight: 600,
-    fontSize: 14,
-  },
-
-  // Modal Styles
-  modalOverlay: {
-    position: "fixed",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "rgba(0, 0, 0, 0.6)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    zIndex: 1000,
-  },
-  modalContent: {
-    background: "white",
-    borderRadius: 12,
-    width: "90%",
-    maxWidth: 480,
-    padding: "24px 28px",
-    position: "relative",
-    boxShadow: "0 10px 30px rgba(0,0,0,0.25)",
-  },
-  closeBtn: {
-    position: "absolute",
-    top: 12,
-    right: 16,
-    fontSize: 28,
-    background: "none",
-    border: "none",
-    cursor: "pointer",
-    color: "#888",
-    lineHeight: 1,
-  },
-
-  form: { marginTop: 10 },
-  formTitle: {
-    margin: "0 0 20px 0",
-    fontSize: 18,
-    color: "#2c3e50",
-    fontWeight: 600,
-    textAlign: "center",
-  },
-  fieldGroup: { marginBottom: 16 },
-  label: {
-    display: "block",
-    marginBottom: 6,
-    fontWeight: 600,
-    fontSize: 13.5,
-    color: "#444",
-  },
-  input: {
-    width: "100%",
-    padding: "10px 12px",
-    borderRadius: 6,
-    border: "1px solid #cdd3e0",
-    fontSize: 14,
-    boxSizing: "border-box",
-  },
-  submitBtn: {
-    width: "100%",
-    padding: "12px",
-    color: "white",
-    border: "none",
-    borderRadius: 8,
-    cursor: "pointer",
-    fontWeight: 600,
-    fontSize: 15,
-    marginTop: 10,
-  },
-
-  // Các style còn lại giữ nguyên
-  statRow: { display: "flex", gap: 16, marginBottom: 24 },
-  statCard: {
-    display: "flex",
-    alignItems: "center",
-    gap: 14,
-    background: "rgb(99, 102, 241)",
-    borderRadius: 10,
-    padding: "14px 24px",
-    boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-    minWidth: 160,
-  },
-  statIcon: {
-    background: "#eef0fb",
-    borderRadius: 8,
-    padding: 10,
-  },
-  statLabel: {
-    fontSize: 11,
-    color: "#ffffff",
-    fontWeight: 600,
-    letterSpacing: 1,
-    marginBottom: 2,
-  },
-  statValue: { fontSize: 22, fontWeight: 700, color: "#ffffff" },
-
-  tableWrapper: {
-    background: "white",
-    borderRadius: 10,
-    border: "1px solid #e4e9f4",
-    overflow: "hidden",
-    boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
-  },
-  tableHeader: {
-    padding: "16px",
-    borderBottom: "1px solid #eef0f7",
-    display: "flex",
-    justifyContent: "flex-end",
-  },
-  searchWrap: {
-    display: "flex",
-    alignItems: "center",
-    gap: 8,
-    border: "1px solid #e2e8f0",
-    borderRadius: 8,
-    padding: "0 12px",
-    minWidth: 280,
-    background: "#fff",
-  },
-  searchInput: {
-    border: "none",
-    outline: "none",
-    padding: "10px 0",
-    fontSize: 14,
-    width: "100%",
-  },
-  table: { width: "100%", borderCollapse: "collapse" },
-  theadRow: { background: "#ffffff" },
-  th: {
-    padding: "13px 16px",
-    color: "#767982",
-    fontSize: 12,
-    fontWeight: 700,
-    textAlign: "left",
-  },
-  tbodyRow: { borderBottom: "1px solid #eef0f7" },
-  td: { padding: "12px 16px", fontSize: 14, color: "#333" },
-  emptyCell: {
-    textAlign: "center",
-    padding: "32px",
-    color: "#aaa",
-    fontSize: 14,
-  },
-  editBtn: {
-    marginRight: 8,
-    padding: "5px 14px",
-    background: "#f0f3ff",
-    color: "#4f63d2",
-    border: "1px solid #c5cdf5",
-    borderRadius: 5,
-    cursor: "pointer",
-    fontSize: 13,
-  },
-  deleteBtn: {
-    padding: "5px 14px",
-    background: "#fff0f0",
-    color: "#e74c3c",
-    border: "1px solid #f5c5c5",
-    borderRadius: 5,
-    cursor: "pointer",
-    fontSize: 13,
-  },
-  pagination: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: "12px 16px",
-    borderTop: "1px solid #eef0f7",
-    fontSize: 13,
-  },
-  pageInfo: { color: "#666" },
-  pageButtons: { display: "flex", gap: 8 },
-  pageBtn: {
-    padding: "6px 16px",
-    border: "none",
-    borderRadius: 5,
-    background: "#e9ecf5",
-    color: "#333",
-    cursor: "pointer",
-    fontWeight: 500,
-  },
-};
-
 export default MinistryStudents;
