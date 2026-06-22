@@ -1,5 +1,11 @@
-import React, { useEffect, useState } from "react";
-import { Routes, Route, Link, useLocation } from "react-router-dom";
+import React, { useContext, useEffect, useState } from "react";
+import {
+  Routes,
+  Route,
+  Link,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 import MinistrySchedule from "./MinistrySchedule";
 import MinistryRooms from "./MinistryRooms";
 import MinistryTeachers from "./MinistryTeachers";
@@ -16,11 +22,22 @@ import { MdMeetingRoom, MdSubject, MdDashboard } from "react-icons/md";
 import { IoCalendar } from "react-icons/io5";
 import { GiTeacher } from "react-icons/gi";
 import { FiLogOut } from "react-icons/fi";
-import { coursesAPI, departmentsAPI, majorsAPI, roomsAPI, semestersAPI, studentClassesAPI, studentsAPI, subjectsAPI, teachersAPI } from "../services/api";
+import {
+  coursesAPI,
+  departmentsAPI,
+  majorsAPI,
+  roomsAPI,
+  semestersAPI,
+  studentClassesAPI,
+  studentsAPI,
+  subjectsAPI,
+  teachersAPI,
+} from "../services/api";
 import { GrSchedule } from "react-icons/gr";
 import toast from "react-hot-toast";
 import { FaLock } from "react-icons/fa";
 import ChangePassword from "./ChangePassword";
+import { AuthContext } from "../contexts/AuthContext";
 
 // ── inject global CSS once ────────────────────────────────────
 import "../styles/MinistryDashboard.css";
@@ -211,7 +228,10 @@ const GLOBAL_CSS = `
     }
   }
 `;
-if (typeof document !== "undefined" && !document.getElementById("edu-ministry-styles")) {
+if (
+  typeof document !== "undefined" &&
+  !document.getElementById("edu-ministry-styles")
+) {
   const style = document.createElement("style");
   style.id = "edu-ministry-styles";
   style.textContent = GLOBAL_CSS;
@@ -219,103 +239,117 @@ if (typeof document !== "undefined" && !document.getElementById("edu-ministry-st
 }
 
 // ── Thứ tự danh mục quản lý ───────────────────────────────────
-const NAV_ITEMS = [{
-  path: "students",
-  label: "Sinh viên",
-  Icon: PiStudentDuotone
-}, {
-  path: "student-classes",
-  label: "Lớp học",
-  Icon: PiStudentDuotone
-}, {
-  path: "departments",
-  label: "Khoa",
-  Icon: MdSubject
-}, {
-  path: "majors",
-  label: "Chuyên ngành",
-  Icon: MdSubject
-}, {
-  path: "teachers",
-  label: "Giảng viên",
-  Icon: GiTeacher
-}, {
-  path: "rooms",
-  label: "Phòng học",
-  Icon: MdMeetingRoom
-}, {
-  path: "semesters",
-  label: "Kỳ học",
-  Icon: GrSchedule
-}, {
-  path: "subjects",
-  label: "Môn học & Khóa học",
-  Icon: MdSubject
-}, {
-  path: "schedule",
-  label: "Lịch học",
-  Icon: IoCalendar
-}, {
-  path: "teacher-busy-schedules",
-  label: "Duyệt lịch bận",
-  Icon: IoCalendar
-}, {
-  path: "enrollments",
-  label: "Ghi danh",
-  Icon: PiStudentDuotone
-}, {
-  path: "change-password",
-  label: "Đổi mật khẩu",
-  Icon: FaLock
-}];
+const NAV_ITEMS = [
+  {
+    path: "students",
+    label: "Sinh viên",
+    Icon: PiStudentDuotone,
+  },
+  {
+    path: "student-classes",
+    label: "Lớp học",
+    Icon: PiStudentDuotone,
+  },
+  {
+    path: "departments",
+    label: "Khoa",
+    Icon: MdSubject,
+  },
+  {
+    path: "majors",
+    label: "Chuyên ngành",
+    Icon: MdSubject,
+  },
+  {
+    path: "teachers",
+    label: "Giảng viên",
+    Icon: GiTeacher,
+  },
+  {
+    path: "rooms",
+    label: "Phòng học",
+    Icon: MdMeetingRoom,
+  },
+  {
+    path: "semesters",
+    label: "Kỳ học",
+    Icon: GrSchedule,
+  },
+  {
+    path: "subjects",
+    label: "Môn học & Khóa học",
+    Icon: MdSubject,
+  },
+  {
+    path: "schedule",
+    label: "Lịch học",
+    Icon: IoCalendar,
+  },
+  {
+    path: "teacher-busy-schedules",
+    label: "Duyệt lịch bận",
+    Icon: IoCalendar,
+  },
+  {
+    path: "enrollments",
+    label: "Ghi danh",
+    Icon: PiStudentDuotone,
+  },
+  {
+    path: "change-password",
+    label: "Đổi mật khẩu",
+    Icon: FaLock,
+  },
+];
 const STAT_ICONS = {
   students: {
     color: "#4f46e5",
     bg: "#e0e7ff",
-    svg: <PiStudentDuotone size={22} color="#4f46e5" />
+    svg: <PiStudentDuotone size={22} color="#4f46e5" />,
   },
   teachers: {
     color: "#16a34a",
     bg: "#dcfce7",
-    svg: <GiTeacher size={22} color="#16a34a" />
+    svg: <GiTeacher size={22} color="#16a34a" />,
   },
   departments: {
     color: "#9333ea",
     bg: "#f3e8ff",
-    svg: <MdDashboard size={22} color="#9333ea" />
+    svg: <MdDashboard size={22} color="#9333ea" />,
   },
   majors: {
     color: "#7c3aed",
     bg: "#ede9fe",
-    svg: <MdSubject size={22} color="#7c3aed" />
+    svg: <MdSubject size={22} color="#7c3aed" />,
   },
   subjects: {
     color: "#6366f1",
     bg: "#ede9fe",
-    svg: <MdSubject size={22} color="#6366f1" />
+    svg: <MdSubject size={22} color="#6366f1" />,
   },
   courses: {
     color: "#f97316",
     bg: "#ffedd5",
-    svg: <GrSchedule size={22} color="#f97316" />
+    svg: <GrSchedule size={22} color="#f97316" />,
   },
   rooms: {
     color: "#0ea5e9",
     bg: "#e0f2fe",
-    svg: <MdMeetingRoom size={22} color="#0ea5e9" />
+    svg: <MdMeetingRoom size={22} color="#0ea5e9" />,
   },
   studentClasses: {
     color: "#0891b2",
     bg: "#cffafe",
-    svg: <PiStudentDuotone size={22} color="#0891b2" />
+    svg: <PiStudentDuotone size={22} color="#0891b2" />,
   },
   activeSemester: {
     color: "#dc2626",
     bg: "#fee2e2",
-    svg: <IoCalendar size={22} color="#dc2626" />
-  }
+    svg: <IoCalendar size={22} color="#dc2626" />,
+  },
 };
 const MinistryDashboard = () => {
+  const { logout } = useContext(AuthContext);
   const [students, setStudents] = useState([]);
   const [teachers, setTeachers] = useState([]);
   const [departments, setDepartments] = useState([]);
@@ -327,9 +361,30 @@ const MinistryDashboard = () => {
   const [activeSemester, setActiveSemester] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const fetchDashboardStats = async () => {
     try {
-      const [studentsRes, teachersRes, departmentsRes, majorsRes, subjectsRes, coursesRes, roomsRes, studentClassesRes, semestersRes] = await Promise.all([studentsAPI.getAll(), teachersAPI.getAll(), departmentsAPI.getAll(), majorsAPI.getAll(), subjectsAPI.getAll(), coursesAPI.getAll(), roomsAPI.getAll(), studentClassesAPI.getAll(), semestersAPI.getAll()]);
+      const [
+        studentsRes,
+        teachersRes,
+        departmentsRes,
+        majorsRes,
+        subjectsRes,
+        coursesRes,
+        roomsRes,
+        studentClassesRes,
+        semestersRes,
+      ] = await Promise.all([
+        studentsAPI.getAll(),
+        teachersAPI.getAll(),
+        departmentsAPI.getAll(),
+        majorsAPI.getAll(),
+        subjectsAPI.getAll(),
+        coursesAPI.getAll(),
+        roomsAPI.getAll(),
+        studentClassesAPI.getAll(),
+        semestersAPI.getAll(),
+      ]);
       setStudents(studentsRes.data || []);
       setTeachers(teachersRes.data || []);
       setDepartments(departmentsRes.data || []);
@@ -338,7 +393,10 @@ const MinistryDashboard = () => {
       setCourses(coursesRes.data || []);
       setRooms(roomsRes.data || []);
       setStudentClasses(studentClassesRes.data || []);
-      setActiveSemester((semestersRes.data || []).find(semester => semester.is_active) || null);
+      setActiveSemester(
+        (semestersRes.data || []).find((semester) => semester.is_active) ||
+          null,
+      );
     } catch {
       toast.error("Không thể tải dữ liệu tổng quan");
     }
@@ -346,221 +404,188 @@ const MinistryDashboard = () => {
   useEffect(() => {
     fetchDashboardStats();
   }, []);
-  const isActive = path => location.pathname.split("/").includes(path);
-  const HomeContent = <div className="ministry-dashboard__inline-359">
+  const isActive = (path) => location.pathname.split("/").includes(path);
+  const handleLogout = async () => {
+    await logout();
+    navigate("/login", { replace: true });
+  };
+  const HomeContent = (
+    <div className="ministry-dashboard__inline-359">
       <div className="ministry-dashboard__inline-360">
         <h1 className="ministry-dashboard__inline-361">
-
-
-
-
-
-
-        
           Chào mừng trở lại, Giáo vụ
         </h1>
         <p className="ministry-dashboard__inline-371">
           Dưới đây là tóm tắt các chỉ số cốt lõi của hệ thống.
         </p>
         <p className="ministry-dashboard__inline-374">
-
-
-
-
-
-
-        
           Kỳ học hiện tại:{" "}
           <span className="ministry-dashboard__inline-383">
-            {activeSemester ? `${activeSemester.name} ${activeSemester.school_year}` : "Chưa thiết lập"}
+            {activeSemester
+              ? `${activeSemester.name} ${activeSemester.school_year}`
+              : "Chưa thiết lập"}
           </span>
         </p>
       </div>
 
       <div className="ministry-dashboard__inline-391">
-        {[{
-        key: "students",
-        label: "SỐ LƯỢNG SINH VIÊN",
-        value: students.length
-      }, {
-        key: "teachers",
-        label: "SỐ LƯỢNG GIẢNG VIÊN",
-        value: teachers.length
-      }, {
-        key: "departments",
-        label: "SỐ LƯỢNG KHOA",
-        value: departments.length
-      }, {
-        key: "majors",
-        label: "SỐ LƯỢNG CHUYÊN NGÀNH",
-        value: majors.length
-      }, {
-        key: "subjects",
-        label: "SỐ LƯỢNG MÔN HỌC",
-        value: subjects.length
-      }, {
-        key: "courses",
-        label: "SỐ LƯỢNG KHÓA HỌC",
-        value: courses.length
-      }, {
-        key: "rooms",
-        label: "SỐ LƯỢNG PHÒNG HỌC",
-        value: rooms.length
-      }, {
-        key: "studentClasses",
-        label: "SỐ LƯỢNG LỚP SINH VIÊN",
-        value: studentClasses.length
-      }].map(stat => <div className="edu-stat-card" key={stat.key}>
-            <div style={{
-          background: STAT_ICONS[stat.key].bg
-        }} className="ministry-dashboard__inline-435">
-          
+        {[
+          {
+            key: "students",
+            label: "SỐ LƯỢNG SINH VIÊN",
+            value: students.length,
+          },
+          {
+            key: "teachers",
+            label: "SỐ LƯỢNG GIẢNG VIÊN",
+            value: teachers.length,
+          },
+          {
+            key: "departments",
+            label: "SỐ LƯỢNG KHOA",
+            value: departments.length,
+          },
+          {
+            key: "majors",
+            label: "SỐ LƯỢNG CHUYÊN NGÀNH",
+            value: majors.length,
+          },
+          {
+            key: "subjects",
+            label: "SỐ LƯỢNG MÔN HỌC",
+            value: subjects.length,
+          },
+          {
+            key: "courses",
+            label: "SỐ LƯỢNG KHÓA HỌC",
+            value: courses.length,
+          },
+          {
+            key: "rooms",
+            label: "SỐ LƯỢNG PHÒNG HỌC",
+            value: rooms.length,
+          },
+          {
+            key: "studentClasses",
+            label: "SỐ LƯỢNG LỚP SINH VIÊN",
+            value: studentClasses.length,
+          },
+        ].map((stat) => (
+          <div className="edu-stat-card" key={stat.key}>
+            <div
+              style={{
+                background: STAT_ICONS[stat.key].bg,
+              }}
+              className="ministry-dashboard__inline-435"
+            >
               {STAT_ICONS[stat.key].svg}
             </div>
             <div>
-              <div className="ministry-dashboard__inline-449">
-
-
-
-
-
-
-
-
-            
-                {stat.label}
-              </div>
-              <div style={{
-            fontSize: stat.isText ? 22 : 34
-          }} className="ministry-dashboard__inline-461">
-            
+              <div className="ministry-dashboard__inline-449">{stat.label}</div>
+              <div
+                style={{
+                  fontSize: stat.isText ? 22 : 34,
+                }}
+                className="ministry-dashboard__inline-461"
+              >
                 {stat.value}
               </div>
             </div>
-          </div>)}
+          </div>
+        ))}
       </div>
-    </div>;
-  return <div className="ministry-dashboard__inline-479">
-
-
-
-
-
-
-
-
-      
+    </div>
+  );
+  return (
+    <div className="ministry-dashboard__inline-479">
       {/* Sidebar overlay (mobile) */}
-      <div className={`edu-sidebar-overlay ${sidebarOpen ? "open" : ""}`} onClick={() => setSidebarOpen(false)} />
-      
+      <div
+        className={`edu-sidebar-overlay ${sidebarOpen ? "open" : ""}`}
+        onClick={() => setSidebarOpen(false)}
+      />
 
       {/* ── Sidebar (Đã chỉnh màu theo ảnh mẫu) ── */}
       <aside className={`edu-sidebar ${sidebarOpen ? "open" : ""}`}>
         {/* Nav links */}
         <nav className="ministry-dashboard__inline-498">
-          <Link to="/ministry/dashboard" className={`edu-nav-item ${location.pathname === "/ministry" || location.pathname === "/ministry/dashboard" ? "active" : ""}`} onClick={() => setSidebarOpen(false)}>
-            
+          <Link
+            to="/ministry/dashboard"
+            className={`edu-nav-item ${location.pathname === "/ministry" || location.pathname === "/ministry/dashboard" ? "active" : ""}`}
+            onClick={() => setSidebarOpen(false)}
+          >
             <MdDashboard size={18} /> Dashboard
           </Link>
 
-          <div className="ministry-dashboard__inline-507">
+          <div className="ministry-dashboard__inline-507">Truy cập nhanh</div>
 
-
-
-
-
-
-
-
-
-            
-            Truy cập nhanh
-          </div>
-
-          {NAV_ITEMS.map(({
-          path,
-          label,
-          Icon
-        }) => <Link key={path} to={`/ministry/${path}`} className={`edu-nav-item ${isActive(path) ? "active" : ""}`} onClick={() => setSidebarOpen(false)}>
-            
+          {NAV_ITEMS.map(({ path, label, Icon }) => (
+            <Link
+              key={path}
+              to={`/ministry/${path}`}
+              className={`edu-nav-item ${isActive(path) ? "active" : ""}`}
+              onClick={() => setSidebarOpen(false)}
+            >
               <Icon size={18} /> {label}
-            </Link>)}
+            </Link>
+          ))}
         </nav>
       </aside>
 
       {/* ── Main Content ── */}
       <div className="ministry-dashboard__inline-535">
-
-
-
-
-
-
-
-        
         {/* Topbar */}
         <header className="ministry-dashboard__inline-545 ministry-dashboard__inline-502">
-          
           {/* Hamburger (Mobile) */}
-          <button className="edu-topbar-hamburger ministry-dashboard__inline-560" onClick={() => setSidebarOpen(!sidebarOpen)}>
-
-
-
-
-
-
-
-
-
-            
-            {[0, 1, 2].map(i => <span key={i} className="ministry-dashboard__inline-574" />)}
+          <button
+            className="edu-topbar-hamburger ministry-dashboard__inline-560"
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+          >
+            {[0, 1, 2].map((i) => (
+              <span key={i} className="ministry-dashboard__inline-574" />
+            ))}
           </button>
 
           {/* Breadcrumb */}
           <div className="ministry-dashboard__inline-588">
-
-
-
-
-
-
-            
             Dashboard Overview
           </div>
           <div className="ministry-dashboard__inline-598" />
 
           {/* Logout button góc phải */}
-          <div onClick={() => window.location.href = "/login"} onMouseEnter={e => {
-          e.currentTarget.style.background = "#fecaca";
-        }} onMouseLeave={e => {
-          e.currentTarget.style.background = "#fee2e2";
-        }} className="ministry-dashboard__inline-601">
-            
+          <div
+            onClick={handleLogout}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = "#fecaca";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = "#fee2e2";
+            }}
+            className="ministry-dashboard__inline-601"
+          >
             <FiLogOut size={16} /> Đăng xuất
           </div>
         </header>
 
         {/* Main View Router */}
         <main className="ministry-dashboard__inline-628">
-
-
-
-
-
-
-          
           <Routes>
             <Route path="/" element={HomeContent} />
             <Route path="dashboard" element={HomeContent} />
             <Route path="subjects" element={<MinistrySubjectsAndCourses />} />
             <Route path="semesters" element={<MinistrySemesters />} />
             <Route path="schedule" element={<MinistrySchedule />} />
-            <Route path="teacher-busy-schedules" element={<MinistryTeacherBusySchedules />} />
-            
+            <Route
+              path="teacher-busy-schedules"
+              element={<MinistryTeacherBusySchedules />}
+            />
+
             <Route path="rooms" element={<MinistryRooms />} />
             <Route path="teachers" element={<MinistryTeachers />} />
-            <Route path="student-classes" element={<MinistryStudentClasses />} />
-            
+            <Route
+              path="student-classes"
+              element={<MinistryStudentClasses />}
+            />
+
             <Route path="departments" element={<MinistryDepartments />} />
             <Route path="majors" element={<MinistryMajors />} />
             <Route path="students" element={<MinistryStudents />} />
@@ -569,6 +594,7 @@ const MinistryDashboard = () => {
           </Routes>
         </main>
       </div>
-    </div>;
+    </div>
+  );
 };
 export default MinistryDashboard;

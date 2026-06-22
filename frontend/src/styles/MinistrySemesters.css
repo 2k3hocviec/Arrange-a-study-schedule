@@ -2,7 +2,7 @@
   padding: 28px 32px;
   background: #f8fafc;
   min-height: 100vh;
-  font-family: 'Segoe UI', sans-serif;
+  font-family: "Segoe UI", sans-serif;
 }
 
 .ministry-semesters__header {
@@ -46,7 +46,7 @@
   padding: 24px;
   width: 100%;
   max-width: 760px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18);
 }
 
 .ministry-semesters__modal-header {
@@ -198,7 +198,7 @@
 .ministry-semesters__modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(15,23,42,0.45);
+  background: rgba(15, 23, 42, 0.45);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
@@ -214,6 +214,28 @@
   border-radius: 6px;
   background: #dcfce7;
   color: #15803d;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.ministry-semesters__register-open-btn {
+  margin-right: 6px;
+  padding: 6px 10px;
+  border: none;
+  border-radius: 6px;
+  background: #e0f2fe;
+  color: #0369a1;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.ministry-semesters__register-close-btn {
+  margin-right: 6px;
+  padding: 6px 10px;
+  border: none;
+  border-radius: 6px;
+  background: #ffedd5;
+  color: #c2410c;
   cursor: pointer;
   font-weight: 700;
 }
