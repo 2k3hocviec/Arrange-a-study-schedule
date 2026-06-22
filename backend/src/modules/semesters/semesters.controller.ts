@@ -1,4 +1,12 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { Roles } from 'src/role/roles.decorator';
 import { CreateSemesterDto } from './dto/create-semester.dto';
 import { UpdateSemesterDto } from './dto/update-semester.dto';
@@ -28,7 +36,10 @@ export class SemestersController {
 
   @Roles('ministry')
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateSemesterDto: UpdateSemesterDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateSemesterDto: UpdateSemesterDto,
+  ) {
     return this.semestersService.update(id, updateSemesterDto);
   }
 
@@ -36,6 +47,15 @@ export class SemestersController {
   @Patch(':id/activate')
   activate(@Param('id') id: string) {
     return this.semestersService.activate(id);
+  }
+
+  @Roles('ministry')
+  @Patch(':id/register')
+  setRegisterStatus(
+    @Param('id') id: string,
+    @Body() body: { is_register: boolean },
+  ) {
+    return this.semestersService.setRegisterStatus(id, body.is_register);
   }
 
   @Roles('ministry')

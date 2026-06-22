@@ -4,4 +4,5 @@ export class CreateSemesterDto {
   start_date!: string;
   end_date!: string;
   is_active?: boolean;
+  is_register?: boolean;
 }

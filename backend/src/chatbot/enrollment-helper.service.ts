@@ -52,7 +52,7 @@ export class EnrollmentHelperService {
     const newCourseSchedule = await this.prisma.schedule.findFirst({
       where: {
         course_id: courseId,
-        course: { semester: { is_active: true } },
+        course: { semester: { is_active: true, is_register: true } },
       },
     });
 
@@ -125,6 +125,13 @@ export class EnrollmentHelperService {
       };
     }
 
+    if (!course.semester?.is_register) {
+      return {
+        canEnroll: false,
+        reason: 'Ky dang ky hien dang dong',
+      };
+    }
+
     return {
       canEnroll: true,
     };
@@ -144,7 +151,7 @@ export class EnrollmentHelperService {
     const normalizedFreeDays = freeDays.map(normalizeDay);
 
     const allSchedules = await this.prisma.schedule.findMany({
-      where: { course: { semester: { is_active: true } } },
+      where: { course: { semester: { is_active: true, is_register: true } } },
       include: {
         course: {
           include: {

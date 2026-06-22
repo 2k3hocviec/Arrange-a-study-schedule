@@ -67,6 +67,7 @@ const semesters = [
     start_date: date('2025-09-05'),
     end_date: date('2026-01-15'),
     is_active: false,
+    is_register: false,
   },
   {
     name: 'Học kỳ 2',
@@ -74,6 +75,7 @@ const semesters = [
     start_date: date('2026-02-16'),
     end_date: date('2026-06-30'),
     is_active: true,
+    is_register: true,
   },
   {
     name: 'Học kỳ 1',
@@ -81,6 +83,7 @@ const semesters = [
     start_date: date('2026-09-05'),
     end_date: date('2027-01-15'),
     is_active: false,
+    is_register: false,
   },
 ];
 

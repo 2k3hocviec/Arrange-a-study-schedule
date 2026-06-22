@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateSemesterDto } from './dto/create-semester.dto';
 import { UpdateSemesterDto } from './dto/update-semester.dto';
@@ -18,10 +22,26 @@ export class SemestersService {
     const endDate = dto.end_date ? new Date(dto.end_date) : undefined;
 
     if (startDate && endDate && startDate > endDate) {
-      throw new BadRequestException('Semester start_date must be before end_date');
+      throw new BadRequestException(
+        'Semester start_date must be before end_date',
+      );
     }
 
     return { startDate, endDate };
+  }
+
+  private resolveRegisterStatus(isActive: boolean, isRegister?: boolean) {
+    if (!isActive) {
+      if (isRegister) {
+        throw new BadRequestException(
+          'Registration can only be opened for the active semester',
+        );
+      }
+
+      return false;
+    }
+
+    return Boolean(isRegister);
   }
 
   private async ensureSchedulesWithinSemesterDateRange(
@@ -63,13 +83,19 @@ export class SemestersService {
     const { startDate, endDate } = this.normalizeDates(createSemesterDto);
 
     if (!startDate || !endDate) {
-      throw new BadRequestException('Semester start_date and end_date are required');
+      throw new BadRequestException(
+        'Semester start_date and end_date are required',
+      );
     }
 
     return this.prisma.$transaction(async (tx) => {
       if (createSemesterDto.is_active) {
-        await tx.semester.updateMany({ data: { is_active: false } });
+        await tx.semester.updateMany({
+          data: { is_active: false, is_register: false },
+        });
       }
+
+      const isActive = Boolean(createSemesterDto.is_active);
 
       return tx.semester.create({
         data: {
@@ -77,7 +103,11 @@ export class SemestersService {
           school_year: createSemesterDto.school_year,
           start_date: startDate,
           end_date: endDate,
-          is_active: Boolean(createSemesterDto.is_active),
+          is_active: isActive,
+          is_register: this.resolveRegisterStatus(
+            isActive,
+            createSemesterDto.is_register,
+          ),
         },
       });
     });
@@ -114,9 +144,26 @@ export class SemestersService {
       if (updateSemesterDto.is_active) {
         await tx.semester.updateMany({
           where: { semester_id: { not: id } },
-          data: { is_active: false },
+          data: { is_active: false, is_register: false },
         });
       }
+
+      const nextIsActive =
+        updateSemesterDto.is_active === undefined
+          ? semester.is_active
+          : updateSemesterDto.is_active;
+      const requestedRegister =
+        updateSemesterDto.is_register === undefined
+          ? semester.is_register
+          : updateSemesterDto.is_register;
+
+      if (updateSemesterDto.is_register && !nextIsActive) {
+        throw new BadRequestException(
+          'Registration can only be opened for the active semester',
+        );
+      }
+
+      const nextIsRegister = nextIsActive ? requestedRegister : false;
 
       return tx.semester.update({
         where: { semester_id: id },
@@ -126,6 +173,7 @@ export class SemestersService {
           start_date: startDate,
           end_date: endDate,
           is_active: updateSemesterDto.is_active,
+          is_register: this.resolveRegisterStatus(nextIsActive, nextIsRegister),
         },
       });
     });
@@ -138,11 +186,31 @@ export class SemestersService {
     }
 
     return this.prisma.$transaction(async (tx) => {
-      await tx.semester.updateMany({ data: { is_active: false } });
+      await tx.semester.updateMany({
+        data: { is_active: false, is_register: false },
+      });
       return tx.semester.update({
         where: { semester_id: id },
         data: { is_active: true },
       });
+    });
+  }
+
+  async setRegisterStatus(id: string, isRegister: boolean) {
+    const semester = await this.findOne(id);
+    if (!semester) {
+      throw new NotFoundException('Semester not found');
+    }
+
+    if (isRegister && !semester.is_active) {
+      throw new BadRequestException(
+        'Registration can only be opened for the active semester',
+      );
+    }
+
+    return this.prisma.semester.update({
+      where: { semester_id: id },
+      data: { is_register: Boolean(isRegister) },
     });
   }
 

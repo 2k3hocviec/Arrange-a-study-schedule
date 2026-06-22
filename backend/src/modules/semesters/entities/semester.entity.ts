@@ -5,4 +5,5 @@ export class Semester {
   start_date!: Date;
   end_date!: Date;
   is_active!: boolean;
+  is_register!: boolean;
 }

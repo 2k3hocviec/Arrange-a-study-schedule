@@ -126,6 +126,10 @@ export class EnrollmentsService {
       );
     }
 
+    if (!options.allowInactiveSemester && !course.semester?.is_register) {
+      throw new BadRequestException('Registration is closed for this semester');
+    }
+
     if (
       course.remaining_capacity !== undefined &&
       course.remaining_capacity !== null &&
@@ -257,9 +261,18 @@ export class EnrollmentsService {
       },
     });
 
-    if (result.count > 0 && course && course.remaining_capacity !== undefined && course.remaining_capacity !== null) {
+    if (
+      result.count > 0 &&
+      course &&
+      course.remaining_capacity !== undefined &&
+      course.remaining_capacity !== null
+    ) {
       const newRemaining = course.remaining_capacity + 1;
-      if (course.capacity === undefined || course.capacity === null || newRemaining <= course.capacity) {
+      if (
+        course.capacity === undefined ||
+        course.capacity === null ||
+        newRemaining <= course.capacity
+      ) {
         await this.coursesService.updateRemaining(courseId, newRemaining);
       }
     }
@@ -299,6 +312,7 @@ export class EnrollmentsService {
                 name: true,
                 school_year: true,
                 is_active: true,
+                is_register: true,
               },
             },
             subject: {

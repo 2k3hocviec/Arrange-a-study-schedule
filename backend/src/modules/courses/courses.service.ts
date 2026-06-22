@@ -146,7 +146,9 @@ export class CoursesService {
     );
 
     if (!teacher || !subject || !semester) {
-      throw new BadRequestException('Not teacher or Not subject or Not semester');
+      throw new BadRequestException(
+        'Not teacher or Not subject or Not semester',
+      );
     }
 
     this.ensureTeacherCanTeachSubject(teacher, subject);
@@ -223,7 +225,9 @@ export class CoursesService {
       ? await this.semestersService.findOne(updateCourseDto.semester_id)
       : true;
     if (!teacher || !subject || !semester) {
-      throw new BadRequestException('Not teacher or Not subject or Not semester');
+      throw new BadRequestException(
+        'Not teacher or Not subject or Not semester',
+      );
     }
 
     this.ensureTeacherCanTeachSubject(teacher, subject);
@@ -272,7 +276,9 @@ export class CoursesService {
     }
 
     if (enrollmentCount > 0) {
-      throw new BadRequestException('Cannot delete course that has enrollments');
+      throw new BadRequestException(
+        'Cannot delete course that has enrollments',
+      );
     }
 
     return this.prisma.course.delete({ where: { course_id: id } });
@@ -325,6 +331,7 @@ export class CoursesService {
             start_date: true,
             end_date: true,
             is_active: true,
+            is_register: true,
           },
         },
         subject: {
