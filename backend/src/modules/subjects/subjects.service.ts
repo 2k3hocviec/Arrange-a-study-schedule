@@ -9,7 +9,7 @@ export class SubjectsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly majorsService: MajorsService,
-  ) {}
+  ) { }
 
   async create(createSubjectDto: CreateSubjectDto) {
     const subjectOld = await this.findOne(createSubjectDto.subject_id);
@@ -25,7 +25,10 @@ export class SubjectsService {
 
   async findAll() {
     return this.prisma.subject.findMany({
-      include: { major: { include: { department: true } } },
+      include: {
+        major: { include: { department: true } },
+        _count: { select: { course: true } },
+      },
       orderBy: { subject_id: 'asc' },
     });
   }
@@ -33,10 +36,18 @@ export class SubjectsService {
   async findOne(id: string) {
     return this.prisma.subject.findUnique({
       where: { subject_id: id },
-      include: { major: { include: { department: true } } },
+      include: {
+        major: { include: { department: true } },
+        _count: { select: { course: true } },
+      },
     });
   }
 
+  /* 
+  câp nhật thông tin môn học:
+    -kiểm tra xem môn học có tồn tại hay không
+    -nếu chuyển ngành thì phải kiểm tra xem môn học đó có lớp học nào không nếu có thì không được chuyển ngành. 
+  */
   async update(id: string, updateSubjectDto: UpdateSubjectDto) {
     const subjectOld = await this.findOne(id);
 
@@ -46,6 +57,23 @@ export class SubjectsService {
 
     if (updateSubjectDto.major_id) {
       await this.majorsService.ensureExists(updateSubjectDto.major_id);
+    }
+
+    const isChangingAllowSameMajor =
+      updateSubjectDto.allow_same_major !== undefined &&
+      updateSubjectDto.allow_same_major !== subjectOld.allow_same_major;
+    const isChangingAllowSameDepartment =
+      updateSubjectDto.allow_same_department !== undefined &&
+      updateSubjectDto.allow_same_department !==
+      subjectOld.allow_same_department;
+
+    if (
+      subjectOld._count.course > 0 &&
+      (isChangingAllowSameMajor || isChangingAllowSameDepartment)
+    ) {
+      throw new BadRequestException(
+        'Cannot change subject registration flags when subject has courses',
+      );
     }
 
     return this.prisma.subject.update({

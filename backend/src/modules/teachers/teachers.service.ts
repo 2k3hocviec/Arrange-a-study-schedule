@@ -73,6 +73,22 @@ export class TeachersService {
       throw new NotFoundException('Teacher not found');
     }
 
+    const isChangingDepartment =
+      updateTeacherDto.department_id &&
+      updateTeacherDto.department_id !== teacher.department_id;
+
+    if (isChangingDepartment) {
+      const courseCount = await this.prisma.course.count({
+        where: { teacher_id: id },
+      });
+
+      if (courseCount > 0) {
+        throw new BadRequestException(
+          'Cannot change department of teacher that has courses',
+        );
+      }
+    }
+
     if (updateTeacherDto.department_id) {
       await this.departmentsService.ensureExists(updateTeacherDto.department_id);
     }

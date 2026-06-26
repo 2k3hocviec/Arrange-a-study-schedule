@@ -13,7 +13,7 @@ export class MajorsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly departmentsService: DepartmentsService,
-  ) {}
+  ) { }
 
   private async withStudentsCount<T extends { major_id: string }>(major: T) {
     const studentClasses = await this.prisma.studentClass.findMany({
@@ -86,10 +86,26 @@ export class MajorsService {
     }
   }
 
+  /*
+  Cập nhật chuyên ngành
+    - kiểm tra mã chuyên ngành có tồn tại hay không.
+    - nếu chuyển ngành thì phải kiểm tra xem chuyên ngành đó có lớp học sinh nào không nếu có thì không được chuyển ngành.
+  */
+
   async update(id: string, updateMajorDto: UpdateMajorDto) {
     const major = await this.findOne(id);
     if (!major) {
       throw new NotFoundException('Major not found');
+    }
+
+    const isChangingDepartment =
+      updateMajorDto.department_id &&
+      updateMajorDto.department_id !== major.department_id;
+
+    if (isChangingDepartment && major._count.studentClasses > 0) {
+      throw new BadRequestException(
+        'Cannot change department of major that has student classes',
+      );
     }
 
     if (updateMajorDto.department_id) {
