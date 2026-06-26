@@ -5,27 +5,30 @@ import { ConfigService } from '@nestjs/config';
 @Injectable()
 export class MailService {
   constructor(
-      private readonly mailerService: MailerService,
-      private readonly configService: ConfigService,
+    private readonly mailerService: MailerService,
+    private readonly configService: ConfigService,
   ) {}
 
+  /*
+  Gửi OTP xác nhận cấp lại mật khẩu mới.
+  */
   async sendOtpEmail(toEmail: string, otp: string, userName: string) {
     try {
       await this.mailerService.sendMail({
         to: toEmail,
-        subject: 'Ma OTP dat lai mat khau - He Thong Quan Ly',
+        subject: 'Mã OTP đặt lại mật khẩu - Hệ Thống Quản Lý',
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <h2 style="color: #2c3e50; border-bottom: 3px solid #c0392b; padding-bottom: 10px;">
-              Ma OTP Dat Lai Mat Khau
+              Mã OTP đặt lại mật khẩu
             </h2>
 
             <p style="color: #444; font-size: 16px;">
-              Xin chao <strong>${userName}</strong>,
+              Xin chào <strong>${userName}</strong>,
             </p>
 
             <p style="color: #555; line-height: 1.6;">
-              Ban da yeu cau dat lai mat khau. Su dung ma OTP ben duoi de xac minh:
+              Bạn đã yêu cầu đặt lại mật khẩu. Sử dụng mã OTP bên dưới để xác minh:
             </p>
 
             <div style="text-align: center; margin: 30px 0;">
@@ -36,12 +39,12 @@ export class MailService {
 
             <div style="background-color: #fff3f3; border: 1px solid #f5c6c6; padding: 15px; border-radius: 8px; margin: 20px 0;">
               <p style="margin: 0; color: #c0392b; font-size: 14px;">
-                <strong>Ma OTP co hieu luc trong 5 phut.</strong> Khong chia se ma nay cho bat ky ai.
+                <strong>Mã OTP có hiệu lực trong 5 phút.</strong> Không chia sẻ mã này cho bất kỳ ai.
               </p>
             </div>
 
             <p style="color: #555; line-height: 1.6;">
-              Neu ban khong yeu cau dat lai mat khau, hay bo qua email nay va lien he quan tri vien.
+              Nếu bạn không yêu cầu đặt lại mật khẩu, hãy bỏ qua email này va liện hệ quản trị viên.
             </p>
           </div>
         `,

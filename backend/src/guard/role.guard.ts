@@ -5,12 +5,15 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { AuthGuard } from '@nestjs/passport';
-import { Observable } from 'rxjs';
 
 @Injectable()
 export class RoleGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
+
+  /*
+  Hàm tự động đợc gọi mỗi khi có decorate @Roles(RoleGuard)
+    - So sánh role trong decorate với role của request.
+  */
   canActivate(context: ExecutionContext): boolean {
     const requiredRoles = this.reflector.get<string[]>(
       'roles',

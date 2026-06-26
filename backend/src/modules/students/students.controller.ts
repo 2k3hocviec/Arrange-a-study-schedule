@@ -13,7 +13,6 @@ import {
 import { StudentsService } from './students.service';
 import { CreateStudentDto } from './dto/create-student.dto';
 import { UpdateStudentDto } from './dto/update-student.dto';
-import { RoleGuard } from 'src/guard/role.guard';
 import { Roles } from 'src/role/roles.decorator';
 
 @Controller('students')

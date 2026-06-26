@@ -11,8 +11,6 @@ import {
 import { SubjectsService } from './subjects.service';
 import { CreateSubjectDto } from './dto/create-subject.dto';
 import { UpdateSubjectDto } from './dto/update-subject.dto';
-import { RoleGuard } from 'src/guard/role.guard';
-import { JwtAuthGuard } from 'src/guard/jwt.guard';
 import { Roles } from 'src/role/roles.decorator';
 
 @Controller('subjects')

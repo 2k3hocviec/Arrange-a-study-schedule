@@ -30,6 +30,10 @@ export class SemestersService {
     return { startDate, endDate };
   }
 
+  /*
+  Mở thao tác đăng ký môn học cho học kì, yêu cầu:
+    - Chỉ mở khi kì đó đang hiện hành
+  */
   private resolveRegisterStatus(isActive: boolean, isRegister?: boolean) {
     if (!isActive) {
       if (isRegister) {
@@ -44,6 +48,9 @@ export class SemestersService {
     return Boolean(isRegister);
   }
 
+  /*
+  Kiểm tra lịch tra của khóa học trong kì có bị vượt ra ngoài khi thay đổi thời gian kì học không ?
+  */
   private async ensureSchedulesWithinSemesterDateRange(
     semesterId: string,
     startDate?: Date,

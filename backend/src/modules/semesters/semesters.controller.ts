@@ -34,6 +34,13 @@ export class SemestersController {
     return this.semestersService.findActive();
   }
 
+  /*
+    Sửa đổi thông tin của kì học, yêu cầu: 
+      - Kì học phải tồn tại.
+      - Thay đổi thời gian, đảm bảo: 
+        + Thời gian bắt đầu phải nhỏ hơn tất cả thời gian bắt đầu của các khóa học trong kì.
+        + Thời gian kết thức phải lớn hơn tất cả thời gian bắt đầu của các khóa học trong kì.
+    */
   @Roles('ministry')
   @Patch(':id')
   update(
