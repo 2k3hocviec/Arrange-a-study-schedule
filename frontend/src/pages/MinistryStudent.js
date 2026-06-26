@@ -9,11 +9,25 @@ const getStudentErrorMessage = (err, action = "save") => {
   const rawMessage = err?.response?.data?.message || err?.message || "";
   const message = Array.isArray(rawMessage) ? rawMessage.join(" ") : String(rawMessage);
   const lowerMessage = message.toLowerCase();
+  const target = err?.response?.data?.meta?.target || err?.meta?.target || [];
+  const targetText = Array.isArray(target) ? target.join(" ").toLowerCase() : String(target).toLowerCase();
   if (lowerMessage.includes("cannot delete student that has enrollments")) {
     return "Không thể xóa sinh viên vì sinh viên đã có đăng ký học phần.";
   }
+  if (lowerMessage.includes("student already exists") || targetText.includes("student_id")) {
+    return "Mã sinh viên đã tồn tại. Vui lòng nhập mã sinh viên khác.";
+  }
+  if (targetText.includes("user_id")) {
+    return "Tài khoản này đã được gắn với một sinh viên khác. Vui lòng chọn tài khoản khác.";
+  }
+  if (lowerMessage.includes("student class not found")) {
+    return "Lớp học đã chọn không tồn tại. Vui lòng chọn lại lớp học.";
+  }
+  if (lowerMessage.includes("student class is full")) {
+    return "Lớp học đã đủ số lượng sinh viên. Vui lòng chọn lớp khác.";
+  }
   if (lowerMessage.includes("unique") || lowerMessage.includes("duplicate")) {
-    return "Mã sinh viên hoặc tài khoản đã tồn tại. Vui lòng kiểm tra lại.";
+    return "Mã sinh viên hoặc tài khoản sinh viên đã tồn tại. Vui lòng kiểm tra lại.";
   }
   if (action === "delete") return "Không thể xóa sinh viên.";
   return "Thao tác thất bại. Vui lòng kiểm tra lại dữ liệu.";
@@ -39,6 +53,22 @@ const MinistryStudents = () => {
     } catch (e) {
       toast.error("Tải dữ liệu sinh viên thất bại");
     }
+  };
+  const refreshStudentsKeepOrder = async () => {
+    const response = await studentsAPI.getAll();
+    const refreshedStudents = Array.isArray(response.data) ? response.data : [];
+    const refreshedById = new Map(
+      refreshedStudents.map(student => [student.student_id, student])
+    );
+    const currentIds = new Set(students.map(student => student.student_id));
+    const updatedStudents = students.map(
+      student => refreshedById.get(student.student_id) || student
+    );
+    const newStudents = refreshedStudents.filter(
+      student => !currentIds.has(student.student_id)
+    );
+
+    setStudents([...updatedStudents, ...newStudents]);
   };
   const fetchAvailableUsers = async () => {
     try {
@@ -123,7 +153,7 @@ const MinistryStudents = () => {
       await studentsAPI.update(formData.student_id, formData);
       toast.success("Cập nhật sinh viên thành công!");
       closeModal();
-      fetchStudents();
+      await refreshStudentsKeepOrder();
     } catch (err) {
       toast.error(getStudentErrorMessage(err));
     }

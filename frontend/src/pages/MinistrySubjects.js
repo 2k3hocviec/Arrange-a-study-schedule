@@ -12,13 +12,19 @@ const getSubjectErrorMessage = (err, action = "save") => {
   if (lowerMessage.includes("cannot delete subject that has courses")) {
     return "Không thể xóa môn học vì đã có khóa học thuộc môn này.";
   }
+  if (lowerMessage.includes("cannot change subject registration flags when subject has courses")) {
+    return "Không thể thay đổi quyền đăng ký cùng ngành/cùng khoa vì môn học này đã có khóa học.";
+  }
   if (lowerMessage.includes("unique") || lowerMessage.includes("duplicate")) {
     return "Mã môn học đã tồn tại. Vui lòng kiểm tra lại.";
   }
   if (action === "delete") return "Không thể xóa môn học.";
   return "Thao tác thất bại. Vui lòng kiểm tra lại dữ liệu.";
 };
-const MinistrySubjects = () => {
+const MinistrySubjects = ({
+  coursesRefreshKey = 0,
+  onSubjectsChanged = () => {},
+}) => {
   const [subjects, setSubjects] = useState([]);
   const [majors, setMajors] = useState([]);
   const [showForm, setShowForm] = useState(false);
@@ -53,6 +59,10 @@ const MinistrySubjects = () => {
     fetchSubjects();
     fetchMajors();
   }, []);
+  useEffect(() => {
+    if (coursesRefreshKey === 0) return;
+    fetchSubjects();
+  }, [coursesRefreshKey]);
   const handleInputChange = e => {
     const {
       name,
@@ -95,6 +105,7 @@ const MinistrySubjects = () => {
       });
       setShowForm(false);
       await fetchSubjects();
+      onSubjectsChanged();
       toast.success("Tạo môn học thành công!");
     } catch (err) {
       toast.error(getSubjectErrorMessage(err));
@@ -119,6 +130,7 @@ const MinistrySubjects = () => {
       setShowForm(false);
       setRepair(false);
       await fetchSubjects();
+      onSubjectsChanged();
       toast.success("Cập nhật môn học thành công!");
     } catch (err) {
       toast.error(getSubjectErrorMessage(err));
@@ -136,6 +148,7 @@ const MinistrySubjects = () => {
     try {
       await subjectsAPI.delete(subject.subject_id);
       await fetchSubjects();
+      onSubjectsChanged();
       toast.success("Xóa môn học thành công!");
     } catch (err) {
       toast.error(getSubjectErrorMessage(err, "delete"));
@@ -145,6 +158,7 @@ const MinistrySubjects = () => {
   const filteredSubjects = normalizedKeyword ? subjects.filter(subject => [subject.subject_id, subject.name, subject.credits, subject.major_id, subject.major?.name, subject.major?.department_id, subject.major?.department?.name, subject.allow_same_major ? "same major cung nganh" : "public", subject.allow_same_department ? "same department cung khoa" : "public"].filter(value => value !== undefined && value !== null).join(" ").toLowerCase().includes(normalizedKeyword)) : subjects;
   const totalPages = Math.max(1, Math.ceil(filteredSubjects.length / PAGE_SIZE));
   const paginatedSubjects = filteredSubjects.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const subjectHasCourses = repair && (formData._count?.course || 0) > 0;
   return <div className="ministry-subjects__page-wrapper">
       {/* BREADCRUMB */}
       <div className="ministry-subjects__breadcrumb">
@@ -239,9 +253,10 @@ const MinistrySubjects = () => {
 
 
                   
-                    <input type="checkbox" name="allow_same_major" checked={!!formData.allow_same_major} onChange={handleInputChange} />
+                    <input type="checkbox" name="allow_same_major" checked={!!formData.allow_same_major} onChange={handleInputChange} disabled={subjectHasCourses} />
                   
                     Cho phép cùng chuyên ngành đăng ký
+                    {subjectHasCourses ? " (không thể đổi vì đã có khóa học)" : ""}
                   </label>
 
                   <label className="ministry-subjects__field-group ministry-subjects__inline-337">
@@ -253,9 +268,10 @@ const MinistrySubjects = () => {
 
 
                   
-                    <input type="checkbox" name="allow_same_department" checked={!!formData.allow_same_department} onChange={handleInputChange} />
+                    <input type="checkbox" name="allow_same_department" checked={!!formData.allow_same_department} onChange={handleInputChange} disabled={subjectHasCourses} />
                   
                     Cho phép cùng khoa đăng ký
+                    {subjectHasCourses ? " (không thể đổi vì đã có khóa học)" : ""}
                   </label>
                 </div>
 

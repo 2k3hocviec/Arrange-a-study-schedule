@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import toast from "react-hot-toast";
 import { RiRobot2Line } from "react-icons/ri";
 import ReactMarkdown from "react-markdown";
+import { API_URL } from "../config/apiBaseUrl";
 
 const ChatBox = ({ studentInfo }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -34,7 +35,7 @@ const ChatBox = ({ studentInfo }) => {
         setLoading(true);
 
         try {
-            const response = await fetch("http://localhost:8000/chatbot/message", {
+            const response = await fetch(`${API_URL}/chatbot/message`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

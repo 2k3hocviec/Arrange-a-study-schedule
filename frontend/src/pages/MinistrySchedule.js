@@ -108,12 +108,19 @@ const getErrorMessage = (err) => {
     return "Khóa học này đã được xếp lịch.";
   }
 
-  if (message.includes("already has schedule")) {
-    return "Phòng học đã có lịch ở khoảng thời gian này.";
+  if (message.includes("Teacher already has schedule")) {
+    return "Giáo viên trùng lịch.";
   }
 
-  if (message.includes("Teacher already has schedule")) {
-    return "Giảng viên đã có lịch dạy ở khoảng thời gian này.";
+  if (
+    message.includes("Classroom") &&
+    message.includes("already has schedule")
+  ) {
+    return "Phòng học trùng lịch.";
+  }
+
+  if (message.includes("already has schedule")) {
+    return "Lịch học bị trùng trong khoảng thời gian này.";
   }
 
   if (message.includes("Teacher has registered a busy date")) {

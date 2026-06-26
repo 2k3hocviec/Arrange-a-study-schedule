@@ -42,7 +42,10 @@ const getCourseErrorMessage = (err, action = "save") => {
   }
   return "Thao tác thất bại. Vui lòng kiểm tra lại dữ liệu.";
 };
-const MinistryCourses = () => {
+const MinistryCourses = ({
+  subjectsRefreshKey = 0,
+  onCoursesChanged = () => {},
+}) => {
   const navigate = useNavigate();
   const roomTypeOptions = [{
     value: "Theory",
@@ -118,6 +121,11 @@ const MinistryCourses = () => {
     fetchSemesters();
     fetchSchedules();
   }, []);
+  useEffect(() => {
+    if (subjectsRefreshKey === 0) return;
+    fetchSubjects();
+    fetchCourses();
+  }, [subjectsRefreshKey]);
   const handleInputChange = e => {
     const {
       name,
@@ -165,8 +173,9 @@ const MinistryCourses = () => {
         toast.success("Thêm khóa học thành công!");
       }
       setShowForm(false);
-      fetchCourses();
-      fetchSchedules();
+      await fetchCourses();
+      await fetchSchedules();
+      onCoursesChanged();
     } catch (err) {
       toast.error(getCourseErrorMessage(err));
     }
@@ -178,8 +187,9 @@ const MinistryCourses = () => {
     try {
       await coursesAPI.delete(course.course_id);
       toast.success("Xóa khóa học thành công!");
-      fetchCourses();
-      fetchSchedules();
+      await fetchCourses();
+      await fetchSchedules();
+      onCoursesChanged();
     } catch (err) {
       toast.error(getCourseErrorMessage(err, "delete"));
     }

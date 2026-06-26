@@ -26,8 +26,14 @@ const getTeacherErrorMessage = (err, action = "save") => {
   if (lowerMessage.includes("cannot delete teacher that has courses")) {
     return "Không thể xóa giảng viên vì giảng viên đã được phân công khóa học.";
   }
+  if (lowerMessage.includes("cannot change department of teacher that has courses")) {
+    return "Không thể đổi khoa vì giảng viên đã liên kết với khóa học.";
+  }
   if (lowerMessage.includes("department not found")) {
     return "Khoa không tồn tại. Vui lòng chọn lại khoa.";
+  }
+  if (lowerMessage.includes("teacher already exists")) {
+    return "Mã giáo viên bị trùng. Vui lòng nhập mã giáo viên khác.";
   }
   if (lowerMessage.includes("unique") || lowerMessage.includes("duplicate")) {
     return "Mã giảng viên hoặc tài khoản đã tồn tại. Vui lòng kiểm tra lại.";

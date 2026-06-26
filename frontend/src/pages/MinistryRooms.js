@@ -15,6 +15,12 @@ const getRoomErrorMessage = (err, action = "save") => {
   if (lowerMessage.includes("cannot update classroom that has schedule")) {
     return "Không thể cập nhật sức chứa, loại phòng hoặc trạng thái vì phòng đã được xếp lịch.";
   }
+  if (
+    lowerMessage.includes("number of students must be greater than zero") ||
+    lowerMessage.includes("capacity")
+  ) {
+    return "Sức chứa không được âm.";
+  }
   if (lowerMessage.includes("unique") || lowerMessage.includes("duplicate")) {
     return "Mã phòng đã tồn tại. Vui lòng kiểm tra lại.";
   }

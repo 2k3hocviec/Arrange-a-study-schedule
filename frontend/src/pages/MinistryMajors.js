@@ -22,6 +22,9 @@ const getMajorErrorMessage = (err, action = "save") => {
   if (lower.includes("already exists")) {
     return "Mã chuyên ngành đã tồn tại.";
   }
+  if (lower.includes("cannot change department of major that has student classes")) {
+    return "Không thể chuyển khoa vì chuyên ngành này đã có lớp học.";
+  }
   if (lower.includes("department not found")) return "Khoa không tồn tại.";
   if (lower.includes("in use")) {
     return "Không thể xóa chuyên ngành đang có sinh viên hoặc môn học.";
