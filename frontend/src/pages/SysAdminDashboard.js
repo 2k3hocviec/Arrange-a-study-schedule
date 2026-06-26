@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { usersAPI } from "../services/api";
 import toast from "react-hot-toast";
 import { FaUsers, FaUserPlus, FaPencilAlt, FaTrash, FaUserShield, FaSearch, FaSignOutAlt // Thêm icon đăng xuất
 } from "react-icons/fa";
+import { AuthContext } from "../contexts/AuthContext";
 import "../styles/SysAdminDashboard.css";
 const ROLE_CONFIG = {
   sysadmin: {
@@ -66,6 +68,8 @@ const RoleBadge = ({
     </span>;
 };
 export default function SysAdminUsers() {
+  const { logout } = useContext(AuthContext);
+  const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [repair, setRepair] = useState(false);
   const [idUpdate, setIdUpdate] = useState(0);
@@ -181,9 +185,10 @@ export default function SysAdminUsers() {
     setShowForm(true);
     setIdUpdate(id);
   };
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await logout();
     toast.success("Đăng xuất thành công");
-    window.location.href = "/login";
+    navigate("/login", { replace: true });
   };
   const filtered = users.filter(u => {
     const matchRole = roleFilter === "all" || u.role === roleFilter;

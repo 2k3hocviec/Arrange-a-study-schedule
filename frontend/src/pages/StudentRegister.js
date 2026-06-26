@@ -182,7 +182,21 @@ const StudentRegister = ({
   const refreshCourses = async () => {
     try {
       const res = await coursesAPI.getInfoCourse();
-      setCourses(res.data);
+      const refreshedCourses = Array.isArray(res.data) ? res.data : [];
+      setCourses((prevCourses) => {
+        const refreshedById = new Map(
+          refreshedCourses.map((course) => [course.course_id, course]),
+        );
+        const prevIds = new Set(prevCourses.map((course) => course.course_id));
+        const updatedCourses = prevCourses.map(
+          (course) => refreshedById.get(course.course_id) || course,
+        );
+        const newCourses = refreshedCourses.filter(
+          (course) => !prevIds.has(course.course_id),
+        );
+
+        return [...updatedCourses, ...newCourses];
+      });
     } catch {}
   };
 
@@ -210,7 +224,9 @@ const StudentRegister = ({
         student_id: studentInfo.student_id,
         course_id: course.course_id,
       });
-      setRegisteredIds([...registeredIds, course.course_id]);
+      setRegisteredIds((prev) =>
+        prev.includes(course.course_id) ? prev : [...prev, course.course_id],
+      );
       toast.success(`Đã đăng ký ${course.subject?.name || "môn học"}`);
       await refreshCourses();
     } catch (err) {
@@ -225,7 +241,7 @@ const StudentRegister = ({
         student_id: studentInfo.student_id,
         course_id: course.course_id,
       });
-      setRegisteredIds(registeredIds.filter((id) => id !== course.course_id));
+      setRegisteredIds((prev) => prev.filter((id) => id !== course.course_id));
       toast.success(`Đã hủy ${course.subject?.name || "môn học"}`);
       await refreshCourses();
     } catch (err) {
