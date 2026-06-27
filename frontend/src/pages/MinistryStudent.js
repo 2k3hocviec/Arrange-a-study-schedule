@@ -14,6 +14,9 @@ const getStudentErrorMessage = (err, action = "save") => {
   if (lowerMessage.includes("cannot delete student that has enrollments")) {
     return "Không thể xóa sinh viên vì sinh viên đã có đăng ký học phần.";
   }
+  if (lowerMessage.includes("cannot change student class when student has enrollments")) {
+    return "Không thể đổi lớp học vì sinh viên này đã có môn học đăng ký.";
+  }
   if (lowerMessage.includes("student already exists") || targetText.includes("student_id")) {
     return "Mã sinh viên đã tồn tại. Vui lòng nhập mã sinh viên khác.";
   }
@@ -44,7 +47,8 @@ const MinistryStudents = () => {
     user_id: "",
     student_id: "",
     name: "",
-    class_id: ""
+    class_id: "",
+    has_enrollments: false
   });
   const fetchStudents = async () => {
     try {
@@ -108,7 +112,8 @@ const MinistryStudents = () => {
       user_id: "",
       student_id: "",
       name: "",
-      class_id: ""
+      class_id: "",
+      has_enrollments: false
     });
     setRepair(false);
     setShowForm(true);
@@ -118,7 +123,8 @@ const MinistryStudents = () => {
       user_id: student.user_id,
       student_id: student.student_id,
       name: student.name,
-      class_id: student.class_id || ""
+      class_id: student.class_id || "",
+      has_enrollments: (student._count?.enrollments || 0) > 0
     });
     setRepair(true);
     setShowForm(true);
@@ -247,8 +253,10 @@ const MinistryStudents = () => {
               </div>
 
               <div className="ministry-student__field-group">
-                <label className="ministry-student__label">Lớp học</label>
-                <select name="class_id" value={formData.class_id} onChange={handleInputChange} required className="ministry-student__input">
+                <label className="ministry-student__label">Lớp học {repair && formData.has_enrollments && "(Không thể đổi)"}</label>
+                <select name="class_id" value={formData.class_id} onChange={handleInputChange} required className="ministry-student__input" disabled={repair && formData.has_enrollments} style={{
+              background: repair && formData.has_enrollments ? "#f0f0f0" : "white"
+            }}>
 
                 
                   <option value="">-- Chọn lớp học --</option>

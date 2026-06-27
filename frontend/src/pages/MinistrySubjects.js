@@ -12,8 +12,8 @@ const getSubjectErrorMessage = (err, action = "save") => {
   if (lowerMessage.includes("cannot delete subject that has courses")) {
     return "Không thể xóa môn học vì đã có khóa học thuộc môn này.";
   }
-  if (lowerMessage.includes("cannot change subject registration flags when subject has courses")) {
-    return "Không thể thay đổi quyền đăng ký cùng ngành/cùng khoa vì môn học này đã có khóa học.";
+  if (lowerMessage.includes("cannot change subject registration flags, credits or major when subject has courses") || lowerMessage.includes("cannot change subject registration flags when subject has courses")) {
+    return "Không thể thay đổi tín chỉ, chuyên ngành hoặc quyền đăng ký vì môn học này đã có khóa học.";
   }
   if (lowerMessage.includes("unique") || lowerMessage.includes("duplicate")) {
     return "Mã môn học đã tồn tại. Vui lòng kiểm tra lại.";
@@ -226,15 +226,15 @@ const MinistrySubjects = ({
                   </div>
 
                   <div className="ministry-subjects__field-group">
-                    <label className="ministry-subjects__field-label">Số Tín Chỉ</label>
+                    <label className="ministry-subjects__field-label">Số Tín Chỉ {subjectHasCourses && "(Không thể đổi)"}</label>
 
-                    <input type="number" name="credits" placeholder="Nhập số tín chỉ" value={formData.credits} onChange={handleInputChange} required min="1" max="10" className="ministry-subjects__field-input" />
+                    <input type="number" name="credits" placeholder="Nhập số tín chỉ" value={formData.credits} onChange={handleInputChange} required min="1" max="10" className="ministry-subjects__field-input" disabled={subjectHasCourses} style={{ ...(subjectHasCourses ? { background: "#f1f5f9", cursor: "not-allowed", color: "#94a3b8" } : {}) }} />
 
                   
                   </div>
                   <div className="ministry-subjects__field-group">
-                    <label className="ministry-subjects__field-label">Chuyên ngành</label>
-                    <select name="major_id" value={formData.major_id || ""} onChange={handleInputChange} required className="ministry-subjects__field-input">
+                    <label className="ministry-subjects__field-label">Chuyên ngành {subjectHasCourses && "(Không thể đổi)"}</label>
+                    <select name="major_id" value={formData.major_id || ""} onChange={handleInputChange} required className="ministry-subjects__field-input" disabled={subjectHasCourses} style={{ ...(subjectHasCourses ? { background: "#f1f5f9", cursor: "not-allowed", color: "#94a3b8" } : {}) }}>
 
                     
                       <option value="">-- Chọn chuyên ngành --</option>

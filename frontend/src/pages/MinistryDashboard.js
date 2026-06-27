@@ -22,6 +22,7 @@ import { MdMeetingRoom, MdSubject, MdDashboard } from "react-icons/md";
 import { IoCalendar } from "react-icons/io5";
 import { GiTeacher } from "react-icons/gi";
 import { FiLogOut } from "react-icons/fi";
+import { RiLuggageDepositLine } from "react-icons/ri";
 import {
   coursesAPI,
   departmentsAPI,
@@ -241,19 +242,14 @@ if (
 // ── Thứ tự danh mục quản lý ───────────────────────────────────
 const NAV_ITEMS = [
   {
-    path: "students",
-    label: "Sinh viên",
-    Icon: PiStudentDuotone,
-  },
-  {
-    path: "student-classes",
-    label: "Lớp học",
-    Icon: PiStudentDuotone,
+    path: "semesters",
+    label: "Kỳ học",
+    Icon: GrSchedule,
   },
   {
     path: "departments",
     label: "Khoa",
-    Icon: MdSubject,
+    Icon: RiLuggageDepositLine,
   },
   {
     path: "majors",
@@ -261,19 +257,29 @@ const NAV_ITEMS = [
     Icon: MdSubject,
   },
   {
+    path: "student-classes",
+    label: "Lớp học",
+    Icon: PiStudentDuotone,
+  },
+  {
+    path: "students",
+    label: "Sinh viên",
+    Icon: PiStudentDuotone,
+  },
+  {
     path: "teachers",
     label: "Giảng viên",
     Icon: GiTeacher,
   },
   {
+    path: "teacher-busy-schedules",
+    label: "Duyệt lịch bận",
+    Icon: IoCalendar,
+  },
+  {
     path: "rooms",
     label: "Phòng học",
     Icon: MdMeetingRoom,
-  },
-  {
-    path: "semesters",
-    label: "Kỳ học",
-    Icon: GrSchedule,
   },
   {
     path: "subjects",
@@ -285,11 +291,7 @@ const NAV_ITEMS = [
     label: "Lịch học",
     Icon: IoCalendar,
   },
-  {
-    path: "teacher-busy-schedules",
-    label: "Duyệt lịch bận",
-    Icon: IoCalendar,
-  },
+
   {
     path: "enrollments",
     label: "Ghi danh",
