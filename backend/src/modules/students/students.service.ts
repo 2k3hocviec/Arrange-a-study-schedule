@@ -13,8 +13,13 @@ export class StudentsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly userService: UsersService,
-  ) {}
+  ) { }
 
+  /*
+  Kiểm tra xem lớp học có còn chỗ trống không:
+    - Nếu capacity = null hoặc undefined thì không kiểm tra
+    - Nếu currentStudentId khác null thì trừ đi 1 sinh viên nếu có lỗi không thể kiểm tra được thì ném lỗi 
+  */
   private async ensureClassCanAcceptStudent(
     classId: string,
     currentStudentId?: string,
@@ -38,9 +43,9 @@ export class StudentsService {
 
     const currentStudent = currentStudentId
       ? await this.prisma.student.findUnique({
-          where: { student_id: currentStudentId },
-          select: { class_id: true },
-        })
+        where: { student_id: currentStudentId },
+        select: { class_id: true },
+      })
       : null;
 
     const alreadyInClass = currentStudent?.class_id === classId;
@@ -94,6 +99,14 @@ export class StudentsService {
     });
   }
 
+  /*
+  Cập nhật thông tin sinh viên:
+    - Kiểm tra thông tin user
+    - Kiểm tra thông tin sinh viên
+    - Kiểm tra nếu chuyển lớp thì phải đảm bảo lớp đó còn chỗ trống
+    - Kiểm tra sinh viên này đã có môn học nào đăng ký chưa nếu có thì không được thay đổi lớp
+  */
+
   async update(id: string, updateStudentDto: UpdateStudentDto) {
     const user = await this.userService.findOne(updateStudentDto.user_id);
     if (!user) {
@@ -107,6 +120,17 @@ export class StudentsService {
     const student = await this.findOneByStudentID(id);
     if (!student) {
       throw new NotFoundException('Student not found');
+    }
+
+    if (student.class_id !== updateStudentDto.class_id) {
+      const enrollmentCount = await this.prisma.enrollment.count({
+        where: { student_id: id },
+      });
+      if (enrollmentCount > 0) {
+        throw new BadRequestException(
+          'Cannot change student class when student has enrollments',
+        );
+      }
     }
 
     await this.ensureClassCanAcceptStudent(updateStudentDto.class_id, id);

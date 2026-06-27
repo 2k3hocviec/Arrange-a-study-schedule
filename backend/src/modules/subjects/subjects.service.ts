@@ -45,8 +45,10 @@ export class SubjectsService {
 
   /* 
   câp nhật thông tin môn học:
-    -kiểm tra xem môn học có tồn tại hay không
-    -nếu chuyển ngành thì phải kiểm tra xem môn học đó có lớp học nào không nếu có thì không được chuyển ngành. 
+    - kiểm tra xem môn học có tồn tại hay không
+    - nếu chuyển ngành thì phải kiểm tra xem môn học đó có lớp học nào không nếu có thì không được chuyển ngành. 
+    - cập nhật số lượng tín chỉ nếu môn học có lớp học thì không được cập nhật số lượng tín chỉ.
+    - cập nhật quyền đăng ký nếu môn học có lớp học thì không được cập nhật quyền đăng ký.
   */
   async update(id: string, updateSubjectDto: UpdateSubjectDto) {
     const subjectOld = await this.findOne(id);
@@ -66,13 +68,19 @@ export class SubjectsService {
       updateSubjectDto.allow_same_department !== undefined &&
       updateSubjectDto.allow_same_department !==
       subjectOld.allow_same_department;
+    const isChangingMajor =
+      updateSubjectDto.major_id !== undefined &&
+      updateSubjectDto.major_id !== subjectOld.major_id;
+    const isChangingCredits =
+      updateSubjectDto.credits !== undefined &&
+      updateSubjectDto.credits !== subjectOld.credits;
 
     if (
       subjectOld._count.course > 0 &&
-      (isChangingAllowSameMajor || isChangingAllowSameDepartment)
+      (isChangingAllowSameMajor || isChangingAllowSameDepartment || isChangingMajor || isChangingCredits)
     ) {
       throw new BadRequestException(
-        'Cannot change subject registration flags when subject has courses',
+        'Cannot change subject registration flags, credits or major when subject has courses',
       );
     }
 
