@@ -70,18 +70,70 @@
 
 .ministry-dashboard__inline-498 {
   flex: 1;
-  padding-top: 24px;
+  padding: 16px 0;
   overflow-y: auto;
 }
 
 .ministry-dashboard__inline-507 {
-  padding: 18px 16px 6px;
+  padding: 18px 14px 6px;
   font-size: 11px;
   font-weight: 700;
-  color: #524d64;
+  color: #94a3b8;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  margin-left: 14px;
+  margin-left: 10px;
+}
+
+.ministry-dashboard__sidebar-brand {
+  padding: 0 20px 24px;
+  border-bottom: 1px solid #f1f3f7;
+}
+
+.ministry-dashboard__brand-title {
+  color: #3730a3;
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.ministry-dashboard__brand-subtitle {
+  color: #94a3b8;
+  font-size: 13px;
+  margin-top: 8px;
+}
+
+.ministry-dashboard__sidebar-footer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 20px 0;
+  border-top: 1px solid #f1f3f7;
+}
+
+.ministry-dashboard__footer-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #3730a3;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.ministry-dashboard__footer-name {
+  color: #1e293b;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.ministry-dashboard__footer-role {
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  margin-top: 3px;
 }
 
 .ministry-dashboard__inline-535 {

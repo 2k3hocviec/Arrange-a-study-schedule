@@ -58,16 +58,18 @@ const GLOBAL_CSS = `
 
   /* SIDEBAR */
   .edu-sidebar {
-    width: 260px;
-    min-width: 260px;
-    background: #1a1625;
-    border-right: 1px solid #2a2438;
+    width: 240px;
+    min-width: 240px;
+    height: 100vh;
+    background: #ffffff;
+    border-right: 1px solid #e8eaef;
     display: flex;
     flex-direction: column;
     transition: all 0.3s ease;
     z-index: 200;
     position: relative;
-    box-shadow: 4px 0 24px rgba(0,0,0,0.18);
+    box-shadow: none;
+    padding: 24px 0;
   }
 
   .edu-sidebar-overlay {
@@ -105,15 +107,15 @@ const GLOBAL_CSS = `
   .edu-nav-item {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 13px 16px;
-    border-radius: 12px;
-    margin: 4px 14px;
-    color: #9fa0a6;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    margin: 0 10px 4px;
+    color: #64748b;
     text-decoration: none;
     font-size: 14px;
     font-weight: 500;
-    transition: all 0.22s ease;
+    transition: all 0.15s ease;
     cursor: pointer;
   }
 
@@ -122,24 +124,19 @@ const GLOBAL_CSS = `
   }
 
   .edu-nav-item:hover {
-    background: rgba(255,255,255,0.06);
-    color: #ffffff;
-    transform: translateX(3px);
+    background: #f8fafc;
+    color: #4f46e5;
   }
 
   .edu-nav-item.active {
-    background: linear-gradient(
-      135deg,
-      rgba(99,102,241,0.22),
-      rgba(139,92,246,0.18)
-    );
-    color: #a5b4fc;
+    background: #eef2ff;
+    color: #4f46e5;
     font-weight: 600;
-    box-shadow: inset 0 0 0 1px rgba(99,102,241,0.15);
+    box-shadow: none;
   }
 
   .edu-nav-item.active svg {
-    color: #818cf8;
+    color: #4f46e5;
   }
 
   /* LOGOUT BUTTON */
@@ -149,10 +146,10 @@ const GLOBAL_CSS = `
     justify-content: center;
     gap: 8px;
     padding: 12px;
-    border-radius: 12px;
+    border-radius: 10px;
     margin: 10px 14px;
-    background: #4c1d24;
-    color: #fca5a5;
+    background: #fee2e2;
+    color: #ef4444;
     font-size: 14px;
     font-weight: 600;
     text-decoration: none;
@@ -161,8 +158,8 @@ const GLOBAL_CSS = `
   }
 
   .edu-btn-logout:hover {
-    background: #5f2330;
-    color: white;
+    background: #fecaca;
+    color: #dc2626;
   }
 
   /* STAT CARD */
@@ -508,6 +505,11 @@ const MinistryDashboard = () => {
 
       {/* ── Sidebar (Đã chỉnh màu theo ảnh mẫu) ── */}
       <aside className={`edu-sidebar ${sidebarOpen ? "open" : ""}`}>
+        <div className="ministry-dashboard__sidebar-brand">
+          <div className="ministry-dashboard__brand-title">Giáo vụ Panel</div>
+          <div className="ministry-dashboard__brand-subtitle">Quản lý đào tạo</div>
+        </div>
+
         {/* Nav links */}
         <nav className="ministry-dashboard__inline-498">
           <Link
@@ -531,6 +533,14 @@ const MinistryDashboard = () => {
             </Link>
           ))}
         </nav>
+
+        <div className="ministry-dashboard__sidebar-footer">
+          <div className="ministry-dashboard__footer-avatar">GV</div>
+          <div>
+            <div className="ministry-dashboard__footer-name">Giáo vụ</div>
+            <div className="ministry-dashboard__footer-role">ACADEMIC OFFICE</div>
+          </div>
+        </div>
       </aside>
 
       {/* ── Main Content ── */}
