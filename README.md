@@ -94,3 +94,11 @@ npm run backend:prisma:generate
 npm run backend:prisma:push
 npm run backend:seed
 ```
+
+View the database with Prisma Studio:
+
+```sh
+cd backend
+npm install
+npx prisma studio
+```
