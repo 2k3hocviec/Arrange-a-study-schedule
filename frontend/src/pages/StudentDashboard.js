@@ -1,402 +1,274 @@
 import React, { useContext, useEffect, useState } from "react";
-import {
-  Routes,
-  Route,
-  Link,
-  useLocation,
-  useNavigate,
-} from "react-router-dom";
+import { Routes, Route, Link, useLocation, useNavigate } from "react-router-dom";
 import StudentTimetable from "./StudentTimetable";
 import StudentRegister from "./StudentRegister";
-import StudentNotifications from "./StudentNotifications";
 import { studentsAPI, enrollmentsAPI } from "../services/api";
 import { AuthContext } from "../contexts/AuthContext";
-import {
-  useMobileMenu,
-  MobileMenuButton,
-  MobileMenuOverlay,
-} from "../utils/responsiveHelpers";
-import { FaCalendarAlt } from "react-icons/fa";
-import { PiBellSimpleRingingFill } from "react-icons/pi";
-import { GiArchiveRegister } from "react-icons/gi";
-import { TiPin } from "react-icons/ti";
-
+import { useMobileMenu, MobileMenuButton, MobileMenuOverlay } from "../utils/responsiveHelpers";
+import { FaCalendarAlt, FaHome, FaUserCircle, FaSignOutAlt, FaBell, FaClipboardList, FaBookOpen, FaLock } from "react-icons/fa";
+import ChangePassword from "./ChangePassword";
+import "../styles/StudentDashboard.css";
+const NAV = [{
+  path: "/student/dashboard",
+  key: "dashboard",
+  icon: <FaHome />,
+  label: "Dashboard"
+}, {
+  path: "/student/timetable",
+  key: "timetable",
+  icon: <FaCalendarAlt />,
+  label: "Thời khóa biểu"
+}, {
+  path: "/student/register",
+  key: "register",
+  icon: <FaClipboardList />,
+  label: "Đăng ký môn học"
+}, {
+  path: "/student/notifications",
+  key: "notifications",
+  icon: <FaLock />,
+  label: "Đổi mật khẩu"
+}];
 const StudentDashboard = () => {
-  const { user, logout } = useContext(AuthContext);
+  const {
+    user,
+    logout
+  } = useContext(AuthContext);
   const [studentInfo, setStudentInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [registeredIds, setRegisteredIds] = useState([]);
   const navigate = useNavigate();
   const location = useLocation();
-  const [registeredIds, setRegisteredIds] = useState([]);
-  const { isMobileMenuOpen, toggleMobileMenu, closeMobileMenu } =
-    useMobileMenu();
-
+  const {
+    isMobileMenuOpen,
+    toggleMobileMenu,
+    closeMobileMenu
+  } = useMobileMenu();
   useEffect(() => {
-    const fetchStudentInfo = async () => {
-      try {
-        setLoading(true);
-        const res = await studentsAPI.getMe();
-        setStudentInfo(res.data);
-        setError(null);
-      } catch (err) {
-        console.error("Failed to fetch student info:", err);
-        setError("Không thể tải thông tin sinh viên");
-      } finally {
-        setLoading(false);
-      }
-    };
-    if (user) {
-      fetchStudentInfo();
-    }
+    if (!user) return;
+    setLoading(true);
+    studentsAPI.getMe().then(res => {
+      setStudentInfo(res.data);
+      setError(null);
+    }).catch(() => setError("Không thể tải thông tin sinh viên")).finally(() => setLoading(false));
   }, [user]);
-
   useEffect(() => {
-    if (!studentInfo || !studentInfo.student_id) return;
-    const fetchEnrollments = async () => {
-      try {
-        const res = await enrollmentsAPI.getByStudentId(studentInfo.student_id);
-        if (res.data && Array.isArray(res.data)) {
-          const enrolledCourseIds = res.data.map((e) => e.course_id);
-          setRegisteredIds(enrolledCourseIds);
-        }
-      } catch (err) {
-        console.error("Error fetching enrollments:", err);
-      }
-    };
-    fetchEnrollments();
+    if (!studentInfo?.student_id) return;
+    enrollmentsAPI.getByStudentId(studentInfo.student_id).then(res => {
+      if (res.data && Array.isArray(res.data)) setRegisteredIds(res.data.map(e => e.course_id));
+    }).catch(console.error);
   }, [studentInfo]);
+  const isActive = key => location.pathname.includes(key) || key === "dashboard" && (location.pathname === "/student" || location.pathname === "/student/");
 
-  const navItemStyle = {
-    padding: "clamp(10px, 2vw, 14px) clamp(10px, 2vw, 15px)",
-    borderBottom: "1px solid #2d3436",
-    borderRadius: "8px",
-    transition: "all 0.3s ease",
-  };
-
-  const linkStyle = {
-    color: "white",
-    textDecoration: "none",
-    display: "flex",
-    alignItems: "center",
-    gap: "10px",
-    width: "100%",
-    fontSize: "clamp(13px, 2vw, 16px)",
-  };
-
-  const statCard = {
-    flex: 1,
-    background: "white",
-    padding: "clamp(16px, 3vw, 25px)",
-    borderRadius: "12px",
-    textAlign: "center",
-    boxShadow: "0 4px 15px rgba(0,0,0,0.05)",
-    borderTop: "6px solid #00d2ff",
-    minWidth: "150px",
-    transition: "all 0.3s ease",
-  };
-
-  const activeStyle = (path) => ({
-    ...navItemStyle,
-    background: location.pathname.includes(path) ? "#00a8cc" : "transparent",
-  });
-
-  const HomeContent = (
-    <div>
-      <h1
-        style={{
-          color: "#2c3e50",
-          fontSize: "clamp(24px, 5vw, 28px)",
-          marginBottom: "10px",
-        }}
-      >
-        BẢNG ĐIỀU KHIỂN SINH VIÊN
-      </h1>
-      {loading ? (
-        <p style={{ color: "#7f8c8d", fontSize: "clamp(14px, 2vw, 16px)" }}>
-          Đang tải thông tin...
-        </p>
-      ) : error ? (
-        <p style={{ color: "#e74c3c", fontSize: "clamp(14px, 2vw, 16px)" }}>
-          {" "}
-          ❌ {error}
-        </p>
-      ) : studentInfo ? (
-        <div style={{ marginBottom: "30px" }}>
-          <p
-            style={{
-              color: "#7f8c8d",
-              marginBottom: "5px",
-              fontSize: "clamp(13px, 2vw, 14px)",
-            }}
-          >
+  // ── Home page ─────────────────────────────────────────────────
+  const HomePage = <div className="student-dashboard__home-page">
+      {/* Welcome banner */}
+      <div className="student-dashboard__banner">
+        <div>
+          <h1 className="student-dashboard__banner-title">
+            Xin chào, {loading ? "..." : studentInfo?.name || "Sinh viên"} 👋
+          </h1>
+          <p className="student-dashboard__banner-sub">
             Mã sinh viên:{" "}
-            <strong style={{ color: "#2c3e50" }}>
-              {studentInfo.student_id}
+            <strong className="student-dashboard__inline-108">
+              {studentInfo?.student_id || "N/A"}
             </strong>
           </p>
-          <p
-            style={{
-              color: "#7f8c8d",
-              margin: 0,
-              fontSize: "clamp(13px, 2vw, 14px)",
-            }}
-          >
-            Họ tên:{" "}
-            <strong style={{ color: "#2c3e50" }}>{studentInfo.name}</strong>
-          </p>
         </div>
-      ) : null}
-      <div
-        style={{
-          display: "flex",
-          gap: "clamp(12px, 3vw, 25px)",
-          marginBottom: "35px",
-          flexWrap: "wrap",
-        }}
-      >
-        <div style={statCard}>
-          <h2
-            style={{
-              margin: 0,
-              fontSize: "clamp(24px, 4vw, 32px)",
-              color: "#00d2ff",
-            }}
-          >
-            {registeredIds.length}
-          </h2>
-          <p
-            style={{
-              color: "#7f8c8d",
-              fontWeight: "bold",
-              fontSize: "clamp(12px, 2vw, 14px)",
-              margin: 0,
-            }}
-          >
-            Môn đã đăng ký
-          </p>
-        </div>
-        <div style={statCard}>
-          <h2
-            style={{
-              margin: 0,
-              fontSize: "clamp(24px, 4vw, 32px)",
-              color: "#00d2ff",
-            }}
-          >
-            18
-          </h2>
-          <p
-            style={{
-              color: "#7f8c8d",
-              fontWeight: "bold",
-              fontSize: "clamp(12px, 2vw, 14px)",
-              margin: 0,
-            }}
-          >
-            Tín chỉ tối đa cho phép
-          </p>
-        </div>
+        <FaBookOpen size={48} className="student-dashboard__inline-113" />
       </div>
-      <div
-        style={{
-          background: "#fff",
-          padding: "clamp(16px, 3vw, 25px)",
-          borderRadius: "12px",
-          borderLeft: "8px solid #00d2ff",
-          boxShadow: "0 4px 15px rgba(0,0,0,0.05)",
-        }}
-      >
-        <h4
-          style={{ margin: "0 0 10px 0", fontSize: "clamp(14px, 2vw, 16px)" }}
-        >
-          {" "}
-          <TiPin /> Quy định sinh viên
-        </h4>
-        <p
-          style={{
-            margin: 0,
-            color: "#34495e",
-            lineHeight: 1.7,
-            fontSize: "clamp(13px, 2vw, 14px)",
-          }}
-        >
+
+      {/* Stat cards */}
+      <div className="student-dashboard__stats-row">
+        {[{
+        icon: <FaClipboardList />,
+        val: registeredIds.length,
+        label: "Môn đã đăng ký",
+        color: "#6366f1"
+      }, {
+        icon: <FaCalendarAlt />,
+        val: 18,
+        label: "Tín chỉ tối đa",
+        color: "#22c55e"
+      }, {
+        icon: <FaBell />,
+        val: 0,
+        label: "Thông báo mới",
+        color: "#f97316"
+      }].map((c, i) => <div key={i} style={{
+        borderTop: `4px solid ${c.color}`
+      }} className="student-dashboard__stat-card">
+        
+            <span style={{
+          color: c.color
+        }} className="student-dashboard__inline-142">{c.icon}</span>
+            <div>
+              <div style={{
+            color: c.color
+          }} className="student-dashboard__inline-144">
+            
+                {c.val}
+              </div>
+              <div className="student-dashboard__inline-154">
+                {c.label}
+              </div>
+            </div>
+          </div>)}
+      </div>
+
+      {/* Quick nav tiles */}
+      <h3 className="student-dashboard__inline-163">
+
+
+
+
+
+
+
+      
+        TRUY CẬP NHANH
+      </h3>
+      <div className="student-dashboard__tiles-row">
+        {NAV.filter(n => n.key !== "dashboard").map(n => <Link key={n.key} to={n.path} onClick={closeMobileMenu} className="student-dashboard__tile">
+        
+            <span className="student-dashboard__inline-182">{n.icon}</span>
+            <span className="student-dashboard__inline-183">
+
+
+
+
+
+
+          
+              {n.label}
+            </span>
+          </Link>)}
+      </div>
+
+      {/* Notice */}
+      <div className="student-dashboard__notice">
+        <strong>📌 Quy định sinh viên:</strong>
+        <p className="student-dashboard__inline-200">
+
+
+
+
+
+
+        
           Sinh viên chỉ được xem thời khóa biểu cá nhân, đăng ký môn trong thời
           gian mở đăng ký, không đăng ký trùng giờ và không vượt quá số tín chỉ
-          tối đa.
+          tối đa cho phép.
         </p>
       </div>
-    </div>
-  );
-
-  return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        minHeight: "100vh",
-        fontFamily: "Arial",
-      }}
-    >
+    </div>;
+  return <div className="student-dashboard__root">
       <MobileMenuOverlay isOpen={isMobileMenuOpen} onClick={closeMobileMenu} />
-      <div style={{ display: "flex", flex: 1 }}>
-        {/* Sidebar */}
-        <div
-          className={`sidebar ${isMobileMenuOpen ? "active" : ""}`}
-          style={{
-            width: "100%",
-            maxWidth: "270px",
-            background: "#1a1c23",
-            color: "white",
-            padding: "clamp(12px, 3vw, 20px)",
-            transition: "all 0.3s ease",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: "15px",
-            }}
-          >
-            <h2
-              style={{
-                textAlign: "center",
-                color: "#00d2ff",
-                marginBottom: "0",
-                fontSize: "clamp(16px, 3vw, 18px)",
-                flex: 1,
-              }}
-            >
-              SINH VIÊN
+
+      {/* ── SIDEBAR ── */}
+      <aside className={`sidebar ${isMobileMenuOpen ? "active" : ""} student-dashboard__sidebar`}>
+
+        
+        {/* Brand */}
+        <div className="student-dashboard__brand">
+          <div className="student-dashboard__brand-icon">
+            <FaUserCircle size={22} />
+          </div>
+          <div>
+            <div className="student-dashboard__brand-title">Cổng Sinh Viên</div>
+            <div className="student-dashboard__brand-sub">
+              {loading ? "Đang tải..." : studentInfo?.student_id || "N/A"}
+            </div>
+          </div>
+        </div>
+
+        {/* Avatar area */}
+        {studentInfo && <div className="student-dashboard__user-area">
+            <div className="student-dashboard__avatar-circle">
+              {studentInfo.name?.charAt(0) || "S"}
+            </div>
+            <div className="student-dashboard__user-name">{studentInfo.name}</div>
+            <div className="student-dashboard__user-role">Sinh viên</div>
+          </div>}
+
+        <hr className="student-dashboard__divider" />
+
+        {/* Nav */}
+        <nav className="student-dashboard__inline-252">
+          {NAV.map(n => <Link key={n.key} to={n.path} onClick={closeMobileMenu} className="student-dashboard__inline-254">
+            
+              <div style={S.navItem(isActive(n.key))}>
+                <span style={{
+              opacity: isActive(n.key) ? 1 : 0.7
+            }} className="student-dashboard__inline-261">
+                
+                  {n.icon}
+                </span>
+                {n.label}
+              </div>
+            </Link>)}
+        </nav>
+
+        {/* Logout */}
+        <button onClick={() => {
+        logout();
+        navigate("/login");
+      }} className="student-dashboard__logout-btn">
+          
+          <FaSignOutAlt /> Đăng xuất
+        </button>
+      </aside>
+
+      {/* ── MAIN ── */}
+      <main className="student-dashboard__main">
+        <MobileMenuButton onClick={toggleMobileMenu} isOpen={isMobileMenuOpen} />
+        
+
+        {/* Topbar */}
+        <header className="student-dashboard__topbar">
+          <div className="student-dashboard__inline-293">
+            <span className="student-dashboard__inline-294">
+              {NAV.find(n => isActive(n.key))?.icon || <FaHome />}
+            </span>
+            <h2 className="student-dashboard__page-title">
+              {NAV.find(n => isActive(n.key))?.label || "Dashboard"}
             </h2>
           </div>
-          <p
-            style={{
-              textAlign: "center",
-              color: "#bdc3c7",
-              marginTop: 0,
-              fontSize: "clamp(11px, 2vw, 13px)",
-            }}
-          >
-            {loading ? "Đang tải..." : studentInfo?.student_id || "N/A"}
-          </p>
-          {studentInfo && (
-            <p
-              style={{
-                textAlign: "center",
-                color: "#95a5a6",
-                fontSize: "clamp(11px, 2vw, 12px)",
-                marginTop: "-10px",
-                marginBottom: "10px",
-              }}
-            >
-              {studentInfo.name}
-            </p>
-          )}
-          <hr style={{ borderColor: "#2d3436", marginBottom: "20px" }} />
-          <nav>
-            <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-              <li style={activeStyle("timetable")}>
-                <Link
-                  to="/student/timetable"
-                  style={linkStyle}
-                  onClick={closeMobileMenu}
-                >
-                  {" "}
-                  <FaCalendarAlt style={{ color: "#00d2ff" }} /> Thời khóa biểu
-                </Link>
-              </li>
-              <li style={activeStyle("register")}>
-                <Link
-                  to="/student/register"
-                  style={linkStyle}
-                  onClick={closeMobileMenu}
-                >
-                  {" "}
-                  <GiArchiveRegister style={{ color: "#00d2ff" }} /> Đăng ký môn
-                  học
-                </Link>
-              </li>
-              <li style={activeStyle("notifications")}>
-                <Link
-                  to="/student/notifications"
-                  style={linkStyle}
-                  onClick={closeMobileMenu}
-                >
-                  <PiBellSimpleRingingFill style={{ color: "#00d2ff" }} /> Thông
-                  báo
-                </Link>
-              </li>
-            </ul>
-          </nav>
-          <button
-            onClick={() => {
-              logout();
-              navigate("/login");
-            }}
-            style={{
-              marginTop: "40px",
-              width: "100%",
-              padding: "clamp(10px, 2vw, 12px)",
-              background: "#e74c3c",
-              color: "white",
-              border: "none",
-              borderRadius: "8px",
-              cursor: "pointer",
-              fontWeight: "bold",
-              fontSize: "clamp(13px, 2vw, 14px)",
-              transition: "all 0.3s ease",
-            }}
-            onMouseOver={(e) => (e.target.style.background = "#c0392b")}
-            onMouseOut={(e) => (e.target.style.background = "#e74c3c")}
-          >
-            Đăng xuất
-          </button>
-        </div>
+        </header>
 
-        {/* Main Content */}
-        <div
-          style={{
-            flex: 1,
-            padding: "clamp(16px, 3vw, 40px)",
-            background: "#f8f9fa",
-            overflowY: "auto",
-            display: "flex",
-            flexDirection: "column",
-          }}
-        >
-          <MobileMenuButton
-            onClick={toggleMobileMenu}
-            isOpen={isMobileMenuOpen}
-          />
+        <div className="student-dashboard__content">
           <Routes>
-            <Route path="/" element={HomeContent} />
-            <Route path="dashboard" element={HomeContent} />
-            <Route
-              path="timetable"
-              element={<StudentTimetable studentInfo={studentInfo} />}
-            />
-            <Route
-              path="register"
-              element={
-                <StudentRegister
-                  registeredIds={registeredIds}
-                  setRegisteredIds={setRegisteredIds}
-                  studentInfo={studentInfo}
-                />
-              }
-            />
-            <Route
-              path="notifications"
-              element={<StudentNotifications registeredIds={registeredIds} />}
-            />
+            <Route path="/" element={HomePage} />
+            <Route path="dashboard" element={HomePage} />
+            <Route path="timetable" element={<StudentTimetable studentInfo={studentInfo} />} />
+            
+            <Route path="register" element={<StudentRegister registeredIds={registeredIds} setRegisteredIds={setRegisteredIds} studentInfo={studentInfo} />} />
+            
+            <Route path="notifications" element={<ChangePassword registeredIds={registeredIds} />} />
+            
           </Routes>
         </div>
-      </div>
-    </div>
-  );
+      </main>
+    </div>;
 };
 
+// ── Styles ────────────────────────────────────────────────────
+const S = {
+  navItem: a => ({
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
+    padding: "10px 14px",
+    borderRadius: 10,
+    fontSize: 13,
+    fontWeight: a ? 700 : 400,
+    color: a ? "#a5b4fc" : "#a1a1aa",
+    background: a ? "rgba(99,102,241,0.15)" : "transparent",
+    marginBottom: 2,
+    cursor: "pointer",
+    transition: "all 0.15s",
+    textDecoration: "none"
+  })
+};
 export default StudentDashboard;

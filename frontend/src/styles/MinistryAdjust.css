@@ -1,0 +1,25 @@
+.ministry-adjust__input {
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.ministry-adjust__inline-7 {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.ministry-adjust__inline-10 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.ministry-adjust__inline-26 {
+  margin-top: 20px;
+  padding: 10px 20px;
+  background: #8e44ad;
+  color: white;
+  border: none;
+}

@@ -1,0 +1,384 @@
+.sys-admin-dashboard__root {
+  display: flex;
+  height: 100vh;
+  min-height: 100vh;
+  font-family: 'Be Vietnam Pro', 'Segoe UI', sans-serif;
+  background: #f0f2f7;
+  color: #1e293b;
+  overflow: hidden;
+}
+
+.sys-admin-dashboard__sidebar {
+  width: 240px;
+  height: 100vh;
+  background: #fff;
+  border-right: 1px solid #e8eaef;
+  display: flex;
+  flex-direction: column;
+  padding: 24px 0;
+}
+
+.sys-admin-dashboard__sidebar-brand {
+  padding: 0 20px 24px;
+  border-bottom: 1px solid #f1f3f7;
+}
+
+.sys-admin-dashboard__brand-title {
+  font-size: 17px;
+  font-weight: 800;
+  color: #3730a3;
+  margin: 0px;
+}
+
+.sys-admin-dashboard__brand-sub {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+.sys-admin-dashboard__sidebar-nav {
+  padding: 16px 10px;
+}
+
+.sys-admin-dashboard__sidebar-footer {
+  padding: 10px 14px;
+  margin-top: 8px;
+  border-top: 1px solid #f1f3f7;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sys-admin-dashboard__footer-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #3730a3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 16px;
+}
+
+.sys-admin-dashboard__footer-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.sys-admin-dashboard__footer-role {
+  font-size: 11px;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.sys-admin-dashboard__main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0px;
+  min-height: 0px;
+}
+
+.sys-admin-dashboard__topbar {
+  background: #fff;
+  border-bottom: 1px solid #e8eaef;
+  padding: 16px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sys-admin-dashboard__page-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: #1e293b;
+  margin: 0px;
+}
+
+.sys-admin-dashboard__topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.sys-admin-dashboard__add-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 18px;
+  background: #4f46e5;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.sys-admin-dashboard__logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: #fee2e2;
+  color: #ef4444;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.sys-admin-dashboard__content {
+  padding: 28px 32px;
+  flex: 1;
+  min-height: 0px;
+  overflow-y: auto;
+}
+
+.sys-admin-dashboard__banner {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px 32px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+.sys-admin-dashboard__banner-left {
+  flex: 1;
+}
+
+.sys-admin-dashboard__banner-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: #4f46e5;
+  margin: 0 0 6px;
+}
+
+.sys-admin-dashboard__banner-desc {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0px;
+}
+
+.sys-admin-dashboard__stat-card {
+  background: linear-gradient(135deg,#4f46e5 0%,#6366f1 100%);
+  border-radius: 16px;
+  padding: 20px 28px;
+  color: #fff;
+  min-width: 200px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.sys-admin-dashboard__stat-num {
+  font-size: 36px;
+  font-weight: 800;
+  margin: 0px;
+}
+
+.sys-admin-dashboard__stat-label {
+  font-size: 13px;
+  opacity: 0.85;
+  margin: 2px 0 0;
+}
+
+.sys-admin-dashboard__toolbar-row {
+  background: #fff;
+  border-radius: 12px;
+  padding: 14px 20px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  flex-wrap: wrap;
+}
+
+.sys-admin-dashboard__search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f8fafc;
+  border-radius: 8px;
+  padding: 8px 14px;
+  border: 1px solid #e2e8f0;
+  flex: 0 0 280px;
+}
+
+.sys-admin-dashboard__search-input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 14px;
+  color: #1e293b;
+  width: 100%;
+}
+
+.sys-admin-dashboard__table-wrap {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  overflow: hidden;
+}
+
+.sys-admin-dashboard__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.sys-admin-dashboard__th {
+  padding: 14px 16px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  text-align: left;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.sys-admin-dashboard__td {
+  padding: 16px 16px;
+  font-size: 14px;
+  color: #1e293b;
+  border-bottom: 1px solid #f8fafc;
+  vertical-align: middle;
+}
+
+.sys-admin-dashboard__pagination {
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid #f1f5f9;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.sys-admin-dashboard__modal {
+  background: #fff;
+  border-radius: 20px;
+  width: 480px;
+  padding: 32px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+}
+
+.sys-admin-dashboard__modal-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: #1e293b;
+  margin: 0 0 24px;
+}
+
+.sys-admin-dashboard__field-wrap {
+  margin-bottom: 16px;
+}
+
+.sys-admin-dashboard__field-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.sys-admin-dashboard__field-input {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1.5px solid #e2e8f0;
+  font-size: 14px;
+  color: #1e293b;
+  outline: none;
+  box-sizing: border-box;
+  transition: border 0.15s;
+}
+
+.sys-admin-dashboard__field-input-disabled {
+  background: #f8fafc;
+  color: #64748b;
+  cursor: not-allowed;
+}
+
+.sys-admin-dashboard__modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.sys-admin-dashboard__submit-btn {
+  flex: 1;
+  padding: 11px;
+  background: #4f46e5;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.sys-admin-dashboard__cancel-btn {
+  padding: 11px 20px;
+  background: #f1f5f9;
+  color: #64748b;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.sys-admin-dashboard__inline-69 {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.sys-admin-dashboard__inline-581 {
+  opacity: 0.3;
+}
+
+.sys-admin-dashboard__inline-596 {
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.sys-admin-dashboard__inline-620 {
+  background: #f8fafc;
+}
+
+.sys-admin-dashboard__inline-637 {
+  font-weight: 500;
+}
+
+.sys-admin-dashboard__inline-640 {
+  font-family: monospace;
+  color: #64748b;
+}
+
+.sys-admin-dashboard__inline-676 {
+  text-align: center;
+  color: #94a3b8;
+  padding: 40px;
+}
+
+.sys-admin-dashboard__inline-731 {
+  color: #94a3b8;
+  font-weight: 400;
+}

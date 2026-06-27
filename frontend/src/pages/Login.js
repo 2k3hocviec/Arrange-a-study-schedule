@@ -4,83 +4,15 @@ import { AuthContext } from "../contexts/AuthContext";
 import toast from "react-hot-toast";
 
 // --- STYLES ---
-const pageWrapper = {
-  position: "relative",
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
-  minHeight: "100vh",
-  padding: "clamp(12px, 3vw, 24px)",
-  overflow: "hidden",
-  fontFamily: "'Segoe UI', Roboto, sans-serif",
-  backgroundColor: "#0a0b10",
-  backgroundImage: `
-    radial-gradient(circle at 20% 30%, rgba(192, 57, 43, 0.15) 0%, transparent 40%),
-    radial-gradient(circle at 80% 70%, rgba(41, 128, 185, 0.15) 0%, transparent 40%)
-  `,
-};
-
-const gridOverlay = {
-  position: "absolute",
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  backgroundImage: `
-    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)
-  `,
-  backgroundSize: "40px 40px",
-  zIndex: 1,
-};
-
-const loginCard = {
-  position: "relative",
-  zIndex: 10,
-  background: "rgba(255, 255, 255, 0.95)",
-  backdropFilter: "blur(10px)",
-  padding: "clamp(20px, 5vw, 50px) clamp(16px, 4vw, 40px)",
-  borderRadius: "24px",
-  boxShadow: "0 20px 40px rgba(0,0,0,0.4)",
-  width: "100%",
-  maxWidth: "400px",
-  textAlign: "center",
-  border: "1px solid rgba(255, 255, 255, 0.2)",
-};
-
-const inputStyle = {
-  width: "100%",
-  padding: "clamp(10px, 2vw, 12px) clamp(12px, 2vw, 15px)",
-  borderRadius: "10px",
-  border: "1px solid #ddd",
-  fontSize: "clamp(14px, 2vw, 16px)",
-  marginTop: "8px",
-  boxSizing: "border-box",
-  outline: "none",
-  transition: "0.3s",
-};
-
-const buttonStyle = {
-  width: "100%",
-  padding: "clamp(12px, 2vw, 14px)",
-  background: "linear-gradient(135deg, #c0392b 0%, #e74c3c 100%)",
-  color: "white",
-  border: "none",
-  borderRadius: "10px",
-  cursor: "pointer",
-  fontWeight: "bold",
-  fontSize: "clamp(14px, 2vw, 16px)",
-  marginTop: "clamp(15px, 3vw, 25px)",
-  boxShadow: "0 4px 15px rgba(192, 57, 43, 0.3)",
-};
-
+import "../styles/Login.css";
 const Login = () => {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const { login } = useContext(AuthContext);
+  const [username, setUsername] = useState("user@gmail.com");
+  const [password, setPassword] = useState("1");
+  const {
+    login
+  } = useContext(AuthContext);
   const navigate = useNavigate();
-
-  const handleLogin = async (e) => {
+  const handleLogin = async e => {
     e.preventDefault();
     try {
       const data = await login(username, password);
@@ -90,87 +22,68 @@ const Login = () => {
       toast.error("Email hoặc mật khẩu không đúng");
     }
   };
+  return <div className="login__page-wrapper">
+      {/* Lớp lưới trang trí */}
+      <div className="login__grid-overlay"></div>
 
-  return (
-      <div style={pageWrapper}>
-        {/* Lớp lưới trang trí */}
-        <div style={gridOverlay}></div>
+      <div className="login__login-card">
+        <div className="login__inline-100">🏛️</div>
+        <h2 className="login__inline-101">
 
-        <div style={loginCard}>
-          <div style={{ fontSize: "50px", marginBottom: "15px" }}>🏛️</div>
-          <h2
-              style={{
-                margin: "0 0 5px 0",
-                color: "#1a1a1a",
-                letterSpacing: "1px",
-              }}
-          >
-            HỆ THỐNG QUẢN LÝ
-          </h2>
 
-          <p style={{ margin: "0 0 35px 0", color: "#666" }}>
-            Học viện Công nghệ Bưu chính Viễn thông
-          </p>
 
-          <form onSubmit={handleLogin}>
-            <div style={{ textAlign: "left", marginBottom: "20px" }}>
-              <label
-                  style={{ fontWeight: "600", color: "#444", fontSize: "14px" }}
-              >
-                Tên đăng nhập
-              </label>
-              <input
-                  type="text"
-                  placeholder="Nhập email của bạn"
-                  style={inputStyle}
-                  onChange={(e) => setUsername(e.target.value)}
-                  onFocus={(e) => (e.target.style.borderColor = "#c0392b")}
-                  onBlur={(e) => (e.target.style.borderColor = "#ddd")}
-                  required
-              />
-            </div>
 
-            <div style={{ textAlign: "left", marginBottom: "10px" }}>
-              <label
-                  style={{ fontWeight: "600", color: "#444", fontSize: "14px" }}
-              >
-                Mật khẩu
-              </label>
-              <input
-                  type="password"
-                  placeholder="••••••••"
-                  style={inputStyle}
-                  onChange={(e) => setPassword(e.target.value)}
-                  onFocus={(e) => (e.target.style.borderColor = "#c0392b")}
-                  onBlur={(e) => (e.target.style.borderColor = "#ddd")}
-                  required
-              />
-            </div>
 
-            <button type="submit" style={buttonStyle}>
-              ĐĂNG NHẬP NGAY
-            </button>
-          </form>
+          
+          HỆ THỐNG QUẢN LÝ
+        </h2>
 
-          <div style={{ marginTop: "25px", fontSize: "13px", color: "#888" }}>
-            <button
-                onClick={() => navigate("/forgot-password")}
-                style={{
-                  background: "none",
-                  border: "none",
-                  color: "#c0392b",
-                  cursor: "pointer",
-                  textDecoration: "none",
-                  fontWeight: "500",
-                }}
-            >
-              Quên mật khẩu?
-            </button>
-            <p style={{ marginTop: "10px" }}>Hỗ trợ kỹ thuật: 024.xxx.xxxx</p>
+        <p className="login__inline-111">
+          Học viện Công nghệ Bưu chính Viễn thông
+        </p>
+
+        <form onSubmit={handleLogin}>
+          <div className="login__inline-116">
+            <label className="login__inline-117">
+
+              
+              Tên đăng nhập
+            </label>
+            <input type="text" placeholder="Nhập email của bạn" value={username} onChange={e => setUsername(e.target.value)} onFocus={e => e.target.style.borderColor = "#c0392b"} onBlur={e => e.target.style.borderColor = "#ddd"} required className="login__input" />
+            
           </div>
+
+          <div className="login__inline-134">
+            <label className="login__inline-135">
+
+              
+              Mật khẩu
+            </label>
+            <input type="password" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} onFocus={e => e.target.style.borderColor = "#c0392b"} onBlur={e => e.target.style.borderColor = "#ddd"} required className="login__input" />
+            
+          </div>
+
+          <button type="submit" className="login__button">
+            ĐĂNG NHẬP NGAY
+          </button>
+        </form>
+
+        <div className="login__inline-157">
+          <button onClick={() => navigate("/forgot-password")} className="login__inline-158">
+
+
+
+
+
+
+
+
+            
+            Quên mật khẩu?
+          </button>
+          <p className="login__inline-171">Hỗ trợ kỹ thuật: 024.xxx.xxxx</p>
         </div>
       </div>
-  );
+    </div>;
 };
-
 export default Login;

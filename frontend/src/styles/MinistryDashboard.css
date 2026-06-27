@@ -1,0 +1,159 @@
+.ministry-dashboard__inline-359 {
+  font-family: 'Be Vietnam Pro', sans-serif;
+}
+
+.ministry-dashboard__inline-360 {
+  margin-bottom: 28px;
+}
+
+.ministry-dashboard__inline-361 {
+  font-size: 22px;
+  font-weight: 800;
+  color: #1e293b;
+  margin-bottom: 6px;
+}
+
+.ministry-dashboard__inline-371 {
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+.ministry-dashboard__inline-374 {
+  color: #475569;
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 8px;
+}
+
+.ministry-dashboard__inline-383 {
+  color: #dc2626;
+}
+
+.ministry-dashboard__inline-391 {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.ministry-dashboard__inline-435 {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ministry-dashboard__inline-449 {
+  font-size: 11px;
+  font-weight: 700;
+  color: #94a3b8;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.ministry-dashboard__inline-461 {
+  font-weight: 800;
+  color: #1e293b;
+  line-height: 1.15;
+}
+
+.ministry-dashboard__inline-479 {
+  display: flex;
+  height: 100vh;
+  min-height: 100vh;
+  font-family: 'Be Vietnam Pro', sans-serif;
+  background: #f4f5f9;
+  overflow: hidden;
+}
+
+.ministry-dashboard__inline-498 {
+  flex: 1;
+  padding-top: 24px;
+  overflow-y: auto;
+}
+
+.ministry-dashboard__inline-507 {
+  padding: 18px 16px 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #524d64;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-left: 14px;
+}
+
+.ministry-dashboard__inline-535 {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0px;
+  min-height: 0px;
+}
+
+.ministry-dashboard__inline-545 {
+  height: 60px;
+  background: #fff;
+  border-bottom: 1px solid #e8eaf0;
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  gap: 16px;
+  position: sticky;
+  top: 0px;
+}
+
+.ministry-dashboard__inline-560 {
+  display: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ministry-dashboard__inline-574 {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: #475569;
+  border-radius: 2px;
+}
+
+.ministry-dashboard__inline-588 {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a1625;
+  flex: 0 0 auto;
+}
+
+.ministry-dashboard__inline-598 {
+  flex: 1;
+}
+
+.ministry-dashboard__inline-601 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: #fee2e2;
+  color: #dc2626;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ministry-dashboard__inline-628 {
+  flex: 1;
+  min-height: 0px;
+  padding: clamp(16px, 3vw, 32px);
+  overflow-y: auto;
+}
+
+.ministry-dashboard__inline-502 {
+  z-index: 100;
+}

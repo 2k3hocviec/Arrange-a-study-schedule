@@ -1,326 +1,330 @@
-import React, { useEffect, useState, useContext } from "react";
-import {
-  Routes,
-  Route,
-  Link,
-  useLocation,
-  useNavigate,
-} from "react-router-dom";
+import React, { useContext, useEffect, useState } from "react";
+import { Routes, Route, Link, useLocation, useNavigate } from "react-router-dom";
 import TeacherSchedule from "./TeacherSchedule";
-import TeacherNotifications from "./TeacherNotifications";
+import TeacherBusySchedules from "./TeacherBusySchedules";
+import ChangePassword from "./ChangePassword";
 import { AuthContext } from "../contexts/AuthContext";
 import { teachersAPI } from "../services/api";
-import {
-  useMobileMenu,
-  MobileMenuButton,
-  MobileMenuOverlay,
-} from "../utils/responsiveHelpers";
-import { FaCalendarAlt } from "react-icons/fa";
-import { PiBellSimpleRingingFill } from "react-icons/pi";
+import { useMobileMenu, MobileMenuButton, MobileMenuOverlay } from "../utils/responsiveHelpers";
+import { FaHome, FaCalendarAlt, FaBell, FaChalkboardTeacher, FaSignOutAlt, FaBookOpen, FaClock, FaLock, FaCalendarCheck } from "react-icons/fa";
+
+// ─────────────────────────────────────────────────────────────
+// NAVIGATION
+// ─────────────────────────────────────────────────────────────
+import "../styles/TeacherDashboard.css";
+const NAV = [{
+  path: "/teacher/dashboard",
+  key: "dashboard",
+  icon: <FaHome />,
+  label: "Dashboard"
+}, {
+  path: "/teacher/schedule",
+  key: "schedule",
+  icon: <FaCalendarAlt />,
+  label: "Lịch giảng dạy"
+}, {
+  path: "/teacher/busy-schedules",
+  key: "busy-schedules",
+  icon: <FaCalendarCheck />,
+  label: "Lịch bận"
+}, {
+  path: "/teacher/notifications",
+  key: "notifications",
+  icon: <FaLock />,
+  label: "Đổi mật khẩu"
+}];
+
+// ─────────────────────────────────────────────────────────────
+// DATE HELPER
+// ─────────────────────────────────────────────────────────────
+
+const getTodayVN = () => {
+  const d = new Date();
+  const days = ["Chủ Nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy"];
+  return `${days[d.getDay()]}, ngày ${d.getDate()} tháng ${d.getMonth() + 1} năm ${d.getFullYear()}`;
+};
+
+// ─────────────────────────────────────────────────────────────
+// COMPONENT
+// ─────────────────────────────────────────────────────────────
 
 const TeacherDashboard = () => {
-  const { user, logout } = useContext(AuthContext);
+  const {
+    user,
+    logout
+  } = useContext(AuthContext);
   const [teacherInfo, setTeacherInfo] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [numCourses, setNumCourses] = useState(0);
   const [numSlots, setNumSlots] = useState(0);
   const navigate = useNavigate();
   const location = useLocation();
-  const { isMobileMenuOpen, toggleMobileMenu, closeMobileMenu } =
-    useMobileMenu();
+  const {
+    isMobileMenuOpen,
+    toggleMobileMenu,
+    closeMobileMenu
+  } = useMobileMenu();
 
-  const navItemStyle = {
-    padding: "clamp(10px, 2vw, 15px) clamp(10px, 2vw, 10px)",
-    borderBottom: "1px solid #2d3436",
-    borderRadius: "8px",
-    transition: "all 0.3s ease",
-  };
+  // ─────────────────────────────────────────
+  // GET TEACHER INFO
+  // ─────────────────────────────────────────
 
-  const linkStyle = {
-    color: "white",
-    textDecoration: "none",
-    display: "flex",
-    alignItems: "center",
-    gap: "10px",
-    width: "100%",
-    fontSize: "clamp(13px, 2vw, 16px)",
-  };
-
-  const statCard = {
-    flex: 1,
-    background: "white",
-    padding: "clamp(16px, 3vw, 25px)",
-    borderRadius: "12px",
-    textAlign: "center",
-    boxShadow: "0 4px 15px rgba(0,0,0,0.05)",
-    borderTop: "6px solid #00ff88",
-    minWidth: "150px",
-    transition: "all 0.3s ease",
-  };
-
-  const activeStyle = (path) => ({
-    ...navItemStyle,
-    background: location.pathname.includes(path) ? "#1a8a4f" : "transparent",
-  });
-
-  // Lấy thông tin Giảng viên đang đăng nhập từ token
   useEffect(() => {
-    if (user) {
-      teachersAPI
-        .getMyInfo()
-        .then((res) => {
-          setTeacherInfo(res.data);
-        })
-        .catch((err) => {
-          console.error("Error fetching teacher info:", err);
-        });
-    }
+    if (!user) return;
+    setLoading(true);
+    teachersAPI.getMyInfo().then(res => {
+      setTeacherInfo(res.data);
+    }).catch(console.error).finally(() => setLoading(false));
   }, [user]);
 
-  // Tính toán số lượng lớp học và tiết dạy
-  useEffect(() => {
-    if (teacherInfo && teacherInfo.teacher_id) {
-      teachersAPI
-        .getSchedule(teacherInfo.teacher_id)
-        .then((res) => {
-          if (res.data && res.data.course) {
-            // Số lượng lớp học
-            setNumCourses(res.data.course.length);
+  // ─────────────────────────────────────────
+  // GET SCHEDULE INFO
+  // ─────────────────────────────────────────
 
-            // Tính tổng tiết dạy trong tuần
-            let totalSlots = 0;
-            res.data.course.forEach((course) => {
-              if (course.schedule && course.schedule.length > 0) {
-                course.schedule.forEach((sch) => {
-                  totalSlots += sch.end_slot - sch.start_slot + 1;
-                });
-              }
-            });
-            setNumSlots(totalSlots);
-          }
-        })
-        .catch((err) => {
-          console.error("Error fetching schedule:", err);
-        });
-    }
+  useEffect(() => {
+    if (!teacherInfo?.teacher_id) return;
+    teachersAPI.getSchedule(teacherInfo.teacher_id).then(res => {
+      if (res.data?.course) {
+        setNumCourses(res.data.course.length);
+        let slots = 0;
+        res.data.course.forEach(c => c.schedule?.forEach(s => {
+          slots += s.end_slot - s.start_slot + 1;
+        }));
+        setNumSlots(slots);
+      }
+    }).catch(console.error);
   }, [teacherInfo]);
 
-  const HomeContent = (
-    <div>
-      <h1
-        style={{
-          color: "#2c3e50",
-          fontSize: "clamp(24px, 5vw, 28px)",
-          marginBottom: "30px",
-        }}
-      >
-        TỔNG QUAN GIẢNG DẠY
-      </h1>
-      <div
-        style={{
-          display: "flex",
-          gap: "clamp(12px, 3vw, 25px)",
-          marginBottom: "40px",
-          flexWrap: "wrap",
-        }}
-      >
-        <div style={statCard}>
-          <h2
-            style={{
-              margin: 0,
-              fontSize: "clamp(24px, 4vw, 32px)",
-              color: "#00ff88",
-            }}
-          >
-            {numCourses}
-          </h2>
-          <p
-            style={{
-              color: "#7f8c8d",
-              fontWeight: "bold",
-              fontSize: "clamp(12px, 2vw, 14px)",
-              margin: 0,
-            }}
-          >
-            Lớp học đảm nhận
+  // ─────────────────────────────────────────
+  // ACTIVE MENU
+  // ─────────────────────────────────────────
+
+  const isActive = key => {
+    if (key === "dashboard") {
+      return location.pathname === "/teacher" || location.pathname === "/teacher/" || location.pathname === "/teacher/dashboard";
+    }
+    return location.pathname.split("/").includes(key);
+  };
+
+  // ─────────────────────────────────────────
+  // HOME PAGE
+  // ─────────────────────────────────────────
+
+  const HomePage = <div className="teacher-dashboard__home-page">
+      {/* Banner */}
+      <div className="teacher-dashboard__banner">
+        <div>
+          <h1 className="teacher-dashboard__banner-title">
+            Xin chào, {loading ? "..." : teacherInfo?.name || "Giảng viên"} 👋
+          </h1>
+
+          <p className="teacher-dashboard__banner-sub">
+            Mã giảng viên:{" "}
+            <strong className="teacher-dashboard__inline-183">
+              {teacherInfo?.teacher_id || "N/A"}
+            </strong>
           </p>
+
+          <p className="teacher-dashboard__date-text">📅 {getTodayVN()}</p>
         </div>
-        <div style={statCard}>
-          <h2
-            style={{
-              margin: 0,
-              fontSize: "clamp(24px, 4vw, 32px)",
-              color: "#00ff88",
-            }}
-          >
-            {numSlots}
-          </h2>
-          <p
-            style={{
-              color: "#7f8c8d",
-              fontWeight: "bold",
-              fontSize: "clamp(12px, 2vw, 14px)",
-              margin: 0,
-            }}
-          >
-            Tiết dạy trong tuần
-          </p>
-        </div>
-        <div style={statCard}>
-          <h2
-            style={{
-              margin: 0,
-              fontSize: "clamp(24px, 4vw, 32px)",
-              color: "#00ff88",
-            }}
-          >
-            2
-          </h2>
-          <p
-            style={{
-              color: "#7f8c8d",
-              fontWeight: "bold",
-              fontSize: "clamp(12px, 2vw, 14px)",
-              margin: 0,
-            }}
-          >
-            Thông báo mới
-          </p>
-        </div>
+
+        <FaChalkboardTeacher size={54} className="teacher-dashboard__inline-191" />
+
+      
       </div>
-    </div>
-  );
 
-  return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        minHeight: "100vh",
-        fontFamily: "Arial",
-      }}
-    >
+      {/* Stats */}
+      <div className="teacher-dashboard__stats-row">
+        {[{
+        icon: <FaBookOpen />,
+        val: numCourses,
+        label: "Lớp học đảm nhận",
+        color: "#6366f1"
+      }, {
+        icon: <FaClock />,
+        val: numSlots,
+        label: "Tiết dạy trong tuần",
+        color: "#22c55e"
+      }, {
+        icon: <FaBell />,
+        val: 2,
+        label: "Thông báo mới",
+        color: "#f97316"
+      }].map((c, i) => <div key={i} style={{
+        borderTop: `4px solid ${c.color}`
+      }} className="teacher-dashboard__stat-card">
+        
+            <span style={{
+          color: c.color
+        }} className="teacher-dashboard__inline-226">{c.icon}</span>
+
+            <div>
+              <div style={{
+            color: c.color
+          }} className="teacher-dashboard__inline-229">
+            
+                {c.val}
+              </div>
+
+              <div className="teacher-dashboard__inline-240">
+
+
+
+
+
+            
+                {c.label}
+              </div>
+            </div>
+          </div>)}
+      </div>
+
+      {/* Quick Access */}
+      <h3 className="teacher-dashboard__quick-title">TRUY CẬP NHANH</h3>
+
+      <div className="teacher-dashboard__tiles-row">
+        {NAV.filter(n => n.key !== "dashboard").map(n => <Link key={n.key} to={n.path} onClick={closeMobileMenu} className="teacher-dashboard__tile">
+        
+            <span className="teacher-dashboard__inline-265">{n.icon}</span>
+
+            <span className="teacher-dashboard__tile-label">{n.label}</span>
+          </Link>)}
+      </div>
+
+      {/* Notice */}
+      <div className="teacher-dashboard__notice">
+        <strong>📌 Quy định giảng viên:</strong>
+
+        <p className="teacher-dashboard__notice-text">
+          Giảng viên chỉ được xem lịch giảng dạy cá nhân, theo dõi thông báo từ
+          nhà trường và quản lý các lớp học được phân công giảng dạy.
+        </p>
+      </div>
+    </div>;
+
+  // ─────────────────────────────────────────
+  // RENDER
+  // ─────────────────────────────────────────
+
+  return <div className="teacher-dashboard__root">
       <MobileMenuOverlay isOpen={isMobileMenuOpen} onClick={closeMobileMenu} />
-      <div style={{ display: "flex", flex: 1 }}>
-        {/* Sidebar bên trái */}
-        <div
-          className={`sidebar ${isMobileMenuOpen ? "active" : ""}`}
-          style={{
-            width: "100%",
-            maxWidth: "260px",
-            background: "#16211a",
-            color: "white",
-            padding: "clamp(12px, 3vw, 20px)",
-            transition: "all 0.3s ease",
-          }}
-        >
-          <h2
-            style={{
-              textAlign: "center",
-              color: "#00ff88",
-              marginBottom: "10px",
-              fontSize: "clamp(16px, 3vw, 18px)",
-            }}
-          >
-            GIẢNG VIÊN
-          </h2>
-          <p
-            style={{
-              textAlign: "center",
-              color: "#bdc3c7",
-              marginTop: 0,
-              fontSize: "clamp(11px, 2vw, 13px)",
-            }}
-          >
-            {teacherInfo ? teacherInfo.teacher_id : "Đang tải..."}
-          </p>
-          {teacherInfo && (
-            <p
-              style={{
-                textAlign: "center",
-                color: "#95a5a6",
-                fontSize: "clamp(11px, 2vw, 12px)",
-                marginTop: "-10px",
-                marginBottom: "10px",
-              }}
-            >
-              {teacherInfo ? teacherInfo.name : "Đang tải..."}
-            </p>
-          )}
-          <hr style={{ borderColor: "#2d3436" }} />
-          <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-            <li style={activeStyle("schedule")}>
-              <Link
-                to="/teacher/schedule"
-                style={linkStyle}
-                onClick={closeMobileMenu}
-              >
-                <FaCalendarAlt style={{ color: "#27ae60" }} /> Lịch giảng dạy
-              </Link>
-            </li>
-            <li style={activeStyle("notifications")}>
-              <Link
-                to="/teacher/notifications"
-                style={linkStyle}
-                onClick={closeMobileMenu}
-              >
-                <PiBellSimpleRingingFill style={{ color: "#27ae60" }} /> Thông
-                báo
-              </Link>
-            </li>
-          </ul>
-          <button
-            onClick={() => {
-              logout();
-              navigate("/login");
-            }}
-            style={{
-              marginTop: "30px",
-              width: "100%",
-              padding: "clamp(10px, 2vw, 10px)",
-              background: "#c0392b",
-              color: "white",
-              border: "none",
-              cursor: "pointer",
-              borderRadius: "8px",
-              fontWeight: "bold",
-              fontSize: "clamp(13px, 2vw, 14px)",
-              transition: "all 0.3s ease",
-            }}
-            onMouseOver={(e) => (e.target.style.background = "#a93226")}
-            onMouseOut={(e) => (e.target.style.background = "#c0392b")}
-          >
-            Đăng xuất
-          </button>
+
+      {/* ───────────────── SIDEBAR ───────────────── */}
+      <aside className={`sidebar ${isMobileMenuOpen ? "active" : ""} teacher-dashboard__sidebar`}>
+
+        
+        {/* Brand */}
+        <div className="teacher-dashboard__brand">
+          <div className="teacher-dashboard__brand-icon">
+            <FaChalkboardTeacher size={22} />
+          </div>
+
+          <div>
+            <div className="teacher-dashboard__brand-title">Cổng Giảng Viên</div>
+
+            <div className="teacher-dashboard__brand-sub">
+              {loading ? "Đang tải..." : teacherInfo?.teacher_id || "N/A"}
+            </div>
+          </div>
         </div>
 
-        {/* Main Content */}
-        <div
-          style={{
-            flex: 1,
-            padding: "clamp(16px, 3vw, 40px)",
-            background: "#f8f9fa",
-            overflowY: "auto",
-            display: "flex",
-            flexDirection: "column",
-          }}
-        >
-          <MobileMenuButton
-            onClick={toggleMobileMenu}
-            isOpen={isMobileMenuOpen}
-          />
+        {/* User Area */}
+        {teacherInfo && <div className="teacher-dashboard__user-area">
+            <div className="teacher-dashboard__avatar-circle">
+              {teacherInfo.name?.charAt(0) || "T"}
+            </div>
+
+            <div className="teacher-dashboard__user-name">{teacherInfo.name}</div>
+
+            <div className="teacher-dashboard__user-role">Giảng viên</div>
+          </div>}
+
+        <hr className="teacher-dashboard__divider" />
+
+        {/* NAV */}
+        <nav className="teacher-dashboard__inline-328">
+          {NAV.map(n => <Link key={n.key} to={n.path} onClick={closeMobileMenu} className="teacher-dashboard__inline-330">
+            
+              <div style={S.navItem(isActive(n.key))}>
+                <span style={{
+              opacity: isActive(n.key) ? 1 : 0.7
+            }} className="teacher-dashboard__inline-337">
+                
+                  {n.icon}
+                </span>
+
+                {n.label}
+              </div>
+            </Link>)}
+        </nav>
+
+        {/* Logout */}
+        <button onClick={() => {
+        logout();
+        navigate("/login");
+      }} className="teacher-dashboard__logout-btn">
+          
+          <FaSignOutAlt />
+          Đăng xuất
+        </button>
+      </aside>
+
+      {/* ───────────────── MAIN ───────────────── */}
+      <main className="teacher-dashboard__main">
+        <MobileMenuButton onClick={toggleMobileMenu} isOpen={isMobileMenuOpen} />
+        
+
+        {/* Topbar */}
+        <header className="teacher-dashboard__topbar">
+          <div className="teacher-dashboard__inline-374">
+            <span className="teacher-dashboard__inline-375">
+              {NAV.find(n => isActive(n.key))?.icon || <FaHome />}
+            </span>
+
+            <h2 className="teacher-dashboard__page-title">
+              {NAV.find(n => isActive(n.key))?.label || "Dashboard"}
+            </h2>
+          </div>
+        </header>
+
+        {/* Content */}
+        <div className="teacher-dashboard__content">
           <Routes>
-            <Route path="/" element={HomeContent} />
-            <Route path="dashboard" element={HomeContent} />
-            <Route
-              path="schedule"
-              element={<TeacherSchedule teacherInfo={teacherInfo} />}
-            />
-            <Route path="notifications" element={<TeacherNotifications />} />
+            <Route path="/" element={HomePage} />
+
+            <Route path="dashboard" element={HomePage} />
+
+            <Route path="schedule" element={<TeacherSchedule teacherInfo={teacherInfo} />} />
+            
+
+            <Route path="busy-schedules" element={<TeacherBusySchedules />} />
+
+            <Route path="notifications" element={<ChangePassword />} />
           </Routes>
         </div>
-      </div>
-    </div>
-  );
+      </main>
+    </div>;
 };
 
+// ─────────────────────────────────────────────────────────────
+// STYLES
+// ─────────────────────────────────────────────────────────────
+
+const S = {
+  navItem: a => ({
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
+    padding: "10px 14px",
+    borderRadius: 10,
+    fontSize: 13,
+    fontWeight: a ? 700 : 400,
+    color: a ? "#a5b4fc" : "#a1a1aa",
+    background: a ? "rgba(99,102,241,0.15)" : "transparent",
+    marginBottom: 2,
+    cursor: "pointer",
+    transition: "all 0.15s",
+    textDecoration: "none"
+  })
+};
 export default TeacherDashboard;
