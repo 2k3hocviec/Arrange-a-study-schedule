@@ -15,7 +15,7 @@ export class TeachersService {
     private readonly prisma: PrismaService,
     private readonly userService: UsersService,
     private readonly departmentsService: DepartmentsService,
-  ) {}
+  ) { }
 
   async create(createTeacherDto: CreateTeacherDto) {
     const user = await this.userService.findOne(createTeacherDto.user_id);

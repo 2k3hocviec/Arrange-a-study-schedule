@@ -20,7 +20,7 @@ export class EnrollmentsController {
   constructor(
     private readonly enrollmentsService: EnrollmentsService,
     private readonly studentsService: StudentsService,
-  ) {}
+  ) { }
 
   private async ensureStudentCanAccess(req: any, studentId: string) {
     if (req.user?.role === 'ministry') {

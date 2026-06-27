@@ -678,6 +678,56 @@ async function main() {
     });
   }
 
+  // --- Add Enrollments for student00 (SV000) ---
+  const coursesToEnroll = allCourseSeeds.slice(0, 3);
+  for (const course of coursesToEnroll) {
+    const courseId = courseIdByCode.get(course.course_code);
+    if (courseId) {
+      await prisma.enrollment.create({
+        data: {
+          student_id: 'SV000',
+          course_id: courseId,
+        },
+      });
+      // Giảm remaining_capacity
+      await prisma.course.update({
+        where: { course_id: courseId },
+        data: {
+          remaining_capacity: { decrement: 1 },
+        },
+      });
+    }
+  }
+
+  // --- Add Busy Schedules for giaovien00 (GV00) and giaovien01 (GV01) ---
+  const gv00_busy_date = new Date(activeSemester.start_date);
+  gv00_busy_date.setDate(gv00_busy_date.getDate() + 5);
+
+  await prisma.teacherBusySchedule.create({
+    data: {
+      teacher_id: 'GV00',
+      busy_date: gv00_busy_date,
+      start_slot: 1,
+      end_slot: 4,
+      reason: 'Họp hội đồng khoa',
+      status: 'approved',
+    },
+  });
+
+  const gv01_busy_date = new Date(activeSemester.start_date);
+  gv01_busy_date.setDate(gv01_busy_date.getDate() + 10);
+
+  await prisma.teacherBusySchedule.create({
+    data: {
+      teacher_id: 'GV01',
+      busy_date: gv01_busy_date,
+      start_slot: 6,
+      end_slot: 9,
+      reason: 'Công tác nước ngoài',
+      status: 'pending',
+    },
+  });
+
   console.log('Seed completed');
   console.log('Password for all seeded accounts: 1');
 }

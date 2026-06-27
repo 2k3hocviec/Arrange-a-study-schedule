@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   Request,
+  ForbiddenException,
 } from '@nestjs/common';
 import { TeachersService } from './teachers.service';
 import { CreateTeacherDto } from './dto/create-teacher.dto';
@@ -15,7 +16,17 @@ import { Roles } from 'src/role/roles.decorator';
 
 @Controller('teachers')
 export class TeachersController {
-  constructor(private readonly teachersService: TeachersService) {}
+  constructor(private readonly teachersService: TeachersService) { }
+  private async ensureTeacherCanAccess(req: any, teacherId: string) {
+    if (req.user?.role === 'ministry') {
+      return;
+    }
+    const currentTeacher = await this.teachersService.findByUserId(req.user.sub);
+
+    if (currentTeacher.teacher_id !== teacherId) {
+      throw new ForbiddenException('You can only access your own schedule');
+    }
+  }
 
   @Roles('ministry')
   @Post()
@@ -42,7 +53,8 @@ export class TeachersController {
 
   @Get('teacher/:id/courses-details')
   @Roles('teacher')
-  findStudentCoursesWithDetails(@Param('id') teacherId: string) {
+  async findStudentCoursesWithDetails(@Param('id') teacherId: string, @Request() req) {
+    await this.ensureTeacherCanAccess(req, teacherId);
     return this.teachersService.findTeacherCoursesWithDetails(teacherId);
   }
 
