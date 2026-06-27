@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import toast from "react-hot-toast";
 import { coursesAPI, enrollmentsAPI, semestersAPI } from "../services/api";
-import ChatBox from "../components/ChatBox";
 
 // ─── helpers ───────────────────────────────────────────────────────────────
 import "../styles/StudentRegister.css";
@@ -497,9 +496,6 @@ const StudentRegister = ({
           </div>
         </div>
       )}
-
-      {/* chat box */}
-      <ChatBox studentInfo={studentInfo} />
     </div>
   );
 };
