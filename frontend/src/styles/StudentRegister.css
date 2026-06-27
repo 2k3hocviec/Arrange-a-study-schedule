@@ -1,0 +1,435 @@
+.student-register__page {
+  font-family: 'Be Vietnam Pro', 'Segoe UI', sans-serif;
+  background: #f0f2f7;
+  min-height: 100vh;
+  padding: 0;
+}
+
+.student-register__top-bar {
+  background: #fff;
+  border-bottom: 1px solid #e8ecf4;
+  padding: 0 28px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.student-register__top-bar-title {
+  font-weight: 700;
+  font-size: 16px;
+  color: #3a4db7;
+  letter-spacing: -0.3px;
+}
+
+.student-register__search-wrap {
+  display: flex;
+  align-items: center;
+  background: #f0f2f7;
+  border-radius: 20px;
+  padding: 6px 14px;
+  gap: 8px;
+  width: 280px;
+}
+
+.student-register__search-input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 13px;
+  color: #333;
+  width: 100%;
+}
+
+.student-register__hero {
+  background: linear-gradient(135deg, #3a4db7 0%, #6c3fc5 60%, #8b2fc9 100%);
+  border-radius: 0 0 24px 24px;
+  padding: 32px 28px 28px;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+
+.student-register__hero-title {
+  font-size: 24px;
+  font-weight: 800;
+  margin-bottom: 8px;
+  letter-spacing: -0.5px;
+}
+
+.student-register__hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,0.18);
+  backdrop-filter: blur(6px);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.3);
+  margin-right: 12px;
+  margin-bottom: 0px;
+}
+
+.student-register__hero-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #4ade80;
+  box-shadow: 0 0 6px #4ade80;
+  display: inline-block;
+}
+
+.student-register__hero-timer {
+  font-size: 13px;
+  opacity: 0.85;
+  margin-top: 10px;
+}
+
+.student-register__stats-row {
+  display: flex;
+  gap: 16px;
+  padding: 0 28px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.student-register__stat-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 18px 22px;
+  flex: 1 1 140px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+.student-register__stat-label {
+  font-size: 11px;
+  color: #8892a4;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.student-register__stat-value {
+  font-size: 28px;
+  font-weight: 800;
+  color: #1e2a5e;
+  margin-top: 2px;
+  letter-spacing: -1px;
+}
+
+.student-register__stat-sub {
+  font-size: 12px;
+  color: #8892a4;
+  margin-top: 2px;
+}
+
+.student-register__progress-bar {
+  height: 4px;
+  border-radius: 4px;
+  background: #e8ecf4;
+  margin-top: 8px;
+  overflow: hidden;
+}
+
+.student-register__progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  background: linear-gradient(90deg,#3a4db7,#6c3fc5);
+  transition: width .4s;
+}
+
+.student-register__table-card {
+  background: #fff;
+  border-radius: 16px;
+  margin: 0 28px 20px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  overflow: hidden;
+}
+
+.student-register__table-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 20px;
+  border-bottom: 1px solid #f0f2f7;
+  flex-wrap: wrap;
+}
+
+.student-register__table-search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: min(420px, 100%);
+  background: #f7f8fc;
+  border: 1px solid #e0e4ef;
+  border-radius: 10px;
+  padding: 9px 12px;
+}
+
+.student-register__table-search-input {
+  border: none;
+  background: transparent;
+  outline: none;
+  width: 100%;
+  font-size: 13px;
+  color: #1e2a5e;
+}
+
+.student-register__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.student-register__th {
+  padding: 10px 14px;
+  color: #8892a4;
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  text-align: left;
+  background: #fafbfd;
+  border-bottom: 1px solid #f0f2f7;
+}
+
+.student-register__td {
+  padding: 14px;
+  border-bottom: 1px solid #f5f6fb;
+  vertical-align: top;
+}
+
+.student-register__course-code {
+  font-weight: 700;
+  color: #3a4db7;
+  font-size: 13px;
+}
+
+.student-register__course-name {
+  font-weight: 700;
+  color: #1e2a5e;
+  font-size: 14px;
+}
+
+.student-register__teacher-name {
+  color: #8892a4;
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.student-register__capacity-full {
+  font-weight: 700;
+  color: #ef4444;
+}
+
+.student-register__capacity-ok {
+  font-weight: 700;
+  color: #22c55e;
+}
+
+.student-register__btn-cancel {
+  background: #fff4ed;
+  color: #ea580c;
+  border: 1px solid #fed7aa;
+  padding: 7px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.student-register__btn-register {
+  background: linear-gradient(135deg,#3a4db7,#6c3fc5);
+  color: #fff;
+  border: none;
+  padding: 7px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+  box-shadow: 0 2px 8px rgba(58,77,183,0.25);
+}
+
+.student-register__btn-full {
+  background: #f5f6fb;
+  color: #aaa;
+  border: 1px solid #e0e4ef;
+  padding: 7px 16px;
+  border-radius: 8px;
+  cursor: not-allowed;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.student-register__btn-loading {
+  background: linear-gradient(135deg,#3a4db7,#6c3fc5);
+  color: #fff;
+  border: none;
+  padding: 7px 16px;
+  border-radius: 8px;
+  cursor: not-allowed;
+  font-weight: 600;
+  font-size: 13px;
+  opacity: 0.6;
+}
+
+.student-register__pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-top: 1px solid #f0f2f7;
+  font-size: 13px;
+  color: #8892a4;
+}
+
+.student-register__bottom-row {
+  display: flex;
+  gap: 16px;
+  margin: 0 28px 28px;
+  flex-wrap: wrap;
+}
+
+.student-register__suggest-card {
+  flex: 1 1 260px;
+  background: #fff;
+  border-radius: 16px;
+  padding: 22px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+.student-register__suggest-title {
+  font-weight: 700;
+  font-size: 15px;
+  color: #1e2a5e;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.student-register__suggest-desc {
+  color: #8892a4;
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+.student-register__suggest-chip {
+  background: #f0f2f7;
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: border .15s;
+}
+
+.student-register__suggest-chip-title {
+  font-weight: 700;
+  color: #1e2a5e;
+  font-size: 13px;
+}
+
+.student-register__suggest-chip-sub {
+  color: #8892a4;
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.student-register__support-card {
+  flex: 0 0 220px;
+  background: linear-gradient(135deg,#3a4db7,#6c3fc5);
+  border-radius: 16px;
+  padding: 22px;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.student-register__support-title {
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.student-register__support-desc {
+  font-size: 13px;
+  opacity: 0.85;
+}
+
+.student-register__support-btn {
+  margin-top: auto;
+  background: rgba(255,255,255,0.18);
+  border: 1px solid rgba(255,255,255,0.35);
+  color: #fff;
+  border-radius: 10px;
+  padding: 9px 14px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.student-register__inline-531 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.student-register__inline-552 {
+  font-size: 16px;
+  color: #8892a4;
+  font-weight: 400;
+}
+
+.student-register__inline-571 {
+  margin: 0 28px 20px;
+  background: #e8f4f8;
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+  color: #2c3e50;
+}
+
+.student-register__inline-585 {
+  margin: 0 28px 20px;
+  background: #ffe0e0;
+  padding: 20px;
+  border-radius: 12px;
+  color: #c0392b;
+}
+
+.student-register__inline-604 {
+  color: #8892a4;
+  font-size: 16px;
+}
+
+.student-register__inline-616 {
+  padding: 40px;
+  text-align: center;
+  color: #8892a4;
+}
+
+.student-register__inline-687 {
+  font-size: 12px;
+  color: #555;
+  max-width: 160px;
+}
+
+.student-register__inline-742 {
+  display: flex;
+  align-items: center;
+}
+
+.student-register__inline-743 {
+  margin-right: 4px;
+}
+
+.student-register__inline-762 {
+  margin-left: 4px;
+}

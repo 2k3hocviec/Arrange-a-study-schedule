@@ -1,0 +1,379 @@
+.teacher-page {
+  box-sizing: border-box;
+  font-family: "Segoe UI", sans-serif;
+  max-width: 100%;
+  min-width: 0;
+  padding: 0 4px;
+}
+
+.teacher-header-row {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.teacher-title {
+  align-items: center;
+  color: #2c3e50;
+  display: flex;
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.teacher-title-icon {
+  margin-right: 10px;
+  vertical-align: middle;
+}
+
+.teacher-add-btn {
+  background: #4f63d2;
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 18px;
+}
+
+.teacher-stat-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.teacher-stat-card {
+  align-items: center;
+  background: rgb(99, 102, 241);
+  border-radius: 10px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  display: flex;
+  gap: 14px;
+  min-width: 160px;
+  padding: 14px 24px;
+}
+
+.teacher-stat-icon {
+  background: #eef0fb;
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.teacher-stat-label {
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  margin-bottom: 2px;
+}
+
+.teacher-stat-value {
+  color: #fff;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.teacher-modal-overlay {
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.6);
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  left: 0;
+  position: fixed;
+  right: 0;
+  top: 0;
+  z-index: 1000;
+}
+
+.teacher-modal-content {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  max-width: 520px;
+  padding: 24px 28px;
+  position: relative;
+  width: 90%;
+}
+
+.teacher-close-btn {
+  background: none;
+  border: none;
+  color: #888;
+  cursor: pointer;
+  font-size: 28px;
+  line-height: 1;
+  position: absolute;
+  right: 16px;
+  top: 12px;
+}
+
+.teacher-form {
+  margin-top: 10px;
+}
+
+.teacher-form-title {
+  color: #2c3e50;
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 20px;
+  text-align: center;
+}
+
+.teacher-field-group {
+  margin-bottom: 16px;
+}
+
+.teacher-label {
+  color: #444;
+  display: block;
+  font-size: 13.5px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.teacher-input {
+  border: 1px solid #cdd3e0;
+  border-radius: 6px;
+  box-sizing: border-box;
+  font-size: 14px;
+  padding: 10px 12px;
+  width: 100%;
+}
+
+.teacher-input--disabled {
+  background: #f0f0f0;
+}
+
+.teacher-submit-btn {
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+  margin-top: 10px;
+  padding: 12px;
+  width: 100%;
+}
+
+.teacher-submit-btn--create {
+  background: #4f63d2;
+}
+
+.teacher-submit-btn--update {
+  background: #4f63d2;
+}
+
+.teacher-table-wrapper {
+  background: #fff;
+  border: 1px solid #e4e9f4;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+}
+
+.teacher-table-header {
+  border-bottom: 1px solid #eef0f7;
+  display: flex;
+  justify-content: flex-end;
+  padding: 16px;
+}
+
+.teacher-search-wrap {
+  align-items: center;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-sizing: border-box;
+  display: flex;
+  gap: 8px;
+  min-width: 320px;
+  padding: 0 12px;
+}
+
+.teacher-search-input {
+  border: none;
+  font-size: 14px;
+  outline: none;
+  padding: 10px 0;
+  width: 100%;
+}
+
+.teacher-table {
+  border-collapse: collapse;
+  min-width: 980px;
+  width: 100%;
+}
+
+.teacher-thead-row {
+  background: #fff;
+}
+
+.teacher-th {
+  color: #767982;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 13px 16px;
+  text-align: left;
+}
+
+.teacher-tbody-row {
+  border-bottom: 1px solid #eef0f7;
+}
+
+.teacher-td {
+  color: #333;
+  font-size: 14px;
+  padding: 12px 16px;
+}
+
+.teacher-td--primary {
+  color: #4f63d2;
+  font-weight: 600;
+}
+
+.teacher-td--name {
+  font-weight: 500;
+}
+
+.teacher-empty-cell {
+  color: #aaa;
+  font-size: 14px;
+  padding: 32px;
+  text-align: center;
+}
+
+.teacher-edit-btn,
+.teacher-delete-btn {
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 5px 14px;
+}
+
+.teacher-edit-btn {
+  background: #f0f3ff;
+  border: 1px solid #c5cdf5;
+  color: #4f63d2;
+  margin-right: 8px;
+}
+
+.teacher-delete-btn {
+  background: #fff0f0;
+  border: 1px solid #f5c5c5;
+  color: #e74c3c;
+}
+
+.teacher-pagination {
+  align-items: center;
+  border-top: 1px solid #eef0f7;
+  display: flex;
+  font-size: 13px;
+  justify-content: space-between;
+  padding: 12px 16px;
+}
+
+.teacher-page-info {
+  color: #666;
+}
+
+.teacher-page-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.teacher-page-btn {
+  background: #e9ecf5;
+  border: none;
+  border-radius: 5px;
+  color: #333;
+  cursor: pointer;
+  font-weight: 500;
+  padding: 6px 16px;
+}
+
+.teacher-page-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.teacher-page-btn--active {
+  background: #4f63d2;
+  color: #fff;
+}
+
+@media (max-width: 768px) {
+  .teacher-page {
+    padding: 0;
+    width: 100%;
+  }
+
+  .teacher-header-row {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .teacher-title {
+    font-size: 18px;
+    line-height: 1.3;
+  }
+
+  .teacher-add-btn {
+    width: 100%;
+  }
+
+  .teacher-stat-row {
+    width: 100%;
+  }
+
+  .teacher-stat-card {
+    box-sizing: border-box;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .teacher-table-header {
+    justify-content: stretch;
+    padding: 12px;
+  }
+
+  .teacher-search-wrap {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .teacher-th,
+  .teacher-td {
+    padding: 10px 12px;
+    white-space: nowrap;
+  }
+
+  .teacher-pagination {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .teacher-page-buttons {
+    width: 100%;
+  }
+
+  .teacher-page-btn {
+    flex: 1;
+  }
+
+  .teacher-modal-content {
+    box-sizing: border-box;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 22px 18px;
+    width: calc(100vw - 24px);
+  }
+}

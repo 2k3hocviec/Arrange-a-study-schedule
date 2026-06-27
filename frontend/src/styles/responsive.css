@@ -1,0 +1,598 @@
+/* ============================================
+   GLOBAL RESPONSIVE STYLES
+   ============================================ */
+
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  /* Colors */
+  --primary: #c0392b;
+  --primary-light: #e74c3c;
+  --secondary: #2980b9;
+  --dark: #1a1c23;
+  --light: #f8f9fa;
+  --text-dark: #2c3e50;
+  --text-light: #7f8c8d;
+  --border: #ddd;
+  --shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.4);
+
+  /* Spacing */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-2xl: 40px;
+
+  /* Breakpoints */
+  --bp-mobile: 480px;
+  --bp-tablet: 768px;
+  --bp-desktop: 1024px;
+  --bp-wide: 1440px;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu",
+    "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--light);
+  color: var(--text-dark);
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+code {
+  font-family:
+    source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
+}
+
+/* ============================================
+   RESPONSIVE TYPOGRAPHY
+   ============================================ */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0;
+  line-height: 1.2;
+}
+
+h1 {
+  font-size: clamp(24px, 5vw, 32px);
+}
+
+h2 {
+  font-size: clamp(20px, 4vw, 28px);
+}
+
+h3 {
+  font-size: clamp(18px, 3.5vw, 24px);
+}
+
+h4 {
+  font-size: clamp(16px, 3vw, 20px);
+}
+
+p {
+  margin: var(--spacing-md) 0;
+  line-height: 1.7;
+}
+
+/* ============================================
+   BUTTON STYLES
+   ============================================ */
+
+button {
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+button:hover {
+  transform: translateY(-2px);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+.btn-primary {
+  padding: clamp(10px, 2vw, 14px) clamp(15px, 3vw, 20px);
+  background: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: clamp(14px, 2vw, 16px);
+  box-shadow: 0 4px 15px rgba(192, 57, 43, 0.3);
+}
+
+.btn-primary:hover {
+  box-shadow: 0 6px 20px rgba(192, 57, 43, 0.4);
+}
+
+.btn-secondary {
+  padding: clamp(10px, 2vw, 14px) clamp(15px, 3vw, 20px);
+  background: #2980b9;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: clamp(14px, 2vw, 16px);
+}
+
+/* ============================================
+   FORM ELEMENTS
+   ============================================ */
+
+input,
+textarea,
+select {
+  width: 100%;
+  padding: clamp(8px, 1.5vw, 12px) clamp(12px, 2vw, 15px);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  font-family: inherit;
+  font-size: clamp(14px, 2vw, 16px);
+  transition: all 0.3s ease;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(192, 57, 43, 0.1);
+}
+
+label {
+  display: block;
+  margin-bottom: var(--spacing-sm);
+  font-weight: 600;
+  color: #444;
+  font-size: clamp(12px, 2vw, 14px);
+}
+
+/* ============================================
+   RESPONSIVE CONTAINERS
+   ============================================ */
+
+.container {
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 clamp(12px, 3vw, 24px);
+}
+
+.container-fluid {
+  width: 100%;
+  padding: 0 clamp(12px, 3vw, 24px);
+}
+
+/* ============================================
+   GRID & FLEXBOX UTILITIES
+   ============================================ */
+
+.grid {
+  display: grid;
+  gap: clamp(12px, 2vw, 24px);
+}
+
+.grid-cols-1 {
+  grid-template-columns: 1fr;
+}
+
+.grid-cols-2 {
+  grid-template-columns: 1fr;
+}
+
+.grid-cols-3 {
+  grid-template-columns: 1fr;
+}
+
+.flex-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.flex-between {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* ============================================
+   MOBILE FIRST (< 480px)
+   ============================================ */
+
+@media (max-width: 479px) {
+  body {
+    font-size: 14px;
+  }
+
+  h1,
+  h2,
+  h3 {
+    word-break: break-word;
+  }
+
+  p {
+    margin: var(--spacing-sm) 0;
+  }
+
+  .hide-mobile {
+    display: none !important;
+  }
+
+  .show-mobile {
+    display: block !important;
+  }
+
+  .gap-large {
+    gap: var(--spacing-md) !important;
+  }
+
+  .px-mobile-sm {
+    padding-left: var(--spacing-sm) !important;
+    padding-right: var(--spacing-sm) !important;
+  }
+}
+
+/* ============================================
+   TABLET (480px - 768px)
+   ============================================ */
+
+@media (min-width: 480px) and (max-width: 767px) {
+  body {
+    font-size: 15px;
+  }
+
+  .grid-cols-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .hide-tablet {
+    display: none !important;
+  }
+}
+
+/* ============================================
+   SMALL DESKTOP (768px - 1024px)
+   ============================================ */
+
+@media (min-width: 768px) {
+  body {
+    font-size: 16px;
+  }
+
+  .grid-cols-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .grid-cols-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .hide-tablet {
+    display: block !important;
+  }
+
+  .show-mobile {
+    display: none !important;
+  }
+
+  .hide-mobile {
+    display: block !important;
+  }
+}
+
+/* ============================================
+   MEDIUM DESKTOP (1024px+)
+   ============================================ */
+
+@media (min-width: 1024px) {
+  .grid-cols-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .grid-cols-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .grid-cols-4 {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* ============================================
+   LARGE DESKTOP (1440px+)
+   ============================================ */
+
+@media (min-width: 1440px) {
+  .container {
+    padding: 0 var(--spacing-2xl);
+  }
+}
+
+/* ============================================
+   CARD COMPONENT
+   ============================================ */
+
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: clamp(16px, 3vw, 24px);
+  box-shadow: var(--shadow);
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.card-border-top {
+  border-top: 6px solid;
+}
+
+/* ============================================
+   RESPONSIVE LAYOUT HELPERS
+   ============================================ */
+
+.layout-sidebar {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  font-family: Arial, sans-serif;
+}
+
+.layout-content-wrapper {
+  display: flex;
+  flex: 1;
+  gap: 0;
+}
+
+.sidebar {
+  width: 100%;
+  max-width: 280px;
+  background: var(--dark);
+  color: white;
+  padding: clamp(12px, 3vw, 24px);
+  overflow-y: auto;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 10;
+}
+
+.main-content {
+  flex: 1;
+  padding: clamp(16px, 3vw, 40px);
+  background: var(--light);
+  overflow-y: auto;
+}
+
+.stat-card {
+  flex: 1;
+  background: white;
+  padding: clamp(16px, 3vw, 25px);
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: var(--shadow);
+  border-top: 6px solid;
+  min-width: 150px;
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.stat-value {
+  margin: 0;
+  font-size: clamp(24px, 4vw, 32px);
+  font-weight: bold;
+  margin-bottom: var(--spacing-sm);
+}
+
+.stat-label {
+  color: var(--text-light);
+  font-weight: bold;
+  margin: 0;
+  font-size: clamp(12px, 2vw, 14px);
+}
+
+/* ============================================
+   NAVIGATION STYLES
+   ============================================ */
+
+.nav-item {
+  padding: clamp(10px, 2vw, 14px) clamp(12px, 2vw, 15px);
+  border-bottom: 1px solid #2d3436;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.nav-item:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.nav-link {
+  color: white;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  width: 100%;
+  font-size: clamp(13px, 2vw, 16px);
+}
+
+.nav-item.active {
+  background: #00a8cc;
+}
+
+/* ============================================
+   HAMBURGER MENU
+   ============================================ */
+
+.hamburger {
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+  background: none;
+  border: none;
+  padding: var(--spacing-md);
+  cursor: pointer;
+}
+
+.hamburger span {
+  width: 24px;
+  height: 3px;
+  background: var(--primary);
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+.hamburger.active span:nth-child(1) {
+  transform: rotate(45deg) translate(8px, 8px);
+}
+
+.hamburger.active span:nth-child(2) {
+  opacity: 0;
+}
+
+.hamburger.active span:nth-child(3) {
+  transform: rotate(-45deg) translate(6px, -6px);
+}
+
+/* ============================================
+   MOBILE SIDEBAR OVERLAY
+   ============================================ */
+
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 8;
+}
+
+.sidebar-overlay.active {
+  display: block;
+}
+
+/* ============================================
+   MOBILE ADJUSTMENTS (< 768px)
+   ============================================ */
+
+@media (max-width: 767px) {
+  .hamburger {
+    display: flex;
+  }
+
+  .layout-content-wrapper {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    height: 100vh;
+    max-width: 250px;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    z-index: 11;
+    overflow-y: auto;
+  }
+
+  .sidebar.active {
+    transform: translateX(0);
+  }
+
+  .main-content {
+    width: 100%;
+  }
+
+  .flex-desktop {
+    flex-direction: column;
+  }
+
+  .grid-cols-2,
+  .grid-cols-3,
+  .grid-cols-4 {
+    grid-template-columns: 1fr !important;
+  }
+
+  .min-width-sidebar {
+    width: 100%;
+  }
+
+  table {
+    font-size: 12px;
+  }
+
+  table td,
+  table th {
+    padding: 8px 4px;
+  }
+}
+
+/* ============================================
+   SCROLLBAR STYLING
+   ============================================ */
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+
+@media print {
+  body {
+    background: white;
+  }
+
+  .no-print,
+  .hamburger,
+  .sidebar,
+  button {
+    display: none !important;
+  }
+
+  .main-content {
+    padding: 0;
+    background: white;
+  }
+
+  .card {
+    page-break-inside: avoid;
+  }
+}

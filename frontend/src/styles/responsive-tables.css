@@ -1,0 +1,379 @@
+/* ============================================
+   RESPONSIVE TABLE & DATA DISPLAY
+   ============================================ */
+
+/**
+ * This file provides responsive table and data display styles
+ * for mobile devices. Tables are converted to card-based layouts
+ * on screens smaller than 768px.
+ */
+
+/* Desktop: Normal table */
+@media (min-width: 768px) {
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    margin: clamp(12px, 3vw, 24px) 0;
+  }
+
+  thead {
+    background-color: #f8f9fa;
+  }
+
+  th {
+    padding: clamp(12px, 2vw, 16px);
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid #e1e8ed;
+    font-size: clamp(12px, 2vw, 14px);
+    color: #2c3e50;
+  }
+
+  td {
+    padding: clamp(12px, 2vw, 16px);
+    border-bottom: 1px solid #e1e8ed;
+    font-size: clamp(12px, 2vw, 14px);
+  }
+
+  tbody tr:hover {
+    background-color: #f8f9fa;
+    transition: background-color 0.3s ease;
+  }
+
+  tbody tr {
+    transition: background-color 0.3s ease;
+  }
+}
+
+/* Tablet: Compact table */
+@media (max-width: 767px) {
+  table {
+    width: 100%;
+    border-spacing: 0;
+    border-collapse: collapse;
+    margin: clamp(12px, 3vw, 24px) 0;
+  }
+
+  thead {
+    display: none;
+  }
+
+  tbody {
+    display: block;
+  }
+
+  tbody tr {
+    display: block;
+    border: 1px solid #e1e8ed;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    overflow: hidden;
+    background: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  }
+
+  tbody tr:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s ease;
+  }
+
+  td {
+    display: block;
+    text-align: right;
+    padding: clamp(8px, 2vw, 12px) clamp(12px, 3vw, 16px);
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 12px;
+    position: relative;
+    padding-left: 50%;
+    min-height: 1.5em;
+  }
+
+  td:last-child {
+    border-bottom: none;
+  }
+
+  /* Label cho mỗi td */
+  td:before {
+    content: attr(data-label);
+    position: absolute;
+    left: clamp(12px, 3vw, 16px);
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 10px;
+    color: #7f8c8d;
+    letter-spacing: 0.5px;
+  }
+
+  /* Align buttons properly */
+  td button,
+  td a {
+    display: inline-block;
+    margin-right: 4px;
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+}
+
+/* ============================================
+   RESPONSIVE LIST VIEW (Alternative to Table)
+   ============================================ */
+
+.list-item {
+  background: white;
+  border: 1px solid #e1e8ed;
+  border-radius: 8px;
+  padding: clamp(12px, 3vw, 16px);
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: clamp(8px, 2vw, 12px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.list-item:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.list-item-header {
+  display: flex;
+  align-items: center;
+  gap: clamp(8px, 2vw, 12px);
+  flex: 1;
+  min-width: 150px;
+}
+
+.list-item-body {
+  flex: 1;
+  min-width: 100px;
+}
+
+.list-item-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 480px) {
+  .list-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .list-item-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
+/* ============================================
+   RESPONSIVE FORM TABLE (for edit forms)
+   ============================================ */
+
+.form-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.form-table td {
+  padding: clamp(12px, 2vw, 16px);
+  border-bottom: 1px solid #e1e8ed;
+}
+
+.form-table-label {
+  font-weight: 600;
+  color: #444;
+  width: 30%;
+  background-color: #f8f9fa;
+}
+
+.form-table-input {
+  width: 70%;
+}
+
+@media (max-width: 768px) {
+  .form-table {
+    display: block;
+  }
+
+  .form-table tbody {
+    display: block;
+  }
+
+  .form-table tr {
+    display: grid;
+    grid-template-columns: 1fr;
+    margin-bottom: 1rem;
+  }
+
+  .form-table td {
+    display: block;
+    width: 100%;
+    border-bottom: none;
+    padding: clamp(8px, 2vw, 12px);
+    border: 1px solid #e1e8ed;
+    border-radius: 4px;
+    margin-bottom: 4px;
+  }
+
+  .form-table-label {
+    width: 100%;
+    background-color: #f8f9fa;
+    margin-bottom: 8px;
+    border-radius: 4px 4px 0 0;
+  }
+
+  .form-table-input {
+    width: 100%;
+  }
+}
+
+/* ============================================
+   SCROLLABLE CONTAINER FOR WIDE TABLES
+   ============================================ */
+
+.table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 8px;
+  margin: clamp(12px, 3vw, 24px) 0;
+}
+
+.table-responsive table {
+  min-width: 100%;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .table-responsive::-webkit-scrollbar {
+    height: 6px;
+  }
+
+  .table-responsive::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+
+  .table-responsive::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+  }
+
+  .table-responsive::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
+}
+
+/* ============================================
+   RESPONSIVE GRID TABLE
+   ============================================ */
+
+.grid-table {
+  display: grid;
+  gap: clamp(12px, 2vw, 16px);
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+
+.grid-table-item {
+  background: white;
+  border: 1px solid #e1e8ed;
+  border-radius: 8px;
+  padding: clamp(12px, 3vw, 16px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+
+.grid-table-item:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.grid-table-item-title {
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #2c3e50;
+  word-break: break-word;
+}
+
+.grid-table-item-content {
+  font-size: clamp(12px, 2vw, 14px);
+  color: #7f8c8d;
+  line-height: 1.6;
+}
+
+.grid-table-item-footer {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 480px) {
+  .grid-table {
+    grid-template-columns: 1fr;
+  }
+
+  .grid-table-item-footer {
+    justify-content: flex-start;
+  }
+}
+
+/* ============================================
+   PAGINATION RESPONSIVE
+   ============================================ */
+
+.pagination {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: clamp(12px, 3vw, 24px) 0;
+}
+
+.pagination button,
+.pagination a {
+  padding: clamp(6px, 1vw, 8px) clamp(8px, 1.5vw, 12px);
+  border: 1px solid #e1e8ed;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  font-size: clamp(12px, 2vw, 14px);
+  transition: all 0.3s ease;
+}
+
+.pagination button:hover,
+.pagination a:hover {
+  background: #f8f9fa;
+  border-color: #c0392b;
+}
+
+.pagination button.active,
+.pagination a.active {
+  background: #c0392b;
+  color: white;
+  border-color: #c0392b;
+}
+
+@media (max-width: 480px) {
+  .pagination {
+    gap: 2px;
+  }
+
+  .pagination button,
+  .pagination a {
+    padding: 4px 6px;
+    font-size: 11px;
+  }
+}

@@ -1,0 +1,433 @@
+.ministry-rooms__page {
+  padding: 28px 32px;
+  font-family: 'Segoe UI', sans-serif;
+  background: #f8fafc;
+  min-height: 100vh;
+}
+
+.ministry-rooms__breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 16px;
+  font-size: 13px;
+}
+
+.ministry-rooms__breadcrumb-home {
+  color: #64748b;
+}
+
+.ministry-rooms__breadcrumb-sep {
+  color: #94a3b8;
+}
+
+.ministry-rooms__breadcrumb-current {
+  color: #4f46e5;
+  font-weight: 600;
+}
+
+.ministry-rooms__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.ministry-rooms__title {
+  margin: 0px;
+  font-size: 28px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.ministry-rooms__add-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  background: #4f46e5;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 13.5px;
+}
+
+.ministry-rooms__total-banner {
+  background: #4f46e5;
+  color: #fff;
+  border-radius: 12px;
+  padding: 28px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.ministry-rooms__total-label {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  opacity: 0.95;
+}
+
+.ministry-rooms__total-value {
+  font-size: 52px;
+  font-weight: 800;
+  line-height: 1;
+  margin: 8px 0;
+}
+
+.ministry-rooms__total-subtext {
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.ministry-rooms__total-icon {
+  opacity: 0.9;
+}
+
+.ministry-rooms__stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.ministry-rooms__stat-card {
+  background: #4f46e5;
+  color: #fff;
+  border-radius: 12px;
+  padding: 18px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3);
+}
+
+.ministry-rooms__stat-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  opacity: 0.9;
+  margin-bottom: 6px;
+}
+
+.ministry-rooms__stat-value {
+  font-size: 32px;
+  font-weight: 800;
+}
+
+.ministry-rooms__stat-icon-box {
+  width: 52px;
+  height: 52px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ministry-rooms__form {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+  border: 1px solid #e2e8f0;
+}
+
+.ministry-rooms__form-title {
+  margin-bottom: 20px;
+  font-size: 17px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.ministry-rooms__form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.ministry-rooms__label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 6px;
+}
+
+.ministry-rooms__input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.ministry-rooms__input-disabled {
+  background: #f1f5f9;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+.ministry-rooms__locked-notice {
+  margin-top: 14px;
+  padding: 10px 12px;
+  border: 1px solid #fde68a;
+  border-radius: 8px;
+  background: #fffbeb;
+  color: #92400e;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.ministry-rooms__submit-btn {
+  margin-top: 20px;
+  padding: 12px 28px;
+  border-radius: 8px;
+  border: none;
+  background: #4f46e5;
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.ministry-rooms__table-wrapper {
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+}
+
+.ministry-rooms__table-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.ministry-rooms__table-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.ministry-rooms__search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0 12px;
+  min-width: 320px;
+  background: #fff;
+}
+
+.ministry-rooms__search-input {
+  border: none;
+  outline: none;
+  padding: 10px 0;
+  font-size: 14px;
+  width: 100%;
+}
+
+.ministry-rooms__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ministry-rooms__thead-row {
+  background: #f1f5f9;
+}
+
+.ministry-rooms__th {
+  padding: 14px 16px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 700;
+  color: #64748b;
+  letter-spacing: 0.5px;
+}
+
+.ministry-rooms__tbody-row {
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.ministry-rooms__td {
+  padding: 15px 16px;
+  font-size: 14px;
+  color: #334155;
+}
+
+.ministry-rooms__type-badge {
+  padding: 4px 12px;
+  border-radius: 9999px;
+  background: #e0e7ff;
+  color: #4f46e5;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.ministry-rooms__ready-badge {
+  padding: 4px 12px;
+  border-radius: 9999px;
+  background: #dcfce7;
+  color: #166534;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.ministry-rooms__maintenance-badge {
+  padding: 4px 12px;
+  border-radius: 9999px;
+  background: #fee2e2;
+  color: #b91c1c;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.ministry-rooms__action-group {
+  display: flex;
+  gap: 8px;
+}
+
+.ministry-rooms__edit-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: #e0e7ff;
+  color: #4f46e5;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ministry-rooms__delete-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: #fee2e2;
+  color: #ef4444;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ministry-rooms__table-footer {
+  padding: 16px 24px;
+  color: #64748b;
+  font-size: 13px;
+  border-top: 1px solid #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.ministry-rooms__page-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ministry-rooms__page-info {
+  color: #334155;
+  font-weight: 600;
+}
+
+.ministry-rooms__page-btn {
+  padding: 6px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 7px;
+  background: #fff;
+  color: #334155;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.ministry-rooms__page-btn-disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.ministry-rooms__modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15,23,42,0.45);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+}
+
+.ministry-rooms__modal-box {
+  width: 100%;
+  max-width: 850px;
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  animation: fadeIn 0.2s ease;
+}
+
+.ministry-rooms__modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.ministry-rooms__close-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: none;
+  background: #f1f5f9;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.ministry-rooms__modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.ministry-rooms__cancel-btn {
+  padding: 12px 20px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  color: #475569;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.ministry-rooms__inline-364 {
+  overflow-x: auto;
+}
+
+.ministry-rooms__inline-386 {
+  font-weight: 700;
+  color: #4f46e5;
+}

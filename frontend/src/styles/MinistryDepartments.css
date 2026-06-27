@@ -1,0 +1,196 @@
+.ministry-departments {
+  padding: 0 4px;
+  font-family: "Segoe UI", sans-serif;
+}
+
+.ministry-departments__header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.ministry-departments__title {
+  color: #2c3e50;
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+}
+
+.ministry-departments__title-icon {
+  margin-right: 10px;
+}
+
+.ministry-departments__add-btn {
+  background: #4f63d2;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.ministry-departments__modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ministry-departments__modal-content {
+  background: white;
+  width: min(520px, 92vw);
+  border-radius: 12px;
+  padding: 24px;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(15, 23, 42, 0.25);
+}
+
+.ministry-departments__close-btn {
+  position: absolute;
+  right: 14px;
+  top: 12px;
+  border: none;
+  background: transparent;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.ministry-departments__form-title {
+  margin-top: 0;
+  color: #1f2937;
+}
+
+.ministry-departments__field-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 14px;
+}
+
+.ministry-departments__label {
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #475569;
+}
+
+.ministry-departments__input {
+  border: 1px solid #dbe2ef;
+  border-radius: 8px;
+  padding: 10px 12px;
+  outline: none;
+}
+
+.ministry-departments__input--disabled {
+  background: #f0f0f0;
+}
+
+.ministry-departments__textarea {
+  min-height: 80px;
+}
+
+.ministry-departments__submit-btn {
+  width: 100%;
+  border: none;
+  border-radius: 8px;
+  padding: 11px 16px;
+  background: #4f63d2;
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.ministry-departments__table-wrapper {
+  background: white;
+  border-radius: 10px;
+  overflow-x: auto;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08);
+}
+
+.ministry-departments__table-header {
+  padding: 16px;
+  border-bottom: 1px solid #eef2f7;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.ministry-departments__search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0 12px;
+  min-width: 280px;
+  background: #fff;
+}
+
+.ministry-departments__search-icon {
+  color: #94a3b8;
+}
+
+.ministry-departments__search-input {
+  border: none;
+  outline: none;
+  padding: 10px 0;
+  font-size: 14px;
+  width: 100%;
+}
+
+.ministry-departments__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ministry-departments__table th {
+  background: #f8fafc;
+  padding: 12px 14px;
+  font-size: 12px;
+  text-align: left;
+  color: #64748b;
+}
+
+.ministry-departments__table td {
+  padding: 12px 14px;
+  border-top: 1px solid #eef2f7;
+  font-size: 14px;
+}
+
+.ministry-departments__table tbody tr {
+  background: white;
+}
+
+.ministry-departments__empty-cell {
+  padding: 24px;
+  text-align: center;
+  color: #64748b;
+}
+
+.ministry-departments__department-id {
+  color: #4f63d2;
+  font-weight: 700;
+}
+
+.ministry-departments__edit-btn {
+  margin-right: 8px;
+  border: none;
+  border-radius: 6px;
+  padding: 7px 10px;
+  background: #e0f2fe;
+  color: #0369a1;
+  cursor: pointer;
+}
+
+.ministry-departments__delete-btn {
+  border: none;
+  border-radius: 6px;
+  padding: 7px 10px;
+  background: #fee2e2;
+  color: #b91c1c;
+  cursor: pointer;
+}
