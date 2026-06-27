@@ -26,7 +26,7 @@ import { MajorsModule } from './modules/majors/majors.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: '.env',
+      envFilePath: ['../.env', '.env'],
     }),
     PrismaModule,
     UsersModule,

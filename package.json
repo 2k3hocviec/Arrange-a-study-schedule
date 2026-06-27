@@ -1,0 +1,23 @@
+{
+  "name": "schedule-course-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "install:frontend": "npm --prefix frontend install",
+    "install:backend": "npm --prefix backend install",
+    "install:all": "npm --prefix frontend install && npm --prefix backend install",
+    "frontend:dev": "npm --prefix frontend run dev",
+    "frontend:build": "npm --prefix frontend run build",
+    "frontend:test": "npm --prefix frontend test",
+    "backend:dev": "npm --prefix backend run dev",
+    "backend:build": "npm --prefix backend run build",
+    "backend:test": "npm --prefix backend test",
+    "backend:prisma:generate": "npm --prefix backend run prisma:generate",
+    "backend:prisma:push": "npm --prefix backend run prisma:push",
+    "backend:seed": "npm --prefix backend run seed",
+    "docker:up": "docker compose up --build",
+    "docker:up:detached": "docker compose up --build -d",
+    "docker:down": "docker compose down",
+    "docker:reset": "docker compose down -v"
+  }
+}
