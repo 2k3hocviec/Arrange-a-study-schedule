@@ -1,103 +1,244 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateScheduleDto } from './dto/create-schedule.dto';
 import { UpdateScheduleDto } from './dto/update-schedule.dto';
-import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
-import { Schedule } from './entities/schedule.entity';
 import { CoursesService } from '../courses/courses.service';
 import { ClassroomsService } from '../classrooms/classrooms.service';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { TeacherBusySchedulesService } from '../teacher-busy-schedules/teacher-busy-schedules.service';
+
+const READY_CLASSROOM_STATUS = 'Ready';
 
 @Injectable()
 export class SchedulesService {
   constructor(
-    @InjectRepository(Schedule)
-    private readonly scheduleRepository: Repository<Schedule>,
+    private readonly prisma: PrismaService,
     private readonly courseService: CoursesService,
     private readonly classroomService: ClassroomsService,
+    private readonly teacherBusySchedulesService: TeacherBusySchedulesService,
   ) {}
+
+  private ensureRoomTypeMatches(
+    course: { required_room_type: string },
+    classroom: { type: string },
+  ) {
+    if (course.required_room_type !== classroom.type) {
+      throw new BadRequestException(
+        `Classroom type ${classroom.type} does not match required room type ${course.required_room_type}`,
+      );
+    }
+  }
+
+  private normalizeSlots(dto: CreateScheduleDto | UpdateScheduleDto) {
+    const start_slot = Number(dto.start_slot);
+    const end_slot = Number(dto.end_slot);
+
+    if (
+      !Number.isInteger(start_slot) ||
+      !Number.isInteger(end_slot) ||
+      start_slot < 1 ||
+      end_slot > 10 ||
+      start_slot > end_slot
+    ) {
+      throw new BadRequestException(
+        'Schedule slots must be valid and start_slot must be less than or equal to end_slot',
+      );
+    }
+
+    return {
+      start_slot,
+      end_slot,
+    };
+  }
+
+  private normalizeScheduleDates(dto: CreateScheduleDto | UpdateScheduleDto) {
+    const scheduleStart = dto.start_date ? new Date(dto.start_date) : undefined;
+    const scheduleEnd = dto.end_date ? new Date(dto.end_date) : undefined;
+
+    if (scheduleStart && scheduleEnd && scheduleStart > scheduleEnd) {
+      throw new BadRequestException(
+        'Schedule start_date must be before or equal to end_date',
+      );
+    }
+
+    return { scheduleStart, scheduleEnd };
+  }
+
+  private ensureScheduleDatesWithinSemester(
+    dto: CreateScheduleDto | UpdateScheduleDto,
+    course: { semester?: { start_date: Date; end_date: Date } | null },
+  ) {
+    if (!dto.start_date || !dto.end_date || !course.semester) {
+      return;
+    }
+
+    const { scheduleStart, scheduleEnd } = this.normalizeScheduleDates(dto);
+    if (!scheduleStart || !scheduleEnd) {
+      return;
+    }
+
+    const semesterStart = new Date(course.semester.start_date);
+    const semesterEnd = new Date(course.semester.end_date);
+
+    if (scheduleStart < semesterStart || scheduleEnd > semesterEnd) {
+      throw new BadRequestException(
+        'Schedule dates must be within the course semester date range',
+      );
+    }
+  }
 
   private async checkClassroomConflict(
     dto: CreateScheduleDto | UpdateScheduleDto,
+    semesterId: string,
+    excludeScheduleId?: string,
   ) {
-    const query = this.scheduleRepository
-      .createQueryBuilder('schedule')
-      .where('schedule.classroom_id = :roomId', { roomId: dto.classroom_id })
-      .andWhere('schedule.dayOfWeek = :day', { day: String(dto.dayOfWeek) })
-      .andWhere('schedule.start_slot <= :endNew', { endNew: dto.end_slot })
-      .andWhere('schedule.end_slot >= :startNew', { startNew: dto.start_slot });
+    const { start_slot, end_slot } = this.normalizeSlots(dto);
+    const where: any = {
+      classroom_id: dto.classroom_id,
+      dayOfWeek: String(dto.dayOfWeek),
+      start_slot: { lte: end_slot },
+      end_slot: { gte: start_slot },
+      course: { semester_id: semesterId },
+    };
 
-    // Kiểm tra khoảng ngày: chỉ conflict nếu:
-    // - Schedule cũ không có ngày (NULL) hoặc
-    // - Khoảng ngày của schedule mới overlap với schedule cũ
-    if (dto.start_date && dto.end_date) {
-      const startDate = new Date(dto.start_date);
-      const endDate = new Date(dto.end_date);
-      query
-        .andWhere(`schedule.start_date <= :endDate`, {
-          endDate,
-        })
-        .andWhere(`schedule.end_date >= :startDate`, {
-          startDate,
-        });
+    // Khi update schedule có thể tự báo trùng với chính nó, vì vậy ta cần loại trừ cái hiện tại
+    if (excludeScheduleId) {
+      where.schedule_id = { not: excludeScheduleId };
     }
 
-    return await query.getOne();
+    if (dto.start_date && dto.end_date) {
+      where.OR = [
+        { start_date: null },
+        { end_date: null },
+        {
+          start_date: { lte: new Date(dto.end_date) },
+          end_date: { gte: new Date(dto.start_date) },
+        },
+      ];
+    }
+
+    return this.prisma.schedule.findFirst({ where });
   }
 
   private async checkTeacherConflict(
     dto: CreateScheduleDto | UpdateScheduleDto,
+    currentCourse: { teacher_id: string; semester_id: string },
+    excludeScheduleId?: string,
   ) {
-    // 1. Tìm thông tin khóa học hiện tại để biết giáo viên là ai
-    const currentCourse = await this.courseService.findOneByCourseID(
-      dto.course_id,
-    );
+    const { start_slot, end_slot } = this.normalizeSlots(dto);
+    const where: any = {
+      dayOfWeek: String(dto.dayOfWeek),
+      start_slot: { lte: end_slot },
+      end_slot: { gte: start_slot },
+      course: {
+        teacher_id: currentCourse.teacher_id,
+        semester_id: currentCourse.semester_id,
+      },
+    };
 
-    if (!currentCourse) return null;
-
-    // 2. Tìm bất kỳ lịch dạy nào của giáo viên này bị trùng giờ
-    // Sử dụng QueryBuilder để join sang bảng Course và check teacher_id
-    // Thêm kiểm tra khoảng ngày: chỉ xung đột nếu ngày overlap hoặc schedule cũ không có giới hạn ngày
-    const query = this.scheduleRepository
-      .createQueryBuilder('schedule')
-      .leftJoinAndSelect('schedule.course', 'course')
-      .where('schedule.dayOfWeek = :dayOfWeek', {
-        dayOfWeek: String(dto.dayOfWeek),
-      })
-      .andWhere('schedule.start_slot <= :end_slot', { end_slot: dto.end_slot })
-      .andWhere('schedule.end_slot >= :start_slot', {
-        start_slot: dto.start_slot,
-      })
-      .andWhere('course.teacher_id = :teacherId', {
-        teacherId: currentCourse.teacher_id,
-      });
-
-    // Kiểm tra khoảng ngày: chỉ conflict nếu:
-    // - Schedule cũ không có ngày (NULL) hoặc
-    // - Khoảng ngày của schedule mới overlap với schedule cũ
-    if (dto.start_date && dto.end_date) {
-      const startDate = new Date(dto.start_date);
-      const endDate = new Date(dto.end_date);
-
-      query
-        .andWhere(`schedule.start_date <= :endDate`, {
-          endDate,
-        })
-        .andWhere(`schedule.end_date >= :startDate`, {
-          startDate,
-        });
+    if (excludeScheduleId) {
+      where.schedule_id = { not: excludeScheduleId };
     }
 
-    const conflict = await query.getOne();
-    return conflict;
+    if (dto.start_date && dto.end_date) {
+      where.OR = [
+        { start_date: null },
+        { end_date: null },
+        {
+          start_date: { lte: new Date(dto.end_date) },
+          end_date: { gte: new Date(dto.start_date) },
+        },
+      ];
+    }
+
+    return this.prisma.schedule.findFirst({
+      where,
+      include: { course: true },
+    });
+  }
+
+  private async checkTeacherBusyConflict(
+    dto: CreateScheduleDto | UpdateScheduleDto,
+    course: {
+      teacher_id: string;
+      semester?: { start_date: Date; end_date: Date } | null;
+    },
+  ) {
+    const scheduleStart = dto.start_date
+      ? new Date(dto.start_date)
+      : course.semester?.start_date;
+    const scheduleEnd = dto.end_date
+      ? new Date(dto.end_date)
+      : course.semester?.end_date;
+    const { start_slot, end_slot } = this.normalizeSlots(dto);
+
+    return this.teacherBusySchedulesService.findConflictForSchedule({
+      teacherId: course.teacher_id,
+      dayOfWeek: String(dto.dayOfWeek),
+      startSlot: start_slot,
+      endSlot: end_slot,
+      startDate: scheduleStart,
+      endDate: scheduleEnd,
+    });
+  }
+
+  private async ensureCourseHasNoOtherSchedule(
+    courseId: string,
+    excludeScheduleId?: string,
+  ) {
+    const existingSchedule = await this.prisma.schedule.findFirst({
+      where: {
+        course_id: courseId,
+        ...(excludeScheduleId
+          ? { schedule_id: { not: excludeScheduleId } }
+          : {}),
+      },
+    });
+
+    if (existingSchedule) {
+      throw new BadRequestException('This course already has a schedule');
+    }
+  }
+
+  private async ensureScheduleCourseHasNoEnrollments(
+    scheduleId: string,
+    action: 'update' | 'delete',
+  ) {
+    const schedule = await this.prisma.schedule.findUnique({
+      where: { schedule_id: scheduleId },
+      select: { course_id: true },
+    });
+
+    if (!schedule) {
+      throw new BadRequestException(`Schedule not exist`);
+    }
+
+    const enrollmentCount = await this.prisma.enrollment.count({
+      where: { course_id: schedule.course_id },
+    });
+
+    if (enrollmentCount > 0) {
+      throw new BadRequestException(
+        action === 'update'
+          ? 'Cannot update schedule that has enrollments'
+          : 'Cannot delete schedule that has enrollments',
+      );
+    }
   }
 
   async create(createScheduleDto: CreateScheduleDto) {
+    const { start_slot, end_slot } = this.normalizeSlots(createScheduleDto);
     const classroom = await this.classroomService.findOne(
       createScheduleDto.classroom_id,
     );
 
     if (!classroom) {
       throw new BadRequestException(`Classroom not exist`);
+    }
+
+    if (classroom.status !== READY_CLASSROOM_STATUS) {
+      throw new BadRequestException(
+        `Classroom ${createScheduleDto.classroom_id} is not ready for scheduling`,
+      );
     }
 
     const course = await this.courseService.findOne(
@@ -108,16 +249,19 @@ export class SchedulesService {
       throw new BadRequestException(`Course not exist`);
     }
 
-    // Kiểm tra sức chứa của lớp có đủ cho số sinh viên tối đa của khóa học không
+    await this.ensureCourseHasNoOtherSchedule(createScheduleDto.course_id);
+
+    this.ensureRoomTypeMatches(course, classroom);
+    this.ensureScheduleDatesWithinSemester(createScheduleDto, course);
+
     if (course.capacity && classroom.capacity < course.capacity) {
       throw new BadRequestException(
         `Classroom capacity (${classroom.capacity}) is less than course maximum students (${course.capacity}). Please choose a larger classroom.`,
       );
     }
 
-    // Kiểm tra classroom không trùng lịch
     const classroomConflict =
-      await this.checkClassroomConflict(createScheduleDto);
+      await this.checkClassroomConflict(createScheduleDto, course.semester_id);
 
     if (classroomConflict) {
       throw new BadRequestException(
@@ -125,63 +269,88 @@ export class SchedulesService {
       );
     }
 
-    // Kiểm tra teacher hôm đó có lịch học không
-    const teacherConflict = await this.checkTeacherConflict(createScheduleDto);
+    const teacherConflict = await this.checkTeacherConflict(
+      createScheduleDto,
+      course,
+    );
     if (teacherConflict) {
       throw new BadRequestException(
         `Teacher already has schedule on ${createScheduleDto.dayOfWeek} at this time`,
       );
     }
 
-    const schedule = new Schedule();
-    schedule.course_id = createScheduleDto.course_id;
-    schedule.classroom_id = createScheduleDto.classroom_id;
-    schedule.dayOfWeek = createScheduleDto.dayOfWeek;
-    schedule.start_slot = createScheduleDto.start_slot;
-    schedule.end_slot = createScheduleDto.end_slot;
-    schedule.start_date = createScheduleDto.start_date
-      ? new Date(createScheduleDto.start_date)
-      : null;
-    schedule.end_date = createScheduleDto.end_date
-      ? new Date(createScheduleDto.end_date)
-      : null;
-    return await this.scheduleRepository.save(schedule);
+    const teacherBusyConflict = await this.checkTeacherBusyConflict(
+      createScheduleDto,
+      course,
+    );
+    if (teacherBusyConflict) {
+      throw new BadRequestException(
+        `Teacher has an approved busy request on ${teacherBusyConflict.busy_date.toISOString().slice(0, 10)} from slot ${teacherBusyConflict.start_slot} to ${teacherBusyConflict.end_slot}`,
+      );
+    }
+
+    return this.prisma.schedule.create({
+      data: {
+        course_id: createScheduleDto.course_id,
+        classroom_id: createScheduleDto.classroom_id,
+        dayOfWeek: String(createScheduleDto.dayOfWeek),
+        start_slot,
+        end_slot,
+        start_date: createScheduleDto.start_date
+          ? new Date(createScheduleDto.start_date)
+          : null,
+        end_date: createScheduleDto.end_date
+          ? new Date(createScheduleDto.end_date)
+          : null,
+      },
+    });
   }
 
   async findExistingSchedules(courseIDs: string[]) {
-    return await this.scheduleRepository.find({
-      where: { course_id: In(courseIDs) },
+    return this.prisma.schedule.findMany({
+      where: { course_id: { in: courseIDs } },
     });
   }
 
   findAll() {
-    return this.scheduleRepository.find({ relations: ['course', 'room'] });
-  }
-
-  findOneWithRoom(schedule_id: string) {
-    return this.scheduleRepository.findOne({
-      where: { schedule_id },
-      relations: ['course', 'room'],
+    return this.prisma.schedule.findMany({
+      include: { course: { include: { semester: true } }, room: true },
     });
   }
 
-  findScheduleWithCourseID(courseID: string) {
-    return this.scheduleRepository.findOne({
+  findOneWithRoom(schedule_id: string) {
+    return this.prisma.schedule.findUnique({
+      where: { schedule_id },
+      include: { course: { include: { semester: true } }, room: true },
+    });
+  }
+
+  findSchedulesWithCourseID(courseID: string) {
+    return this.prisma.schedule.findMany({
       where: { course_id: courseID },
     });
   }
 
   findOne(id: string) {
-    return this.scheduleRepository.findBy({ schedule_id: id });
+    return this.prisma.schedule.findMany({ where: { schedule_id: id } });
   }
 
   async update(id: string, updateScheduleDto: UpdateScheduleDto) {
+    await this.ensureScheduleCourseHasNoEnrollments(id, 'update');
+
+    const { start_slot, end_slot } = this.normalizeSlots(updateScheduleDto);
     const classroom = await this.classroomService.findOne(
       updateScheduleDto.classroom_id,
     );
 
     if (!classroom) {
       throw new BadRequestException(`Classroom not exist`);
+    }
+
+    if (classroom.status !== READY_CLASSROOM_STATUS) {
+      throw new BadRequestException(
+        `Classroom ${updateScheduleDto.classroom_id} is not ready for scheduling`,
+      );
     }
 
     const course = await this.courseService.findOne(
@@ -192,16 +361,25 @@ export class SchedulesService {
       throw new BadRequestException(`Course not exist`);
     }
 
-    // Kiểm tra sức chứa của lớp có đủ cho số sinh viên tối đa của khóa học không
+    await this.ensureCourseHasNoOtherSchedule(
+      updateScheduleDto.course_id,
+      id,
+    );
+
+    this.ensureRoomTypeMatches(course, classroom);
+    this.ensureScheduleDatesWithinSemester(updateScheduleDto, course);
+
     if (course.capacity && classroom.capacity < course.capacity) {
       throw new BadRequestException(
         `Classroom capacity (${classroom.capacity}) is less than course maximum students (${course.capacity}). Please choose a larger classroom.`,
       );
     }
 
-    // Kiểm tra classroom không trùng lịch
-    const classroomConflict =
-      await this.checkClassroomConflict(updateScheduleDto);
+    const classroomConflict = await this.checkClassroomConflict(
+      updateScheduleDto,
+      course.semester_id,
+      id,
+    );
 
     if (classroomConflict) {
       throw new BadRequestException(
@@ -209,29 +387,49 @@ export class SchedulesService {
       );
     }
 
-    // Kiểm tra teacher hôm đó có lịch học không
-    const teacherConflict = await this.checkTeacherConflict(updateScheduleDto);
+    const teacherConflict = await this.checkTeacherConflict(
+      updateScheduleDto,
+      course,
+      id,
+    );
     if (teacherConflict) {
       throw new BadRequestException(
         `Teacher already has schedule on ${updateScheduleDto.dayOfWeek} at this time`,
       );
     }
 
-    // Chuyển đổi ngày nếu có
-    const dataToUpdate = {
-      ...updateScheduleDto,
-      start_date: updateScheduleDto.start_date
-        ? new Date(updateScheduleDto.start_date)
-        : undefined,
-      end_date: updateScheduleDto.end_date
-        ? new Date(updateScheduleDto.end_date)
-        : undefined,
-    };
+    const teacherBusyConflict = await this.checkTeacherBusyConflict(
+      updateScheduleDto,
+      course,
+    );
+    if (teacherBusyConflict) {
+      throw new BadRequestException(
+        `Teacher has an approved busy request on ${teacherBusyConflict.busy_date.toISOString().slice(0, 10)} from slot ${teacherBusyConflict.start_slot} to ${teacherBusyConflict.end_slot}`,
+      );
+    }
 
-    return await this.scheduleRepository.update(id, dataToUpdate);
+    return this.prisma.schedule.update({
+      where: { schedule_id: id },
+      data: {
+        ...updateScheduleDto,
+        dayOfWeek:
+          updateScheduleDto.dayOfWeek === undefined
+            ? undefined
+            : String(updateScheduleDto.dayOfWeek),
+        start_slot,
+        end_slot,
+        start_date: updateScheduleDto.start_date
+          ? new Date(updateScheduleDto.start_date)
+          : undefined,
+        end_date: updateScheduleDto.end_date
+          ? new Date(updateScheduleDto.end_date)
+          : undefined,
+      },
+    });
   }
 
-  remove(id: string) {
-    return this.scheduleRepository.delete(id);
+  async remove(id: string) {
+    await this.ensureScheduleCourseHasNoEnrollments(id, 'delete');
+    return this.prisma.schedule.delete({ where: { schedule_id: id } });
   }
 }

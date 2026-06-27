@@ -2,122 +2,127 @@ import {
   Injectable,
   BadRequestException,
   UnauthorizedException,
+  NotFoundException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 import { UsersService } from 'src/modules/users/users.service';
 import { MailService } from 'src/mail/mail.service';
+import { RedisService } from 'src/redis/redis.service';
 import * as bcrypt from 'bcrypt';
-import type { Response, Request } from 'express';
 
-// OTP store tạm thời trong memory
 const otpStore = new Map<string, { otp: string; expiry: number }>();
-
-// Secret riêng cho refresh token (khác access token)
-const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'jwt_refresh_secret_key';
-const ACCESS_SECRET  = process.env.JWT_SECRET         || 'jwt_access_secret_key';
+const REFRESH_TTL = 7 * 24 * 60 * 60;
 
 @Injectable()
 export class AuthService {
   constructor(
-      private readonly usersServive: UsersService,
-      private readonly jwtService: JwtService,
-      private readonly mailService: MailService,
+    private readonly usersServive: UsersService,
+    private readonly jwtService: JwtService,
+    private readonly mailService: MailService,
+    private readonly configService: ConfigService,
+    private readonly redisService: RedisService,
   ) {}
 
-  // ─── Tạo Access Token (15 phút) ───
-  private createAccessToken(payload: { sub: number; email: string; role: string }) {
-    return this.jwtService.sign(payload, {
-      secret: ACCESS_SECRET,
-      expiresIn: '15m',
-    });
+  private getAccessSecret() {
+    return (
+      this.configService.get<string>('JWT_ACCESS_SECRET') ||
+      this.configService.get<string>('JWT_SECRET') ||
+      '123'
+    );
   }
 
-  // ─── Tạo Refresh Token (7 ngày) ───
-  private createRefreshToken(payload: { sub: number; email: string; role: string }) {
-    return this.jwtService.sign(payload, {
-      secret: REFRESH_SECRET,
-      expiresIn: '7d',
-    });
+  private getRefreshSecret() {
+    return (
+      this.configService.get<string>('JWT_REFRESH_SECRET') ||
+      'jwt_refresh_secret_key'
+    );
   }
 
-  // ─── Set Refresh Token vào httpOnly Cookie ───
-  setRefreshTokenCookie(res: Response, refreshToken: string) {
-    res.cookie('refresh_token', refreshToken, {
-      httpOnly: true,      // JS không đọc được → bảo mật khỏi XSS
-      secure: false,       // Đổi thành true khi dùng HTTPS (production)
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 ngày (ms)
-      path: '/',
-    });
+  private async generateTokens(userId: number, email: string, role: string) {
+    const payload = { sub: userId, email, role };
+
+    const [access_token, refresh_token] = await Promise.all([
+      this.jwtService.signAsync(payload, {
+        secret: this.getAccessSecret(),
+        expiresIn: '15m',
+      }),
+      this.jwtService.signAsync(payload, {
+        secret: this.getRefreshSecret(),
+        expiresIn: '7d',
+      }),
+    ]);
+
+    const hashed = await bcrypt.hash(refresh_token, 10);
+    await this.redisService.set(`refresh_token:${userId}`, hashed, REFRESH_TTL);
+
+    return { access_token, refresh_token };
   }
 
-  // ─── LOGIN ───
-  async login(email: string, password: string, res: Response) {
+  async login(email: string, password: string) {
     const user = await this.usersServive.findByEmail(email);
     if (!user) {
-      throw new UnauthorizedException('Email hoặc mật khẩu không đúng');
+      throw new UnauthorizedException('Email or passwrod unvalid');
     }
+
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      throw new UnauthorizedException('Email hoặc mật khẩu không đúng');
+      throw new UnauthorizedException('Email or passwrod unvalid');
     }
 
-    const payload = { sub: user.id, email: user.email, role: user.role };
-    const accessToken  = this.createAccessToken(payload);
-    const refreshToken = this.createRefreshToken(payload);
-
-    // Gửi refresh token qua cookie httpOnly
-    this.setRefreshTokenCookie(res, refreshToken);
+    const { access_token, refresh_token } = await this.generateTokens(
+      user.id,
+      user.email,
+      user.role,
+    );
 
     return {
-      access_token: accessToken,
+      access_token,
+      refresh_token,
       user: { id: user.id, email: user.email, role: user.role },
     };
   }
 
-  // ─── REFRESH: FE gọi khi access token hết hạn ───
-  async refresh(req: Request, res: Response) {
-    const refreshToken = req.cookies?.refresh_token;
-    if (!refreshToken) {
-      throw new UnauthorizedException('Không có refresh token. Vui lòng đăng nhập lại.');
-    }
-
+  async refreshTokens(rawRefreshToken: string) {
     let payload: any;
     try {
-      payload = this.jwtService.verify(refreshToken, { secret: REFRESH_SECRET });
+      payload = this.jwtService.verify(rawRefreshToken, {
+        secret: this.getRefreshSecret(),
+      });
     } catch {
-      // Refresh token hết hạn hoặc không hợp lệ → yêu cầu login lại
-      res.clearCookie('refresh_token');
-      throw new UnauthorizedException('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+      throw new UnauthorizedException(
+        'Refresh token unvalid or expire',
+      );
     }
 
-    // Kiểm tra user vẫn còn tồn tại trong DB
-    const user = await this.usersServive.findById(payload.sub);
-    if (!user) {
-      res.clearCookie('refresh_token');
-      throw new UnauthorizedException('Tài khoản không tồn tại.');
+    const userId = payload.sub;
+    const storedHash = await this.redisService.get(`refresh_token:${userId}`);
+    if (!storedHash) {
+      throw new ForbiddenException(
+        'Refresh token da bi thu hoi hoac khong ton tai',
+      );
     }
 
-    // Cấp access token mới (refresh token giữ nguyên - không cần đổi)
-    const newPayload    = { sub: user.id, email: user.email, role: user.role };
-    const newAccessToken = this.createAccessToken(newPayload);
+    const isMatch = await bcrypt.compare(rawRefreshToken, storedHash);
+    if (!isMatch) {
+      throw new ForbiddenException('Refresh token unvalid');
+    }
 
-    return { access_token: newAccessToken };
+    return this.generateTokens(userId, payload.email, payload.role);
   }
 
-  // ─── LOGOUT ───
-  async logout(res: Response) {
-    res.clearCookie('refresh_token', { path: '/' });
-    return { message: 'Đăng xuất thành công' };
+  async logout(userId: number) {
+    await this.redisService.delete(`refresh_token:${userId}`);
   }
 
-  // ─── OTP: Bước 1 - Gửi OTP ───
   async sendOtp(email: string) {
     const user = await this.usersServive.findByEmail(email);
     if (!user) {
-      throw new BadRequestException('Email không tồn tại trong hệ thống');
+      throw new BadRequestException('Email not Found');
     }
-    const otp    = Math.floor(100000 + Math.random() * 900000).toString();
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const expiry = Date.now() + 5 * 60 * 1000;
     otpStore.set(email, { otp, expiry });
 
@@ -126,66 +131,81 @@ export class AuthService {
       await this.mailService.sendOtpEmail(email, otp, userName);
     } catch (error) {
       console.error('Failed to send OTP email:', error);
-      throw new BadRequestException('Không thể gửi email. Kiểm tra cấu hình SMTP trong .env');
+      throw new BadRequestException(
+        'Can not send email. Check SMTP in .env',
+      );
     }
-    return { message: 'Mã OTP đã được gửi tới email của bạn' };
+
+    return { message: 'The OTP has been sent to you' };
   }
 
-  // ─── OTP: Bước 2 - Xác minh OTP ───
   async verifyOtp(email: string, otp: string) {
     const stored = otpStore.get(email);
     if (!stored) {
-      throw new BadRequestException('Không tìm thấy yêu cầu OTP. Vui lòng gửi lại.');
+      throw new BadRequestException('Not found OTP. Try again.');
     }
     if (Date.now() > stored.expiry) {
       otpStore.delete(email);
-      throw new BadRequestException('Mã OTP đã hết hạn. Vui lòng yêu cầu lại.');
+      throw new BadRequestException('The OTP code has expired. Please request it again.');
     }
     if (stored.otp !== otp) {
-      throw new BadRequestException('Mã OTP không đúng');
+      throw new BadRequestException('The OTP code is incorrect.');
     }
-    otpStore.delete(email);
 
+    otpStore.delete(email);
     const resetToken = this.jwtService.sign(
-        { email, purpose: 'reset-password' },
-        { secret: ACCESS_SECRET, expiresIn: '10m' },
+      { email, purpose: 'reset-password' },
+      { secret: this.getAccessSecret(), expiresIn: '10m' },
     );
-    return { message: 'Xác minh OTP thành công', reset_token: resetToken };
+
+    return { message: 'OTP verification successful', reset_token: resetToken };
   }
 
-  // ─── OTP: Bước 3 - Đặt mật khẩu mới ───
   async resetPassword(resetToken: string, newPassword: string) {
     let payload: any;
     try {
-      payload = this.jwtService.verify(resetToken, { secret: ACCESS_SECRET });
+      payload = this.jwtService.verify(resetToken, {
+        secret: this.getAccessSecret(),
+      });
     } catch {
-      throw new BadRequestException('Token không hợp lệ hoặc đã hết hạn');
+      throw new BadRequestException('Token khong hop le hoac da het han');
     }
+
     if (payload.purpose !== 'reset-password') {
-      throw new BadRequestException('Token không hợp lệ');
+      throw new BadRequestException('Token khong hop le');
     }
+
     const user = await this.usersServive.findByEmail(payload.email);
     if (!user) {
-      throw new BadRequestException('Người dùng không tồn tại');
+      throw new BadRequestException('Nguoi dung khong ton tai');
     }
+
     await this.usersServive.updatePassword(user.id, newPassword);
-    return { message: 'Mật khẩu đã được cập nhật thành công' };
+    return { message: 'Mat khau da duoc cap nhat thanh cong' };
   }
 
-  // ─── Forgot password (gửi mật khẩu mới qua email) ───
-  async forgotPassword(email: string) {
-    const user = await this.usersServive.findByEmail(email);
+  async changePassword(
+    userId: number,
+    currentPassword: string,
+    newPassword: string,
+  ) {
+    const user = await this.usersServive.findOneById(userId);
     if (!user) {
-      throw new BadRequestException('Email không tồn tại trong hệ thống');
+      throw new NotFoundException('User not found');
     }
-    const newPassword = '123456';
-    await this.usersServive.updatePassword(user.id, newPassword);
-    try {
-      const userName = user.email.split('@')[0];
-      await this.mailService.sendNewPasswordEmail(email, newPassword, userName);
-    } catch (error) {
-      console.error('Failed to send email:', error);
+
+    if (user.role === 'sysadmin') {
+      throw new BadRequestException('Cannot change password of sysadmin user');
     }
-    return { message: 'Mật khẩu mới đã được gửi tới email của bạn' };
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      throw new BadRequestException('Password is incorret');
+    }
+
+    user.password = await bcrypt.hash(newPassword, 10);
+    await this.usersServive.save(user);
+
+    return { message: 'Change Password success' };
   }
 }

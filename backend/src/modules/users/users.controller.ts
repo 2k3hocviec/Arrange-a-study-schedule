@@ -14,8 +14,6 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { AuthService } from 'src/auth/auth.service';
 import { Roles } from 'src/role/roles.decorator';
-import { JwtAuthGuard } from 'src/guard/jwt.guard';
-import { RoleGuard } from 'src/guard/role.guard';
 
 @Controller('users')
 export class UsersController {
@@ -26,18 +24,31 @@ export class UsersController {
 
   @Get('profile')
   getProfile(@Request() req) {
-    return req.user;
+    return { user: req.user };
   }
   @Roles('sysadmin')
   @Post()
   create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
   }
-  @Roles('sysadmin')
+
+  @Roles('sysadmin', 'ministry')
+  @Get('available-students')
+  getAvailableStudents() {
+    return this.usersService.getAvailableStudents();
+  }
+
+  @Roles('sysadmin', 'ministry')
+  @Get('available-teachers')
+  getAvailableTeachers() {
+    return this.usersService.getAvailableTeachers();
+  }
+  @Roles('sysadmin', 'ministry')
   @Get()
   findAll() {
     return this.usersService.findAll();
   }
+
   @Roles('sysadmin')
   @Get(':id')
   findOne(@Param('id') id: string) {

@@ -1,7 +1,32 @@
-import { Body, Controller, Post, Req, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Patch,
+  Post,
+  Req,
+  Res,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Public } from 'src/role/public.decorator';
+import { ChangePasswordDto } from './dto/change.password.dto';
 import type { Request, Response } from 'express';
+
+interface AuthenticatedRequest extends Request {
+  user?: {
+    sub: number;
+    email: string;
+    role: string;
+  };
+}
+
+const REFRESH_COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'lax' as const,
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+  path: '/auth/refresh',
+};
 
 @Controller('/auth')
 export class AuthController {
@@ -10,25 +35,50 @@ export class AuthController {
   @Post('/login')
   @Public()
   async login(
-      @Body() body: { email: string; password: string },
-      @Res({ passthrough: true }) res: Response,
+    @Body() body: { email: string; password: string },
+    @Res({ passthrough: true }) res: Response,
   ) {
-    return this.authService.login(body.email, body.password, res);
+    const { access_token, refresh_token, user } = await this.authService.login(
+      body.email,
+      body.password,
+    );
+
+    res.cookie('refresh_token', refresh_token, REFRESH_COOKIE_OPTIONS);
+    return { access_token, user };
   }
 
   @Post('/refresh')
   @Public()
   async refresh(
-      @Req() req: Request,
-      @Res({ passthrough: true }) res: Response,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
   ) {
-    return this.authService.refresh(req, res);
+    const token = req.cookies?.refresh_token;
+    if (!token) {
+      throw new UnauthorizedException('Refresh token not found');
+    }
+
+    const { access_token, refresh_token } =
+      await this.authService.refreshTokens(token);
+
+    res.cookie('refresh_token', refresh_token, REFRESH_COOKIE_OPTIONS);
+    return { access_token };
   }
 
   @Post('/logout')
-  @Public()
-  async logout(@Res({ passthrough: true }) res: Response) {
-    return this.authService.logout(res);
+  async logout(
+    @Req() req: AuthenticatedRequest,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const userId = req.user?.sub;
+    if (!userId) {
+      throw new UnauthorizedException('User token not found');
+    }
+
+    await this.authService.logout(userId);
+    res.clearCookie('refresh_token', { path: '/auth/refresh' });
+
+    return { message: 'Logged out successfully' };
   }
 
   @Post('/send-otp')
@@ -46,14 +96,25 @@ export class AuthController {
   @Post('/reset-password')
   @Public()
   async resetPassword(
-      @Body() body: { reset_token: string; newPassword: string },
+    @Body() body: { reset_token: string; newPassword: string },
   ) {
     return this.authService.resetPassword(body.reset_token, body.newPassword);
   }
 
-  @Post('/forgot-password')
-  @Public()
-  async forgotPassword(@Body() body: { email: string }) {
-    return this.authService.forgotPassword(body.email);
+  @Patch('/change-password')
+  changePassword(
+    @Req() req: AuthenticatedRequest,
+    @Body() body: ChangePasswordDto,
+  ) {
+    const userId = req.user?.sub;
+    if (!userId) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    return this.authService.changePassword(
+      userId,
+      body.currentPassword,
+      body.newPassword,
+    );
   }
 }

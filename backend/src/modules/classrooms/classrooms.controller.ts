@@ -16,25 +16,25 @@ import { Roles } from 'src/role/roles.decorator';
 export class ClassroomsController {
   constructor(private readonly classroomsService: ClassroomsService) {}
 
-  @Roles('admin')
+  @Roles('ministry')
   @Post()
   create(@Body() createClassroomDto: CreateClassroomDto) {
     return this.classroomsService.create(createClassroomDto);
   }
 
-  @Roles('admin')
+  @Roles('ministry')
   @Get()
   findAll() {
     return this.classroomsService.findAll();
   }
 
-  @Roles('admin')
+  @Roles('ministry')
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.classroomsService.findOne(id);
   }
 
-  @Roles('admin')
+  @Roles('ministry')
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -43,7 +43,7 @@ export class ClassroomsController {
     return this.classroomsService.update(id, updateClassroomDto);
   }
 
-  @Roles('admin')
+  @Roles('ministry')
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.classroomsService.remove(id);

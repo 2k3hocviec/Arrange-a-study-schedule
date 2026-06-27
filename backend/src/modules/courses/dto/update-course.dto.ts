@@ -4,4 +4,5 @@ import { CreateCourseDto } from './create-course.dto';
 export class UpdateCourseDto extends PartialType(CreateCourseDto) {
   subject_id!: string;
   teacher_id!: string;
+  semester_id!: string;
 }

@@ -1,27 +1,51 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateEnrollmentDto } from './dto/create-enrollment.dto';
 import { UpdateEnrollmentDto } from './dto/update-enrollment.dto';
-import { Repository } from 'typeorm';
-import { Enrollment } from './entities/enrollment.entity';
-import { InjectRepository } from '@nestjs/typeorm';
 import { SchedulesService } from '../schedules/schedules.service';
 import { StudentsService } from '../students/students.service';
 import { CoursesService } from '../courses/courses.service';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class EnrollmentsService {
   constructor(
-    @InjectRepository(Enrollment)
-    private readonly enrollmentRepository: Repository<Enrollment>,
+    private readonly prisma: PrismaService,
     private readonly studentsService: StudentsService,
     private readonly coursesService: CoursesService,
     private readonly scheduleService: SchedulesService,
   ) {}
 
+  private hasDateOverlap(newSchedule: any, existingSchedule: any) {
+    if (
+      !newSchedule.start_date ||
+      !newSchedule.end_date ||
+      !existingSchedule.start_date ||
+      !existingSchedule.end_date
+    ) {
+      return true;
+    }
+
+    const newStartDate = new Date(newSchedule.start_date);
+    const newEndDate = new Date(newSchedule.end_date);
+    const existingStartDate = new Date(existingSchedule.start_date);
+    const existingEndDate = new Date(existingSchedule.end_date);
+
+    return newStartDate <= existingEndDate && newEndDate >= existingStartDate;
+  }
+
   async checkScheduleConflict(studentID: string, newCourseID: string) {
-    const enrollments = await this.enrollmentRepository.find({
-      where: { student_id: studentID },
-      relations: ['course', 'course.subject'],
+    const newCourse = await this.coursesService.findOneByCourseID(newCourseID);
+    if (!newCourse) {
+      throw new BadRequestException(`Course with ID ${newCourseID} not exist`);
+    }
+
+    const enrollments = await this.prisma.enrollment.findMany({
+      where: {
+        student_id: studentID,
+        course: { semester_id: newCourse.semester_id },
+      },
+      include: { course: { include: { subject: true } } },
     });
 
     const courseIDs = enrollments.map((e) => e.course_id);
@@ -29,56 +53,36 @@ export class EnrollmentsService {
     const existingSchedules =
       await this.scheduleService.findExistingSchedules(courseIDs);
 
-    const newSchedule =
-      await this.scheduleService.findScheduleWithCourseID(newCourseID);
+    const newSchedules =
+      await this.scheduleService.findSchedulesWithCourseID(newCourseID);
 
-    if (!newSchedule) {
-      throw new Error('Môn này chưa có lịch dạy');
+    if (newSchedules.length === 0) {
+      throw new BadRequestException('This course has not yet been scheduled.');
     }
 
-    for (const existingSchedule of existingSchedules) {
-      // Kiểm tra xung đột slot
-      const slotConflict =
-        newSchedule.dayOfWeek === existingSchedule.dayOfWeek &&
-        newSchedule.start_slot <= existingSchedule.start_slot &&
-        newSchedule.end_slot >= existingSchedule.start_slot;
+    for (const newSchedule of newSchedules) {
+      for (const existingSchedule of existingSchedules) {
+        const slotConflict =
+          newSchedule.dayOfWeek === existingSchedule.dayOfWeek &&
+          newSchedule.start_slot <= existingSchedule.end_slot &&
+          newSchedule.end_slot >= existingSchedule.start_slot;
 
-      if (!slotConflict) continue;
-
-      // Nếu có xung đột slot, kiểm tra khoảng ngày
-      // Chỉ xung đột ngày nếu:
-      // - Schedule cũ không có ngày (NULL) hoặc
-      // - Khoảng ngày overlap
-      if (newSchedule.start_date && newSchedule.end_date) {
-        const newStartDate = new Date(newSchedule.start_date);
-        const newEndDate = new Date(newSchedule.end_date);
-
-        const existingStartDate = existingSchedule.start_date
-          ? new Date(existingSchedule.start_date)
-          : null;
-        const existingEndDate = existingSchedule.end_date
-          ? new Date(existingSchedule.end_date)
-          : null;
-
-        // Nếu schedule cũ không có ngày hoặc khoảng ngày overlap → conflict
         if (
-          !existingStartDate ||
-          !existingEndDate ||
-          (existingStartDate <= newEndDate && existingEndDate >= newStartDate)
+          slotConflict &&
+          this.hasDateOverlap(newSchedule, existingSchedule)
         ) {
-          return `Conflict with ${existingSchedule.course_id}`;
+          return `Conflict with course with ID ${existingSchedule.course_id}`;
         }
-      } else {
-        // Schedule mới không có ngày → luôn conflict nếu slot trùng
-        return `Conflict with ${existingSchedule.course_id}`;
       }
     }
 
     return null;
   }
 
-  async create(createEnrollmentDto: CreateEnrollmentDto) {
-    // Kiểm tra student có tồn tại không
+  async create(
+    createEnrollmentDto: CreateEnrollmentDto,
+    options: { allowInactiveSemester?: boolean } = {},
+  ) {
     const student = await this.studentsService.findOneByStudentID(
       createEnrollmentDto.student_id,
     );
@@ -88,7 +92,6 @@ export class EnrollmentsService {
       );
     }
 
-    // Kiểm tra course có tồn tại không
     const course = await this.coursesService.findOneByCourseIDWithSubject(
       createEnrollmentDto.course_id,
     );
@@ -98,19 +101,58 @@ export class EnrollmentsService {
       );
     }
 
-    // Kiểm tra còn chỗ trong khóa học không
+    const studentMajorId = student.class?.major_id;
+    const studentDepartmentId = student.class?.major?.department_id;
+    const subjectMajorId = course.subject?.major_id;
+    const subjectDepartmentId = course.subject?.major?.department_id;
+    const allowPublic =
+      !course.subject?.allow_same_major &&
+      !course.subject?.allow_same_department;
+    const allowByMajor =
+      course.subject?.allow_same_major && studentMajorId === subjectMajorId;
+    const allowByDepartment =
+      course.subject?.allow_same_department &&
+      studentDepartmentId === subjectDepartmentId;
+
+    if (!allowPublic && !allowByMajor && !allowByDepartment) {
+      throw new BadRequestException(
+        'Subject is not available for this student major or department',
+      );
+    }
+
+    if (!options.allowInactiveSemester && !course.semester?.is_active) {
+      throw new BadRequestException(
+        'This course is not in the active semester',
+      );
+    }
+
+    if (!options.allowInactiveSemester && !course.semester?.is_register) {
+      throw new BadRequestException('Registration is closed for this semester');
+    }
+
     if (
       course.remaining_capacity !== undefined &&
+      course.remaining_capacity !== null &&
       course.remaining_capacity <= 0
     ) {
       throw new BadRequestException('This course is fully booked');
     }
 
-    // Kiểm tra sinh viên đã từng đăng ký môn học này (theo subject_id) chưa
-    const existingEnrollments = await this.enrollmentRepository.find({
-      where: { student_id: createEnrollmentDto.student_id },
-      relations: ['course', 'course.subject'],
+    const existingEnrollments = await this.prisma.enrollment.findMany({
+      where: {
+        student_id: createEnrollmentDto.student_id,
+        course: { semester_id: course.semester_id },
+      },
+      include: { course: { include: { subject: true } } },
     });
+
+    const hasEnrolledSameCourse = existingEnrollments.some(
+      (enrollment) => enrollment.course_id === createEnrollmentDto.course_id,
+    );
+
+    if (hasEnrolledSameCourse) {
+      throw new BadRequestException(`This course has already been registered`);
+    }
 
     const hasEnrolledSameSubject = existingEnrollments.some(
       (enrollment) => enrollment.course.subject_id === course.subject_id,
@@ -120,7 +162,6 @@ export class EnrollmentsService {
       throw new BadRequestException(`This subject has been registed`);
     }
 
-    // Kiểm tra tổng số tín chỉ không vượt quá 18
     const totalCurrentCredits = existingEnrollments.reduce(
       (sum, enrollment) => {
         return sum + (enrollment.course.subject?.credits || 0);
@@ -144,27 +185,44 @@ export class EnrollmentsService {
       throw new BadRequestException(conflict);
     }
 
-    const enrollment =
-      await this.enrollmentRepository.create(createEnrollmentDto);
-    enrollment.createdAt = new Date();
+    // Đoạn code này sử transcion/lock kiểm soát nếu 2 người cùng đăng kí môn học tại cùng một thời điểm
+    return this.prisma.$transaction(async (tx) => {
+      if (
+        course.remaining_capacity !== undefined &&
+        course.remaining_capacity !== null
+      ) {
+        const capacityUpdate = await tx.course.updateMany({
+          where: {
+            course_id: createEnrollmentDto.course_id,
+            remaining_capacity: { gt: 0 },
+          },
+          data: {
+            remaining_capacity: { decrement: 1 },
+          },
+        });
 
-    // Lưu enrollment
-    const savedEnrollment = await this.enrollmentRepository.save(enrollment);
+        if (capacityUpdate.count === 0) {
+          throw new BadRequestException('This course is fully booked');
+        }
+      }
 
-    // Giảm remaining_capacity của course
-    if (course.remaining_capacity !== undefined) {
-      const newRemaining = course.remaining_capacity - 1;
-      await this.coursesService.updateRemaining(
-        createEnrollmentDto.course_id,
-        newRemaining,
-      );
-    }
+      try {
+        return await tx.enrollment.create({
+          data: createEnrollmentDto,
+        });
+      } catch (error) {
+        if (
+          error instanceof Prisma.PrismaClientKnownRequestError &&
+          error.code === 'P2002'
+        ) {
+          throw new BadRequestException(
+            'This course has already been registered',
+          );
+        }
 
-    return savedEnrollment;
-  }
-
-  findAll() {
-    return `This action returns all enrollments`;
+        throw error;
+      }
+    });
   }
 
   findOne(id: number) {
@@ -175,20 +233,46 @@ export class EnrollmentsService {
     return `This action updates a #${id} enrollment`;
   }
 
-  async remove({ studentId, courseId }) {
-    // Lấy thông tin course để tăng lại remaining_capacity
+  async remove({
+    studentId,
+    courseId,
+    allowInactiveSemester = false,
+  }: {
+    studentId: string;
+    courseId: string;
+    allowInactiveSemester?: boolean;
+  }) {
     const course = await this.coursesService.findOneByCourseID(courseId);
 
-    const result = await this.enrollmentRepository.delete({
-      student_id: studentId,
-      course_id: courseId,
+    if (!course) {
+      throw new BadRequestException(`Course with ID ${courseId} not exist`);
+    }
+
+    if (!allowInactiveSemester && !course.semester?.is_active) {
+      throw new BadRequestException(
+        'This course is not in the active semester',
+      );
+    }
+
+    const result = await this.prisma.enrollment.deleteMany({
+      where: {
+        student_id: studentId,
+        course_id: courseId,
+      },
     });
 
-    // Tăng lại remaining_capacity khi hủy đăng ký
-    if (course && course.remaining_capacity !== undefined) {
+    if (
+      result.count > 0 &&
+      course &&
+      course.remaining_capacity !== undefined &&
+      course.remaining_capacity !== null
+    ) {
       const newRemaining = course.remaining_capacity + 1;
-      // Không vượt quá capacity ban đầu
-      if (course.capacity === undefined || newRemaining <= course.capacity) {
+      if (
+        course.capacity === undefined ||
+        course.capacity === null ||
+        newRemaining <= course.capacity
+      ) {
         await this.coursesService.updateRemaining(courseId, newRemaining);
       }
     }
@@ -197,34 +281,77 @@ export class EnrollmentsService {
   }
 
   async findEnrollOfStudentId(studentId: string) {
-    return await this.enrollmentRepository.findBy({ student_id: studentId });
+    return this.prisma.enrollment.findMany({
+      where: {
+        student_id: studentId,
+        course: { semester: { is_active: true } },
+      },
+    });
   }
 
   async findStudentCoursesWithDetails(studentId: string) {
-    return await this.enrollmentRepository.find({
-      where: { student_id: studentId },
-      relations: ['course', 'course.schedule', 'course.subject'],
+    return this.prisma.enrollment.findMany({
+      where: {
+        student_id: studentId,
+        course: { semester: { is_active: true } },
+      },
       select: {
         student_id: true,
         enrollment_id: true,
         course_id: true,
         course: {
-          course_id: true,
-          subject_id: true,
-          teacher_id: true,
-          subject: {
+          select: {
+            course_id: true,
+            course_code: true,
             subject_id: true,
-            name: true,
-            credits: true,
+            teacher_id: true,
+            semester_id: true,
+            semester: {
+              select: {
+                semester_id: true,
+                name: true,
+                school_year: true,
+                is_active: true,
+                is_register: true,
+              },
+            },
+            subject: {
+              select: {
+                subject_id: true,
+                name: true,
+                credits: true,
+              },
+            },
+            schedule: {
+              select: {
+                schedule_id: true,
+                classroom_id: true,
+                dayOfWeek: true,
+                start_slot: true,
+                end_slot: true,
+                start_date: true,
+                end_date: true,
+              },
+            },
           },
-          schedule: {
-            schedule_id: true,
-            classroom_id: true,
-            dayOfWeek: true,
-            start_slot: true,
-            end_slot: true,
-            start_date: true,
-            end_date: true,
+        },
+      },
+    });
+  }
+
+  async findAllEnrollCourse() {
+    return this.prisma.enrollment.findMany({
+      select: {
+        student_id: true,
+        enrollment_id: true,
+        course_id: true,
+        createdAt: true,
+        course: {
+          select: {
+            course_id: true,
+            course_code: true,
+            subject_id: true,
+            teacher_id: true,
           },
         },
       },

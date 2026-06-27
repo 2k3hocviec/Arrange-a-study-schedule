@@ -16,25 +16,25 @@ import { Roles } from 'src/role/roles.decorator';
 export class SchedulesController {
   constructor(private readonly schedulesService: SchedulesService) {}
 
-  @Roles('admin')
+  @Roles('ministry')
   @Post()
   create(@Body() createScheduleDto: CreateScheduleDto) {
     return this.schedulesService.create(createScheduleDto);
   }
 
-  @Roles('admin')
+  @Roles('ministry')
   @Get()
   findAll() {
     return this.schedulesService.findAll();
   }
 
-  @Roles('admin')
+  @Roles('ministry')
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.schedulesService.findOne(id);
   }
 
-  @Roles('admin')
+  @Roles('ministry')
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -43,7 +43,7 @@ export class SchedulesController {
     return this.schedulesService.update(id, updateScheduleDto);
   }
 
-  @Roles('admin')
+  @Roles('ministry')
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.schedulesService.remove(id);
