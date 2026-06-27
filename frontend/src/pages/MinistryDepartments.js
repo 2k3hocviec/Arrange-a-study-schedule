@@ -111,20 +111,20 @@ const MinistryDepartments = () => {
   const normalizedKeyword = keyword.trim().toLowerCase();
   const filteredDepartments = normalizedKeyword
     ? departments.filter((item) =>
-        [
-          item.department_id,
-          item.name,
-          item.description,
-          item.studentClassesCount,
-          item._count?.studentClasses,
-          item._count?.teachers,
-          item._count?.majors,
-        ]
-          .filter((value) => value !== undefined && value !== null)
-          .join(" ")
-          .toLowerCase()
-          .includes(normalizedKeyword),
-      )
+      [
+        item.department_id,
+        item.name,
+        item.description,
+        item.studentClassesCount,
+        item._count?.studentClasses,
+        item._count?.teachers,
+        item._count?.majors,
+      ]
+        .filter((value) => value !== undefined && value !== null)
+        .join(" ")
+        .toLowerCase()
+        .includes(normalizedKeyword),
+    )
     : departments;
 
   return (
@@ -153,20 +153,19 @@ const MinistryDepartments = () => {
             </h3>
             <form onSubmit={handleSubmit}>
               <div className="ministry-departments__field-group">
-                <label className="ministry-departments__label">Ma khoa</label>
+                <label className="ministry-departments__label">Mã khoa</label>
                 <input
                   name="department_id"
                   value={formData.department_id}
                   onChange={handleChange}
                   disabled={!!editingId}
-                  className={`ministry-departments__input ${
-                    editingId ? "ministry-departments__input--disabled" : ""
-                  }`}
+                  className={`ministry-departments__input ${editingId ? "ministry-departments__input--disabled" : ""
+                    }`}
                   required
                 />
               </div>
               <div className="ministry-departments__field-group">
-                <label className="ministry-departments__label">Ten khoa</label>
+                <label className="ministry-departments__label">Tên khoa</label>
                 <input
                   name="name"
                   value={formData.name}
@@ -176,7 +175,7 @@ const MinistryDepartments = () => {
                 />
               </div>
               <div className="ministry-departments__field-group">
-                <label className="ministry-departments__label">Mo ta</label>
+                <label className="ministry-departments__label">Mô tả</label>
                 <textarea
                   name="description"
                   value={formData.description}

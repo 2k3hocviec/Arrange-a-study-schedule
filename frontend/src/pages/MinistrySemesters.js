@@ -300,7 +300,7 @@ const MinistrySemesters = () => {
                 <button
                   type="submit"
                   style={{
-                    background: editingId ? "#4f46e5" : "#16a34a",
+                    background: "#4f46e5",
                   }}
                   className="ministry-semesters__submit-btn"
                 >

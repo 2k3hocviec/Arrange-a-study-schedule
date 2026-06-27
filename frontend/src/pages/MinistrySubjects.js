@@ -15,15 +15,15 @@ const getSubjectErrorMessage = (err, action = "save") => {
   if (lowerMessage.includes("cannot change subject registration flags, credits or major when subject has courses") || lowerMessage.includes("cannot change subject registration flags when subject has courses")) {
     return "Không thể thay đổi tín chỉ, chuyên ngành hoặc quyền đăng ký vì môn học này đã có khóa học.";
   }
-  if (lowerMessage.includes("unique") || lowerMessage.includes("duplicate")) {
-    return "Mã môn học đã tồn tại. Vui lòng kiểm tra lại.";
+  if (lowerMessage.includes("unique") || lowerMessage.includes("duplicate") || lowerMessage.includes("already exists")) {
+    return "Mã môn học này đã tồn tại trong hệ thống. Vui lòng nhập một mã môn học khác (không được phép trùng lặp mã).";
   }
   if (action === "delete") return "Không thể xóa môn học.";
   return "Thao tác thất bại. Vui lòng kiểm tra lại dữ liệu.";
 };
 const MinistrySubjects = ({
   coursesRefreshKey = 0,
-  onSubjectsChanged = () => {},
+  onSubjectsChanged = () => { },
 }) => {
   const [subjects, setSubjects] = useState([]);
   const [majors, setMajors] = useState([]);
@@ -160,106 +160,91 @@ const MinistrySubjects = ({
   const paginatedSubjects = filteredSubjects.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
   const subjectHasCourses = repair && (formData._count?.course || 0) > 0;
   return <div className="ministry-subjects__page-wrapper">
-      {/* BREADCRUMB */}
-      <div className="ministry-subjects__breadcrumb">
-        <span className="ministry-subjects__breadcrumb-home">Dashboard</span>
-        <span className="ministry-subjects__breadcrumb-sep">/</span>
-        <span className="ministry-subjects__breadcrumb-current">QUẢN LÝ MÔN HỌC</span>
-      </div>
+    {/* BREADCRUMB */}
+    <div className="ministry-subjects__breadcrumb">
+      <span className="ministry-subjects__breadcrumb-home">Dashboard</span>
+      <span className="ministry-subjects__breadcrumb-sep">/</span>
+      <span className="ministry-subjects__breadcrumb-current">QUẢN LÝ MÔN HỌC</span>
+    </div>
 
-      {/* PAGE HEADER */}
-      <div className="ministry-subjects__page-header">
-        <div className="ministry-subjects__page-header-left">
-          <div>
-            <h1 className="ministry-subjects__page-title">QUẢN LÝ DANH SÁCH MÔN HỌC</h1>
-          </div>
-        </div>
-        <button onClick={handleClickCreateSubject} className="ministry-subjects__add-btn">
-          <FiPlus size={16} />
-          {showForm ? "Đóng Form" : "Thêm môn học mới"}
-        </button>
-      </div>
-
-      {/* STAT BANNER */}
-      <div className="ministry-subjects__stat-banner">
-        <div className="ministry-subjects__stat-banner-inner">
-          <div>
-            <p className="ministry-subjects__stat-label">Tổng số môn học</p>
-            <p className="ministry-subjects__stat-number">{subjects.length}</p>
-          </div>
-          <div className="ministry-subjects__banner-icon-bg">
-            <MdMenuBook size={48} color="rgba(255,255,255,0.25)" />
-          </div>
+    {/* PAGE HEADER */}
+    <div className="ministry-subjects__page-header">
+      <div className="ministry-subjects__page-header-left">
+        <div>
+          <h1 className="ministry-subjects__page-title">QUẢN LÝ DANH SÁCH MÔN HỌC</h1>
         </div>
       </div>
+      <button onClick={handleClickCreateSubject} className="ministry-subjects__add-btn">
+        <FiPlus size={16} />
+        {showForm ? "Đóng Form" : "Thêm môn học mới"}
+      </button>
+    </div>
 
-      {/* FORM */}
-      {/* MODAL FORM */}
-      {showForm && <div style={modalOverlay}>
-          <div style={modalContainer}>
-            <div className="ministry-subjects__form-card">
-              <h3 className="ministry-subjects__form-title">
-                {repair ? "Cập nhật môn học" : "Thêm môn học mới"}
-              </h3>
+    {/* STAT BANNER */}
+    <div className="ministry-subjects__stat-banner">
+      <div className="ministry-subjects__stat-banner-inner">
+        <div>
+          <p className="ministry-subjects__stat-label">Tổng số môn học</p>
+          <p className="ministry-subjects__stat-number">{subjects.length}</p>
+        </div>
+        <div className="ministry-subjects__banner-icon-bg">
+          <MdMenuBook size={48} color="rgba(255,255,255,0.25)" />
+        </div>
+      </div>
+    </div>
 
-              <form onSubmit={repair ? handleSubmitUpdate : handleSubmit}>
-                <div className="ministry-subjects__form-grid">
-                  <div className="ministry-subjects__field-group">
-                    <label className="ministry-subjects__field-label">Mã Môn Học</label>
+    {/* FORM */}
+    {/* MODAL FORM */}
+    {showForm && <div style={modalOverlay}>
+      <div style={modalContainer}>
+        <div className="ministry-subjects__form-card">
+          <h3 className="ministry-subjects__form-title">
+            {repair ? "Cập nhật môn học" : "Thêm môn học mới"}
+          </h3>
 
-                    <input type="text" name="subject_id" placeholder="Nhập mã môn (VD: INT1306)" value={formData.subject_id} onChange={handleInputChange} required disabled={repair} style={{
+          <form onSubmit={repair ? handleSubmitUpdate : handleSubmit}>
+            <div className="ministry-subjects__form-grid">
+              <div className="ministry-subjects__field-group">
+                <label className="ministry-subjects__field-label">Mã Môn Học</label>
+
+                <input type="text" name="subject_id" placeholder="Nhập mã môn (VD: INT1306)" value={formData.subject_id} onChange={handleInputChange} required disabled={repair} style={{
                   ...(repair ? {
                     background: "#f1f5f9",
                     cursor: "not-allowed",
                     color: "#94a3b8"
                   } : {})
                 }} className="ministry-subjects__field-input" />
-                  
-                  </div>
 
-                  <div className="ministry-subjects__field-group">
-                    <label className="ministry-subjects__field-label">Tên Môn Học</label>
+              </div>
 
-                    <input type="text" name="name" placeholder="Nhập tên môn học" value={formData.name} onChange={handleInputChange} required className="ministry-subjects__field-input" />
+              <div className="ministry-subjects__field-group">
+                <label className="ministry-subjects__field-label">Tên Môn Học</label>
 
-                  
-                  </div>
-
-                  <div className="ministry-subjects__field-group">
-                    <label className="ministry-subjects__field-label">Số Tín Chỉ {subjectHasCourses && "(Không thể đổi)"}</label>
-
-                    <input type="number" name="credits" placeholder="Nhập số tín chỉ" value={formData.credits} onChange={handleInputChange} required min="1" max="10" className="ministry-subjects__field-input" disabled={subjectHasCourses} style={{ ...(subjectHasCourses ? { background: "#f1f5f9", cursor: "not-allowed", color: "#94a3b8" } : {}) }} />
-
-                  
-                  </div>
-                  <div className="ministry-subjects__field-group">
-                    <label className="ministry-subjects__field-label">Chuyên ngành {subjectHasCourses && "(Không thể đổi)"}</label>
-                    <select name="major_id" value={formData.major_id || ""} onChange={handleInputChange} required className="ministry-subjects__field-input" disabled={subjectHasCourses} style={{ ...(subjectHasCourses ? { background: "#f1f5f9", cursor: "not-allowed", color: "#94a3b8" } : {}) }}>
-
-                    
-                      <option value="">-- Chọn chuyên ngành --</option>
-                      {majors.map(major => <option key={major.major_id} value={major.major_id}>
-                          {major.major_id} - {major.name}
-                        </option>)}
-                    </select>
-                  </div>
-
-                  <label className="ministry-subjects__field-group ministry-subjects__inline-319">
+                <input type="text" name="name" placeholder="Nhập tên môn học" value={formData.name} onChange={handleInputChange} required className="ministry-subjects__field-input" />
 
 
+              </div>
+
+              <div className="ministry-subjects__field-group">
+                <label className="ministry-subjects__field-label">Số Tín Chỉ {subjectHasCourses && "(Không thể đổi)"}</label>
+
+                <input type="number" name="credits" placeholder="Nhập số tín chỉ" value={formData.credits} onChange={handleInputChange} required min="1" max="10" className="ministry-subjects__field-input" disabled={subjectHasCourses} style={{ ...(subjectHasCourses ? { background: "#f1f5f9", cursor: "not-allowed", color: "#94a3b8" } : {}) }} />
 
 
+              </div>
+              <div className="ministry-subjects__field-group">
+                <label className="ministry-subjects__field-label">Chuyên ngành {subjectHasCourses && "(Không thể đổi)"}</label>
+                <select name="major_id" value={formData.major_id || ""} onChange={handleInputChange} required className="ministry-subjects__field-input" disabled={subjectHasCourses} style={{ ...(subjectHasCourses ? { background: "#f1f5f9", cursor: "not-allowed", color: "#94a3b8" } : {}) }}>
 
 
+                  <option value="">-- Chọn chuyên ngành --</option>
+                  {majors.map(major => <option key={major.major_id} value={major.major_id}>
+                    {major.major_id} - {major.name}
+                  </option>)}
+                </select>
+              </div>
 
-                  
-                    <input type="checkbox" name="allow_same_major" checked={!!formData.allow_same_major} onChange={handleInputChange} disabled={subjectHasCourses} />
-                  
-                    Cho phép cùng chuyên ngành đăng ký
-                    {subjectHasCourses ? " (không thể đổi vì đã có khóa học)" : ""}
-                  </label>
-
-                  <label className="ministry-subjects__field-group ministry-subjects__inline-337">
+              <label className="ministry-subjects__field-group ministry-subjects__inline-319">
 
 
 
@@ -267,134 +252,149 @@ const MinistrySubjects = ({
 
 
 
-                  
-                    <input type="checkbox" name="allow_same_department" checked={!!formData.allow_same_department} onChange={handleInputChange} disabled={subjectHasCourses} />
-                  
-                    Cho phép cùng khoa đăng ký
-                    {subjectHasCourses ? " (không thể đổi vì đã có khóa học)" : ""}
-                  </label>
-                </div>
 
-                <div className="ministry-subjects__inline-356">
+                <input type="checkbox" name="allow_same_major" checked={!!formData.allow_same_major} onChange={handleInputChange} disabled={subjectHasCourses} />
 
+                Cho phép cùng chuyên ngành đăng ký
+                {subjectHasCourses ? " (không thể đổi vì đã có khóa học)" : ""}
+              </label>
+
+              <label className="ministry-subjects__field-group ministry-subjects__inline-337">
 
 
 
 
-                
-                  <button type="submit" style={{
-                background: repair ? "#4f46e5" : "#16a34a"
+
+
+
+
+                <input type="checkbox" name="allow_same_department" checked={!!formData.allow_same_department} onChange={handleInputChange} disabled={subjectHasCourses} />
+
+                Cho phép cùng khoa đăng ký
+                {subjectHasCourses ? " (không thể đổi vì đã có khóa học)" : ""}
+              </label>
+            </div>
+
+            <div className="ministry-subjects__inline-356">
+
+
+
+
+
+
+              <button type="submit" style={{
+                background: "#4f46e5"
               }} className="ministry-subjects__submit-btn ministry-subjects__inline-363">
-                  
-                    {repair ? "Cập nhật Môn Học" : "Tạo Môn Học"}
-                  </button>
 
-                  <button type="button" onClick={() => {
+                {repair ? "Cập nhật Môn Học" : "Tạo Môn Học"}
+              </button>
+
+              <button type="button" onClick={() => {
                 setShowForm(false);
                 setRepair(false);
               }} className="ministry-subjects__cancel-btn">
 
-                  
-                    Hủy
-                  </button>
-                </div>
-              </form>
+
+                Hủy
+              </button>
             </div>
-          </div>
-        </div>}
-      {/* TABLE */}
-      <div className="ministry-subjects__table-card">
-        <div className="ministry-subjects__table-header">
-          <h3 className="ministry-subjects__table-title">Danh sách môn học hiện tại</h3>
-          <div className="ministry-subjects__search-wrap">
-            <FiSearch size={15} color="#94a3b8" />
-            <input value={keyword} onChange={e => {
+          </form>
+        </div>
+      </div>
+    </div>}
+    {/* TABLE */}
+    <div className="ministry-subjects__table-card">
+      <div className="ministry-subjects__table-header">
+        <h3 className="ministry-subjects__table-title">Danh sách môn học hiện tại</h3>
+        <div className="ministry-subjects__search-wrap">
+          <FiSearch size={15} color="#94a3b8" />
+          <input value={keyword} onChange={e => {
             setKeyword(e.target.value);
             setPage(1);
           }} placeholder="Tim ma mon, ten mon, khoa, chuyen nganh..." className="ministry-subjects__search-input" />
 
-            
-          </div>
+
         </div>
-
-        <div className="ministry-subjects__inline-408">
-          <table className="ministry-subjects__table">
-            <thead>
-              <tr className="ministry-subjects__thead-row">
-                <th className="ministry-subjects__th">STT</th>
-                <th className="ministry-subjects__th">MÃ MÔN</th>
-                <th className="ministry-subjects__th">TÊN MÔN HỌC</th>
-                <th className="ministry-subjects__th">SỐ TÍN CHỈ</th>
-                <th className="ministry-subjects__th">CHUYÊN NGÀNH</th>
-                <th className="ministry-subjects__th">KHOA</th>
-                <th className="ministry-subjects__th">CÙNG NGÀNH</th>
-                <th className="ministry-subjects__th">CÙNG KHOA</th>
-                <th className="ministry-subjects__th">THAO TÁC</th>
-              </tr>
-            </thead>
-            <tbody>
-              {paginatedSubjects.map((subject, index) => <tr key={subject.subject_id} className="ministry-subjects__tbody-row">
-                  <td className="ministry-subjects__td ministry-subjects__inline-426">
-                    {String((page - 1) * PAGE_SIZE + index + 1).padStart(2, "0")}
-                  </td>
-                  <td className="ministry-subjects__td ministry-subjects__inline-432">
-                    {subject.subject_id}
-                  </td>
-                  <td className="ministry-subjects__td">{subject.name}</td>
-                  <td className="ministry-subjects__td">
-                    <span className="ministry-subjects__credit-badge">{subject.credits}</span>
-                  </td>
-                  <td className="ministry-subjects__td">
-                    {subject.major ? `${subject.major.major_id} - ${subject.major.name}` : subject.major_id || "-"}
-                  </td>
-                  <td className="ministry-subjects__td">
-                    {subject.major?.department ? `${subject.major.department.department_id} - ${subject.major.department.name}` : "-"}
-                  </td>
-                  <td className="ministry-subjects__td">
-                    {subject.allow_same_major ? "Có" : "Không"}
-                  </td>
-                  <td className="ministry-subjects__td">
-                    {subject.allow_same_department ? "Có" : "Không"}
-                  </td>
-                  <td className="ministry-subjects__td ministry-subjects__inline-455">
-                    <button onClick={() => handleOpenFormUpdateSubject(subject)} className="ministry-subjects__edit-btn">
-
-                    
-                      <FiEdit2 size={13} /> Sửa
-                    </button>
-                    <button onClick={() => handleDeleteSubject(subject)} className="ministry-subjects__delete-btn">
-
-                    
-                      <FiTrash2 size={13} /> Xóa
-                    </button>
-                  </td>
-                </tr>)}
-            </tbody>
-          </table>
-        </div>
-
-        {filteredSubjects.length > 0 && <div className="ministry-subjects__table-footer">
-            <span className="ministry-subjects__inline-477">
-              Hiển thị {(page - 1) * PAGE_SIZE + 1}-
-              {Math.min(page * PAGE_SIZE, filteredSubjects.length)} trên{" "}
-              {filteredSubjects.length} môn học
-            </span>
-            <div className="ministry-subjects__page-controls">
-              <button disabled={page === 1} onClick={() => setPage(p => Math.max(1, p - 1))} className={"ministry-subjects__page-btn" + (page === 1 ? " ministry-subjects__page-btn-disabled" : "")}>
-              
-                Trước
-              </button>
-              <span className="ministry-subjects__page-info">
-                {page} / {totalPages}
-              </span>
-              <button disabled={page === totalPages} onClick={() => setPage(p => Math.min(totalPages, p + 1))} className={"ministry-subjects__page-btn" + (page === totalPages ? " ministry-subjects__page-btn-disabled" : "")}>
-              
-                Tiếp
-              </button>
-            </div>
-          </div>}
       </div>
-    </div>;
+
+      <div className="ministry-subjects__inline-408">
+        <table className="ministry-subjects__table">
+          <thead>
+            <tr className="ministry-subjects__thead-row">
+              <th className="ministry-subjects__th">STT</th>
+              <th className="ministry-subjects__th">MÃ MÔN</th>
+              <th className="ministry-subjects__th">TÊN MÔN HỌC</th>
+              <th className="ministry-subjects__th">SỐ TÍN CHỈ</th>
+              <th className="ministry-subjects__th">CHUYÊN NGÀNH</th>
+              <th className="ministry-subjects__th">KHOA</th>
+              <th className="ministry-subjects__th">CÙNG NGÀNH</th>
+              <th className="ministry-subjects__th">CÙNG KHOA</th>
+              <th className="ministry-subjects__th">THAO TÁC</th>
+            </tr>
+          </thead>
+          <tbody>
+            {paginatedSubjects.map((subject, index) => <tr key={subject.subject_id} className="ministry-subjects__tbody-row">
+              <td className="ministry-subjects__td ministry-subjects__inline-426">
+                {String((page - 1) * PAGE_SIZE + index + 1).padStart(2, "0")}
+              </td>
+              <td className="ministry-subjects__td ministry-subjects__inline-432">
+                {subject.subject_id}
+              </td>
+              <td className="ministry-subjects__td">{subject.name}</td>
+              <td className="ministry-subjects__td">
+                <span className="ministry-subjects__credit-badge">{subject.credits}</span>
+              </td>
+              <td className="ministry-subjects__td">
+                {subject.major ? `${subject.major.major_id} - ${subject.major.name}` : subject.major_id || "-"}
+              </td>
+              <td className="ministry-subjects__td">
+                {subject.major?.department ? `${subject.major.department.department_id} - ${subject.major.department.name}` : "-"}
+              </td>
+              <td className="ministry-subjects__td">
+                {subject.allow_same_major ? "Có" : "Không"}
+              </td>
+              <td className="ministry-subjects__td">
+                {subject.allow_same_department ? "Có" : "Không"}
+              </td>
+              <td className="ministry-subjects__td ministry-subjects__inline-455">
+                <button onClick={() => handleOpenFormUpdateSubject(subject)} className="ministry-subjects__edit-btn">
+
+
+                  <FiEdit2 size={13} /> Sửa
+                </button>
+                <button onClick={() => handleDeleteSubject(subject)} className="ministry-subjects__delete-btn">
+
+
+                  <FiTrash2 size={13} /> Xóa
+                </button>
+              </td>
+            </tr>)}
+          </tbody>
+        </table>
+      </div>
+
+      {filteredSubjects.length > 0 && <div className="ministry-subjects__table-footer">
+        <span className="ministry-subjects__inline-477">
+          Hiển thị {(page - 1) * PAGE_SIZE + 1}-
+          {Math.min(page * PAGE_SIZE, filteredSubjects.length)} trên{" "}
+          {filteredSubjects.length} môn học
+        </span>
+        <div className="ministry-subjects__page-controls">
+          <button disabled={page === 1} onClick={() => setPage(p => Math.max(1, p - 1))} className={"ministry-subjects__page-btn" + (page === 1 ? " ministry-subjects__page-btn-disabled" : "")}>
+
+            Trước
+          </button>
+          <span className="ministry-subjects__page-info">
+            {page} / {totalPages}
+          </span>
+          <button disabled={page === totalPages} onClick={() => setPage(p => Math.min(totalPages, p + 1))} className={"ministry-subjects__page-btn" + (page === totalPages ? " ministry-subjects__page-btn-disabled" : "")}>
+
+            Tiếp
+          </button>
+        </div>
+      </div>}
+    </div>
+  </div>;
 };
 
 // STYLES

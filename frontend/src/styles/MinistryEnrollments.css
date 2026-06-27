@@ -99,7 +99,7 @@
 .ministry-enrollments__submit-btn {
   margin-top: 16px;
   padding: 10px 24px;
-  background: #16a34a;
+  background: #4338ca;
   color: white;
   border: none;
   border-radius: 7px;
@@ -111,7 +111,7 @@
 .ministry-enrollments__table-card {
   background: white;
   border-radius: 12px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
   border: 1px solid #e2e8f0;
   overflow: hidden;
 }
@@ -204,7 +204,7 @@
   color: white;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 10px 30px rgba(79,70,229,0.18);
+  box-shadow: 0 10px 30px rgba(79, 70, 229, 0.18);
 }
 
 .ministry-enrollments__filter-bar {
@@ -344,6 +344,6 @@
   background: white;
   border-radius: 16px;
   padding: 24px;
-  box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
   animation: fadeIn 0.25s ease;
 }

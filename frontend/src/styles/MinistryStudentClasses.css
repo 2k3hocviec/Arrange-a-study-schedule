@@ -37,7 +37,7 @@
   max-width: 480px;
   padding: 24px 28px;
   position: relative;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
 }
 
 .ministry-student-classes__close-btn {
@@ -91,7 +91,7 @@
   font-weight: 600;
   font-size: 15px;
   margin-top: 10px;
-  background: #27ae60;
+  background: #4f63d2;
 }
 
 .ministry-student-classes__table-wrapper {
@@ -99,7 +99,7 @@
   border-radius: 10px;
   border: 1px solid #e4e9f4;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .ministry-student-classes__table-header {

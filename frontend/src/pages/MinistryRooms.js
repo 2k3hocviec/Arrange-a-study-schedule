@@ -21,8 +21,8 @@ const getRoomErrorMessage = (err, action = "save") => {
   ) {
     return "Sức chứa không được âm.";
   }
-  if (lowerMessage.includes("unique") || lowerMessage.includes("duplicate")) {
-    return "Mã phòng đã tồn tại. Vui lòng kiểm tra lại.";
+  if (lowerMessage.includes("unique") || lowerMessage.includes("duplicate") || lowerMessage.includes("already exists")) {
+    return "Mã phòng học này đã tồn tại trong hệ thống. Vui lòng nhập một mã phòng khác (không được phép trùng lặp mã).";
   }
   if (action === "delete") return "Không thể xóa phòng học.";
   return "Thao tác thất bại. Vui lòng kiểm tra lại dữ liệu.";

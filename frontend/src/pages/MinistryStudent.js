@@ -182,190 +182,190 @@ const MinistryStudents = () => {
   const totalPages = Math.max(1, Math.ceil(filteredStudents.length / ROWS_PER_PAGE));
   const paginatedStudents = filteredStudents.slice((currentPage - 1) * ROWS_PER_PAGE, currentPage * ROWS_PER_PAGE);
   return <div className="ministry-student__wrapper">
-      {/* Header row */}
-      <div className="ministry-student__header-row">
-        <h2 className="ministry-student__title">
-          <PiStudentDuotone className="ministry-student__inline-184" />
+    {/* Header row */}
+    <div className="ministry-student__header-row">
+      <h2 className="ministry-student__title">
+        <PiStudentDuotone className="ministry-student__inline-184" />
 
-          
-          QUẢN LÝ SINH VIÊN
-        </h2>
-        <button onClick={handleClickCreate} className="ministry-student__add-btn">
-          + Thêm sinh viên mới
-        </button>
-      </div>
 
-      {/* Stat card */}
-      <div className="ministry-student__stat-row">
-        <div className="ministry-student__stat-card">
-          <div className="ministry-student__stat-icon">
-            <PiStudentDuotone size={28} color="#4f63d2" />
-          </div>
-          <div>
-            <div className="ministry-student__stat-label">TỔNG</div>
-            <div className="ministry-student__stat-value">
-              {students.length.toLocaleString()}
-            </div>
+        QUẢN LÝ SINH VIÊN
+      </h2>
+      <button onClick={handleClickCreate} className="ministry-student__add-btn">
+        + Thêm sinh viên mới
+      </button>
+    </div>
+
+    {/* Stat card */}
+    <div className="ministry-student__stat-row">
+      <div className="ministry-student__stat-card">
+        <div className="ministry-student__stat-icon">
+          <PiStudentDuotone size={28} color="#4f63d2" />
+        </div>
+        <div>
+          <div className="ministry-student__stat-label">TỔNG</div>
+          <div className="ministry-student__stat-value">
+            {students.length.toLocaleString()}
           </div>
         </div>
       </div>
+    </div>
 
-      {/* ==================== MODAL ==================== */}
-      {showForm && <div className="ministry-student__modal-overlay">
-          <div className="ministry-student__modal-content">
-            <button onClick={closeModal} className="ministry-student__close-btn">
-              ×
-            </button>
+    {/* ==================== MODAL ==================== */}
+    {showForm && <div className="ministry-student__modal-overlay">
+      <div className="ministry-student__modal-content">
+        <button onClick={closeModal} className="ministry-student__close-btn">
+          ×
+        </button>
 
-            <h3 className="ministry-student__form-title">
-              {repair ? "Cập nhật thông tin sinh viên" : "Tạo sinh viên mới"}
-            </h3>
+        <h3 className="ministry-student__form-title">
+          {repair ? "Cập nhật thông tin sinh viên" : "Tạo sinh viên mới"}
+        </h3>
 
-            <form onSubmit={repair ? handleSubmitUpdate : handleSubmit} className="ministry-student__form">
+        <form onSubmit={repair ? handleSubmitUpdate : handleSubmit} className="ministry-student__form">
 
-            
-              {!repair && <div className="ministry-student__field-group">
-                  <label className="ministry-student__label">
-                    Chọn User (Role: Student - Chưa đăng ký)
-                  </label>
-                  <select name="user_id" value={formData.user_id} onChange={handleInputChange} required className="ministry-student__input">
-                
-                    <option value="">-- Chọn User --</option>
-                    {availableUsers.map(user => <option key={user.id} value={user.id}>
-                        {user.username || user.email} (ID: {user.id})
-                      </option>)}
-                  </select>
-                </div>}
 
-              <div className="ministry-student__field-group">
-                <label className="ministry-student__label">Mã Sinh Viên</label>
-                <input type="text" name="student_id" placeholder="Nhập mã sinh viên" value={formData.student_id} onChange={handleInputChange} required disabled={repair} style={{
+          {!repair && <div className="ministry-student__field-group">
+            <label className="ministry-student__label">
+              Chọn User (Role: Student - Chưa đăng ký)
+            </label>
+            <select name="user_id" value={formData.user_id} onChange={handleInputChange} required className="ministry-student__input">
+
+              <option value="">-- Chọn User --</option>
+              {availableUsers.map(user => <option key={user.id} value={user.id}>
+                {user.username || user.email} (ID: {user.id})
+              </option>)}
+            </select>
+          </div>}
+
+          <div className="ministry-student__field-group">
+            <label className="ministry-student__label">Mã Sinh Viên</label>
+            <input type="text" name="student_id" placeholder="Nhập mã sinh viên" value={formData.student_id} onChange={handleInputChange} required disabled={repair} style={{
               background: repair ? "#f0f0f0" : "white"
             }} className="ministry-student__input" />
-              
-              </div>
 
-              <div className="ministry-student__field-group">
-                <label className="ministry-student__label">Họ và Tên</label>
-                <input type="text" name="name" placeholder="Nhập họ tên sinh viên" value={formData.name} onChange={handleInputChange} required className="ministry-student__input" />
+          </div>
 
-              
-              </div>
+          <div className="ministry-student__field-group">
+            <label className="ministry-student__label">Họ và Tên</label>
+            <input type="text" name="name" placeholder="Nhập họ tên sinh viên" value={formData.name} onChange={handleInputChange} required className="ministry-student__input" />
 
-              <div className="ministry-student__field-group">
-                <label className="ministry-student__label">Lớp học {repair && formData.has_enrollments && "(Không thể đổi)"}</label>
-                <select name="class_id" value={formData.class_id} onChange={handleInputChange} required className="ministry-student__input" disabled={repair && formData.has_enrollments} style={{
+
+          </div>
+
+          <div className="ministry-student__field-group">
+            <label className="ministry-student__label">Lớp học {repair && formData.has_enrollments && "(Không thể đổi)"}</label>
+            <select name="class_id" value={formData.class_id} onChange={handleInputChange} required className="ministry-student__input" disabled={repair && formData.has_enrollments} style={{
               background: repair && formData.has_enrollments ? "#f0f0f0" : "white"
             }}>
 
-                
-                  <option value="">-- Chọn lớp học --</option>
-                  {studentClasses.map(item => <option key={item.class_id} value={item.class_id}>
-                      {item.class_id} - {item.name}
-                    </option>)}
-                </select>
-              </div>
 
-              <button type="submit" style={{
-            background: repair ? "#3498db" : "#27ae60"
-          }} className="ministry-student__submit-btn">
-              
-                {repair ? "Cập nhật sinh viên" : "Tạo sinh viên"}
-              </button>
-            </form>
+              <option value="">-- Chọn lớp học --</option>
+              {studentClasses.map(item => <option key={item.class_id} value={item.class_id}>
+                {item.class_id} - {item.name}
+              </option>)}
+            </select>
           </div>
-        </div>}
 
-      {/* Table */}
-      <div className="ministry-student__table-wrapper">
-        <div className="ministry-student__table-header">
-          <div className="ministry-student__search-wrap">
-            <FiSearch size={15} color="#94a3b8" />
-            <input value={keyword} onChange={e => {
+          <button type="submit" style={{
+            background: "#3498db"
+          }} className="ministry-student__submit-btn">
+
+            {repair ? "Cập nhật sinh viên" : "Tạo sinh viên"}
+          </button>
+        </form>
+      </div>
+    </div>}
+
+    {/* Table */}
+    <div className="ministry-student__table-wrapper">
+      <div className="ministry-student__table-header">
+        <div className="ministry-student__search-wrap">
+          <FiSearch size={15} color="#94a3b8" />
+          <input value={keyword} onChange={e => {
             setKeyword(e.target.value);
             setCurrentPage(1);
           }} placeholder="Tim ma, ten, email, lop, chuyen nganh..." className="ministry-student__search-input" />
 
-            
-          </div>
+
         </div>
-        <table className="ministry-student__table">
-          <thead>
-            <tr className="ministry-student__thead-row">
-              <th className="ministry-student__th">STT</th>
-              <th className="ministry-student__th">MÃ SINH VIÊN</th>
-              <th className="ministry-student__th">HỌ TÊN</th>
-              <th className="ministry-student__th">TÀI KHOẢN</th>
-              <th className="ministry-student__th">LỚP HỌC</th>
-              <th className="ministry-student__th">CHUYÊN NGÀNH</th>
-              <th className="ministry-student__th">KHOA</th>
-              <th className="ministry-student__th">USER ID</th>
-              <th className="ministry-student__th">THAO TÁC</th>
-            </tr>
-          </thead>
-          <tbody>
-            {paginatedStudents.length === 0 ? <tr>
-                <td colSpan={9} className="ministry-student__empty-cell">
-                  Không có dữ liệu sinh viên
-                </td>
-              </tr> : paginatedStudents.map((student, idx) => <tr key={student.student_id} className="ministry-student__tbody-row">
-                  <td className="ministry-student__td">
-                    {String((currentPage - 1) * ROWS_PER_PAGE + idx + 1).padStart(2, "0")}
-                  </td>
-                  <td className="ministry-student__td ministry-student__inline-354">
+      </div>
+      <table className="ministry-student__table">
+        <thead>
+          <tr className="ministry-student__thead-row">
+            <th className="ministry-student__th">STT</th>
+            <th className="ministry-student__th">MÃ SINH VIÊN</th>
+            <th className="ministry-student__th">HỌ TÊN</th>
+            <th className="ministry-student__th">TÀI KHOẢN</th>
+            <th className="ministry-student__th">LỚP HỌC</th>
+            <th className="ministry-student__th">CHUYÊN NGÀNH</th>
+            <th className="ministry-student__th">KHOA</th>
+            <th className="ministry-student__th">USER ID</th>
+            <th className="ministry-student__th">THAO TÁC</th>
+          </tr>
+        </thead>
+        <tbody>
+          {paginatedStudents.length === 0 ? <tr>
+            <td colSpan={9} className="ministry-student__empty-cell">
+              Không có dữ liệu sinh viên
+            </td>
+          </tr> : paginatedStudents.map((student, idx) => <tr key={student.student_id} className="ministry-student__tbody-row">
+            <td className="ministry-student__td">
+              {String((currentPage - 1) * ROWS_PER_PAGE + idx + 1).padStart(2, "0")}
+            </td>
+            <td className="ministry-student__td ministry-student__inline-354">
 
-                
-                    {student.student_id}
-                  </td>
-                  <td className="ministry-student__td">{student.name}</td>
-                  <td className="ministry-student__td">{student.user?.email || "-"}</td>
-                  <td className="ministry-student__td">
-                    {student.class ? `${student.class.class_id} - ${student.class.name}` : student.class_id || "-"}
-                  </td>
-                  <td className="ministry-student__td">
-                    {student.class?.major ? `${student.class.major.major_id} - ${student.class.major.name}` : student.class?.major_id || "-"}
-                  </td>
-                  <td className="ministry-student__td">
-                    {student.class?.major?.department ? `${student.class.major.department.department_id} - ${student.class.major.department.name}` : "-"}
-                  </td>
-                  <td className="ministry-student__td">{student.user_id}</td>
-                  <td className="ministry-student__td">
-                    <button onClick={() => handleOpenUpdate(student)} className="ministry-student__edit-btn">
-                  
-                      Sửa
-                    </button>
-                    <button onClick={() => handleDeleteStudent(student.student_id)} className="ministry-student__delete-btn">
-                  
-                      Xóa
-                    </button>
-                  </td>
-                </tr>)}
-          </tbody>
-        </table>
 
-        {/* Pagination */}
-        <div className="ministry-student__pagination">
-          <span className="ministry-student__page-info">
-            Trang {currentPage} / {totalPages}
-          </span>
-          <div className="ministry-student__page-buttons">
-            <button style={{
+              {student.student_id}
+            </td>
+            <td className="ministry-student__td">{student.name}</td>
+            <td className="ministry-student__td">{student.user?.email || "-"}</td>
+            <td className="ministry-student__td">
+              {student.class ? `${student.class.class_id} - ${student.class.name}` : student.class_id || "-"}
+            </td>
+            <td className="ministry-student__td">
+              {student.class?.major ? `${student.class.major.major_id} - ${student.class.major.name}` : student.class?.major_id || "-"}
+            </td>
+            <td className="ministry-student__td">
+              {student.class?.major?.department ? `${student.class.major.department.department_id} - ${student.class.major.department.name}` : "-"}
+            </td>
+            <td className="ministry-student__td">{student.user_id}</td>
+            <td className="ministry-student__td">
+              <button onClick={() => handleOpenUpdate(student)} className="ministry-student__edit-btn">
+
+                Sửa
+              </button>
+              <button onClick={() => handleDeleteStudent(student.student_id)} className="ministry-student__delete-btn">
+
+                Xóa
+              </button>
+            </td>
+          </tr>)}
+        </tbody>
+      </table>
+
+      {/* Pagination */}
+      <div className="ministry-student__pagination">
+        <span className="ministry-student__page-info">
+          Trang {currentPage} / {totalPages}
+        </span>
+        <div className="ministry-student__page-buttons">
+          <button style={{
             opacity: currentPage === 1 ? 0.4 : 1,
             cursor: currentPage === 1 ? "not-allowed" : "pointer"
           }} onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="ministry-student__page-btn">
-              
-              Trước
-            </button>
-            <button style={{
+
+            Trước
+          </button>
+          <button style={{
             background: currentPage === totalPages ? "#4f63d2" : "#e9ecf5",
             color: currentPage === totalPages ? "white" : "#333"
           }} onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="ministry-student__page-btn">
-              
-              Tiếp theo
-            </button>
-          </div>
+
+            Tiếp theo
+          </button>
         </div>
       </div>
-    </div>;
+    </div>
+  </div>;
 };
 export default MinistryStudents;
