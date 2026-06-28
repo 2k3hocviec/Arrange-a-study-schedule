@@ -11,9 +11,9 @@ import { UpdateDepartmentDto } from './dto/update-department.dto';
 export class DepartmentsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  private async withStudentClassesCount<
-    T extends { department_id: string },
-  >(department: T) {
+  private async withStudentClassesCount<T extends { department_id: string }>(
+    department: T,
+  ) {
     const majors = await this.prisma.major.findMany({
       where: { department_id: department.department_id },
       select: { _count: { select: { studentClasses: true } } },
@@ -32,9 +32,7 @@ export class DepartmentsService {
     T extends { department_id: string },
   >(departments: T[]) {
     return Promise.all(
-      departments.map((department) =>
-        this.withStudentClassesCount(department),
-      ),
+      departments.map((department) => this.withStudentClassesCount(department)),
     );
   }
 
@@ -111,6 +109,12 @@ export class DepartmentsService {
     });
   }
 
+  /*
+  Xóa khoa, đảm bảo: 
+    - Số lượng giảng viên thuộc khoa = 0 
+    - Số lượng chuyên khoa thuộc khoa = 0
+  --> Tránh trường hợp bị mồ côi nghiệp vụ.
+  */
   async remove(id: string) {
     const department = await this.findOne(id);
     if (!department) {
@@ -118,8 +122,7 @@ export class DepartmentsService {
     }
 
     const hasRelations =
-      department._count.teachers > 0 ||
-      department._count.majors > 0;
+      department._count.teachers > 0 || department._count.majors > 0;
 
     if (hasRelations) {
       throw new BadRequestException('Cannot delete department that is in use');

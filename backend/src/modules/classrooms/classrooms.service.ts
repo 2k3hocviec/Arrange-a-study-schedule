@@ -70,6 +70,10 @@ export class ClassroomsService {
     });
   }
 
+  /*
+  Update phải kiểm tra:
+    - Phòng học có đang được xếp lịch không, nếu có thì block không cho thay đổi làm sai thuộc tính loại phòng và số lượng.
+  */
   async update(id: string, updateclassroomsDto: UpdateClassroomDto) {
     const classroom = await this.findOne(id);
 

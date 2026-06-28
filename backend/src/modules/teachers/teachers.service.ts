@@ -15,7 +15,7 @@ export class TeachersService {
     private readonly prisma: PrismaService,
     private readonly userService: UsersService,
     private readonly departmentsService: DepartmentsService,
-  ) { }
+  ) {}
 
   async create(createTeacherDto: CreateTeacherDto) {
     const user = await this.userService.findOne(createTeacherDto.user_id);
@@ -58,6 +58,9 @@ export class TeachersService {
     });
   }
 
+  /*
+  Không thể đổi khoa nếu giảng viên còn lịch dạy.
+  */
   async update(id: string, updateTeacherDto: UpdateTeacherDto) {
     const user = await this.userService.findOne(updateTeacherDto.user_id);
     if (!user) {
@@ -90,7 +93,9 @@ export class TeachersService {
     }
 
     if (updateTeacherDto.department_id) {
-      await this.departmentsService.ensureExists(updateTeacherDto.department_id);
+      await this.departmentsService.ensureExists(
+        updateTeacherDto.department_id,
+      );
     }
 
     return this.prisma.teacher.update({
@@ -99,6 +104,9 @@ export class TeachersService {
     });
   }
 
+  /*
+  Không thể xóa nếu giảng viên còn lịch dạy.
+  */
   async remove(id: string) {
     const teacher = await this.findOne(id);
     if (!teacher) {

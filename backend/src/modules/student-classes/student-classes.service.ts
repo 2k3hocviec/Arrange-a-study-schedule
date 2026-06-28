@@ -79,6 +79,10 @@ export class StudentClassesService {
     });
   }
 
+  /*
+  Cập nhật, cần đảm bảo:
+    - Số lượng sinh viên ban đầu > số lượng mới.
+  */
   async update(id: string, updateStudentClassDto: UpdateStudentClassDto) {
     const studentClass = await this.findOne(id);
     if (!studentClass) {
@@ -115,6 +119,9 @@ export class StudentClassesService {
     });
   }
 
+  /*
+  Không thể xóa nếu đang có học sinh trong lớp
+  */
   async remove(id: string) {
     const studentClass = await this.findOne(id);
     if (!studentClass) {

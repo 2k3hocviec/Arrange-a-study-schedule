@@ -18,6 +18,11 @@ export class UsersService {
     }
   }
 
+  /*
+  Cần kiểm tra đây có phải là sysadmin không:
+    - sysadmin có thể đổi được mật khẩu, các trường như role, tài khoản không thể thay đổi.
+    - các role khác thì tùy ý nhưng không được chuyển thành role == admin
+  */
   private ensureSysadminIsNotCredentialEdited(
     user: { role: string },
     data: Partial<UpdateUserDto>,
@@ -37,6 +42,9 @@ export class UsersService {
     }
   }
 
+  /*
+  Không thể tạo thêm tài khoản role admin để đảm bảo có duy nhất 1 admin.
+  */
   async create(createUserDto: CreateUserDto) {
     const data = { ...createUserDto };
     this.ensureRoleIsNotSysadmin(data.role);
@@ -72,6 +80,10 @@ export class UsersService {
     return this.prisma.user.update({ where: { id }, data });
   }
 
+  /*
+  Không thể xóa user admin (user admin đang là duy nhất)
+  Khôgn thể xóa tài khoản đang liên kết với student hoặc teacher.
+  */
   async remove(id: number) {
     const user = await this.findOne(id);
     if (!user) {

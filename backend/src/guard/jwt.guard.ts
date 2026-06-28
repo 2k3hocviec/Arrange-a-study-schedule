@@ -14,6 +14,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       context.getClass(),
     ]);
 
+    /*Nếu là public thì luôn cho đi qua không cần check Auth và Role*/
     if (isPublic) {
       return true; // ← Bỏ qua JWT check
     }

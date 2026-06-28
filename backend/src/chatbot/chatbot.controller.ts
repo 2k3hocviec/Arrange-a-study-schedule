@@ -8,8 +8,11 @@ import { log } from 'console';
 @ApiTags('Chatbot')
 @Controller('chatbot')
 export class ChatbotController {
-  constructor(private readonly chatbotService: ChatbotService) { }
+  constructor(private readonly chatbotService: ChatbotService) {}
 
+  /*
+  Toàn bộ module bị vô hiệu hóa.
+  */
   @Post('message')
   @ApiOperation({ summary: 'Gửi tin nhắn đến AI chatbot hỗ trợ đặt lịch' })
   async chat(@Body() dto: ChatDto) {

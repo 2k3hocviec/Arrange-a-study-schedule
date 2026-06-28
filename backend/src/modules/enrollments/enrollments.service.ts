@@ -79,6 +79,15 @@ export class EnrollmentsService {
     return null;
   }
 
+  /*
+  - Kiểm tra môn học có phù hợp với lớp của sinh viên không
+  - Môn học có đang trong kì học được active không
+  - Kiểm tra trạng thái đăng kí của kì học
+  - Kiểm tra số lượng còn có thể đăng kí được phải > 0.
+  - Kiểm tra môn này sinh viên đã đăng kí chưa.
+  - Tổng số tín chỉ có vượt quá 18 tín không.
+  - Sau đó dùng transaction để đăng kí phòng trường hợp 2 người cùng ấn đăng kí cùng một lúc.
+  */
   async create(
     createEnrollmentDto: CreateEnrollmentDto,
     options: { allowInactiveSemester?: boolean } = {},

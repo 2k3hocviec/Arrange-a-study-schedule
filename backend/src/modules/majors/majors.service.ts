@@ -13,7 +13,7 @@ export class MajorsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly departmentsService: DepartmentsService,
-  ) { }
+  ) {}
 
   private async withStudentsCount<T extends { major_id: string }>(major: T) {
     const studentClasses = await this.prisma.studentClass.findMany({
@@ -91,7 +91,6 @@ export class MajorsService {
     - kiểm tra mã chuyên ngành có tồn tại hay không.
     - nếu chuyển ngành thì phải kiểm tra xem chuyên ngành đó có lớp học sinh nào không nếu có thì không được chuyển ngành.
   */
-
   async update(id: string, updateMajorDto: UpdateMajorDto) {
     const major = await this.findOne(id);
     if (!major) {
@@ -122,6 +121,11 @@ export class MajorsService {
     });
   }
 
+  /*
+  Xóa chuyên ngành phải đảm báo:
+    - Không còn lớp học thuộc chuyên ngành.
+    - Không môn học thuộc chuyên ngành.
+  */
   async remove(id: string) {
     const major = await this.findOne(id);
     if (!major) {

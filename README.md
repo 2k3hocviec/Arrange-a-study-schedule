@@ -95,7 +95,7 @@ npm run backend:prisma:push
 npm run backend:seed
 ```
 
-View the database with Prisma Studio:
+View the database with Prisma Studio: (Xem database)
 
 ```sh
 cd backend

@@ -63,12 +63,12 @@ export class AuthService {
   async login(email: string, password: string) {
     const user = await this.usersServive.findByEmail(email);
     if (!user) {
-      throw new UnauthorizedException('Email or passwrod unvalid');
+      throw new UnauthorizedException('Email or password unvalid');
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      throw new UnauthorizedException('Email or passwrod unvalid');
+      throw new UnauthorizedException('Email or password unvalid');
     }
 
     const { access_token, refresh_token } = await this.generateTokens(
@@ -91,9 +91,7 @@ export class AuthService {
         secret: this.getRefreshSecret(),
       });
     } catch {
-      throw new UnauthorizedException(
-        'Refresh token unvalid or expire',
-      );
+      throw new UnauthorizedException('Refresh token unvalid or expire');
     }
 
     const userId = payload.sub;
@@ -131,9 +129,7 @@ export class AuthService {
       await this.mailService.sendOtpEmail(email, otp, userName);
     } catch (error) {
       console.error('Failed to send OTP email:', error);
-      throw new BadRequestException(
-        'Can not send email. Check SMTP in .env',
-      );
+      throw new BadRequestException('Can not send email. Check SMTP in .env');
     }
 
     return { message: 'The OTP has been sent to you' };
@@ -146,7 +142,9 @@ export class AuthService {
     }
     if (Date.now() > stored.expiry) {
       otpStore.delete(email);
-      throw new BadRequestException('The OTP code has expired. Please request it again.');
+      throw new BadRequestException(
+        'The OTP code has expired. Please request it again.',
+      );
     }
     if (stored.otp !== otp) {
       throw new BadRequestException('The OTP code is incorrect.');

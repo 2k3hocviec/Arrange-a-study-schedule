@@ -17,6 +17,9 @@ export class SchedulesService {
     private readonly teacherBusySchedulesService: TeacherBusySchedulesService,
   ) {}
 
+  /*
+  Yêu cầu loại phòng phải đúng theo yêu cầu
+  */
   private ensureRoomTypeMatches(
     course: { required_room_type: string },
     classroom: { type: string },
@@ -28,6 +31,9 @@ export class SchedulesService {
     }
   }
 
+  /*
+  Yêu cầu slot bắt đầu khóa học <= slot kết thúc khóa học
+   */
   private normalizeSlots(dto: CreateScheduleDto | UpdateScheduleDto) {
     const start_slot = Number(dto.start_slot);
     const end_slot = Number(dto.end_slot);
@@ -50,6 +56,9 @@ export class SchedulesService {
     };
   }
 
+  /*
+  Yêu cầu ngày bắt đầu khóa học <= ngày kết thúc khóa học
+   */
   private normalizeScheduleDates(dto: CreateScheduleDto | UpdateScheduleDto) {
     const scheduleStart = dto.start_date ? new Date(dto.start_date) : undefined;
     const scheduleEnd = dto.end_date ? new Date(dto.end_date) : undefined;
@@ -63,6 +72,12 @@ export class SchedulesService {
     return { scheduleStart, scheduleEnd };
   }
 
+  /*
+  Yêu cầu lịch của khóa học phải nằm trong thời gian cho phép của học kì:
+    - Lịch bắt đầu của học kì < Lịch bắt đầu của khóa học 
+    Và
+    - Lịch kết thúc của học kì > Lịch kết thúc của khóa học
+  */
   private ensureScheduleDatesWithinSemester(
     dto: CreateScheduleDto | UpdateScheduleDto,
     course: { semester?: { start_date: Date; end_date: Date } | null },
@@ -86,6 +101,20 @@ export class SchedulesService {
     }
   }
 
+  /*
+  Kiểm tra lớp học có đang lịch học cho cả thao tác create và update: Ta có biến where.
+    - Bước 1: Lọc lịch theo điều kiện gán vào where:
+      + Kì học
+      + ClassroomID trùng.
+      + Ngày trong tuần trùng.
+      + Giờ bắt đầu khóa đã xếp <= giờ kết thúc của khóa học đang xét
+      + Giờ kết thúc khóa đã xếp >= giờ bắt đầu của khóa học đang xét
+    - Bước 2: Cần bỏ qua chính lịch học hiện tại đang xét ở trường hợp update: Cập nhật lại biến where
+    - Bước 3: Lọc theo điều kiện lấy dữ liệu từ where:
+      + Giờ bắt đầu khóa đã xếp <= giờ kết thúc của khóa học đang xét.
+      + Giờ kết thúc khóa đã xếp >= giờ bắt đầu của khóa học đang xét.
+    - Bước 4: Chọn lịch trùng trả về nếu có.
+  */
   private async checkClassroomConflict(
     dto: CreateScheduleDto | UpdateScheduleDto,
     semesterId: string,
@@ -119,6 +148,20 @@ export class SchedulesService {
     return this.prisma.schedule.findFirst({ where });
   }
 
+  /*
+  Kiểm tra teacher có bị đang trùng lịch cho cả thao tác create và update:
+    - Bước 1: Lọc lịch theo điều kiện gán vào where:
+      + Kì học phải trùng 
+      + TeacherID phải trùng
+      + Ngày trong tuần trùng (thứ)
+      + Giờ bắt đầu khóa đã xếp <= giờ kết thúc của khóa học đang xét
+      + Giờ kết thúc khóa đã xếp >= giờ bắt đầu của khóa học đang xét
+    - Bước 2: Cần bỏ qua chính lịch học hiện tại đang xét ở trường hợp update: Cập nhật lại biến where
+    - Bước 3: Lọc theo điều kiện lấy dữ liệu từ where:
+      + Giờ bắt đầu khóa đã xếp <= giờ kết thúc của khóa học đang xét.
+      + Giờ kết thúc khóa đã xếp >= giờ bắt đầu của khóa học đang xét.
+    - Bước 4: Chọn lịch trùng trả về nếu có.
+  */
   private async checkTeacherConflict(
     dto: CreateScheduleDto | UpdateScheduleDto,
     currentCourse: { teacher_id: string; semester_id: string },
@@ -156,6 +199,9 @@ export class SchedulesService {
     });
   }
 
+  /*
+  Kiểm tra teacher bận, trả về lịch mà teacher bận.
+  */
   private async checkTeacherBusyConflict(
     dto: CreateScheduleDto | UpdateScheduleDto,
     course: {
@@ -181,6 +227,9 @@ export class SchedulesService {
     });
   }
 
+  /*
+  Đảm bảo Khóa học chưa được xếp lịch, tránh trường hợp một khóa học có 2 Schedule
+   */
   private async ensureCourseHasNoOtherSchedule(
     courseId: string,
     excludeScheduleId?: string,
@@ -199,6 +248,12 @@ export class SchedulesService {
     }
   }
 
+  /*
+  Đảm bảo khóa học không có học sinh tham gia:
+    - hàm này thực hiện khi có thao tác update, delete.
+    - mục đích để tránh delete sinh viên đang học lại xóa, làm mất tham chiếu từ enrollment đến course.
+    - mục đích tránh update nhầm qua thời gian học môn khác sinh viên bị conflict với môn khác.
+  */
   private async ensureScheduleCourseHasNoEnrollments(
     scheduleId: string,
     action: 'update' | 'delete',
@@ -225,6 +280,17 @@ export class SchedulesService {
     }
   }
 
+  /*Tạo lịch học:
+    - Kiểm tra Classroom có tồn tại không.
+    - Kiểm tra trạng thái của classroom.
+    - Course có tồn tại không.
+    - Đảm bảo khóa học chưa được xếp lịch
+    - Kiểm loại phòng có phù hợp với khóa học không.
+    - Kiểm tra sức chứa của phòng >= số lượng sinh viên tối đa của khóa học không.
+    - Kiểm tra phòng học có conflict không.
+    - Kiểm tra giảng viên có conflict không,
+    - Kiểm tra giảng viên có bận không.
+  */
   async create(createScheduleDto: CreateScheduleDto) {
     const { start_slot, end_slot } = this.normalizeSlots(createScheduleDto);
     const classroom = await this.classroomService.findOne(
@@ -260,8 +326,10 @@ export class SchedulesService {
       );
     }
 
-    const classroomConflict =
-      await this.checkClassroomConflict(createScheduleDto, course.semester_id);
+    const classroomConflict = await this.checkClassroomConflict(
+      createScheduleDto,
+      course.semester_id,
+    );
 
     if (classroomConflict) {
       throw new BadRequestException(
@@ -335,6 +403,17 @@ export class SchedulesService {
     return this.prisma.schedule.findMany({ where: { schedule_id: id } });
   }
 
+  /*Cập nhật lịch học:
+    - Kiểm tra Classroom có tồn tại không.
+    - Kiểm tra trạng thái của classroom.
+    - Course có tồn tại không.
+    - Kiểm loại phòng có phù hợp với khóa học không.
+    - Kiểm tra sức chứa của phòng >= số lượng sinh viên tối đa của khóa học không.
+    - Kiểm tra xem có enrollment vào trong khóa học không (tránh update khi sinh viên đã đăng kí môn học)
+    - Kiểm tra phòng học có conflict không.
+    - Kiểm tra giảng viên có conflict không,
+    - Kiểm tra giảng viên có bận không.
+  */
   async update(id: string, updateScheduleDto: UpdateScheduleDto) {
     await this.ensureScheduleCourseHasNoEnrollments(id, 'update');
 
@@ -361,10 +440,7 @@ export class SchedulesService {
       throw new BadRequestException(`Course not exist`);
     }
 
-    await this.ensureCourseHasNoOtherSchedule(
-      updateScheduleDto.course_id,
-      id,
-    );
+    await this.ensureCourseHasNoOtherSchedule(updateScheduleDto.course_id, id);
 
     this.ensureRoomTypeMatches(course, classroom);
     this.ensureScheduleDatesWithinSemester(updateScheduleDto, course);
@@ -428,6 +504,9 @@ export class SchedulesService {
     });
   }
 
+  /*Xóa lịch học:
+    - Kiểm tra xem có enrollment vào trong khóa học không (tránh update khi sinh viên đã đăng kí môn học)
+  */
   async remove(id: string) {
     await this.ensureScheduleCourseHasNoEnrollments(id, 'delete');
     return this.prisma.schedule.delete({ where: { schedule_id: id } });

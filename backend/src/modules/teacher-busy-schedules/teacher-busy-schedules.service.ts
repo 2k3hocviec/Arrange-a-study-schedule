@@ -174,7 +174,9 @@ export class TeacherBusySchedulesService {
     }
 
     if (busySchedule.status !== BUSY_STATUS.PENDING) {
-      throw new BadRequestException('Only pending busy requests can be deleted');
+      throw new BadRequestException(
+        'Only pending busy requests can be deleted',
+      );
     }
 
     return this.prisma.teacherBusySchedule.delete({
@@ -200,6 +202,10 @@ export class TeacherBusySchedulesService {
     return busySchedule;
   }
 
+  /*
+  Chấp nhận lịch bận phải kiểm tra trùng lịch lại một lần nữa tránh hợp giảng viên đăng ký lịch, 
+  sau đó giáo vụ xếp lịch, rồi quay lại duyệt bị conflict
+  */
   async approve(id: string, reviewerId: number) {
     const busySchedule = await this.ensurePending(id);
     const existingSchedule = await this.findTeachingConflict({

@@ -126,6 +126,11 @@ export class CoursesService {
     return Number(updateCourseDto.capacity) !== currentCourse.capacity;
   }
 
+  /*
+  Tạo khóa học phải đảm bảo điều kiện:
+    - Có tồn tại teacher, subject, semester.
+    - Đảm bảo teacher và môn học đều cùng một khoa.
+  */
   async create(createCourseDto: CreateCourseDto) {
     if (!createCourseDto.required_room_type) {
       throw new BadRequestException('Required room type is required');
@@ -183,6 +188,9 @@ export class CoursesService {
     });
   }
 
+  /*
+  Khi update phải kiểm tra xem môn học đó đã được xếp lịch hoặc có sinh viên tham gia chưa nếu chưa thì không cho update.
+  */
   async update(id: string, updateCourseDto: UpdateCourseDto) {
     if (updateCourseDto.required_room_type === '') {
       throw new BadRequestException('Required room type is required');
@@ -265,6 +273,9 @@ export class CoursesService {
     });
   }
 
+  /*
+  Khi xóa phải kiểm tra xem môn học đó đã được xếp lịch hoặc có sinh viên tham gia chưa nếu chưa thì không cho update.
+  */
   async remove(id: string) {
     const [scheduleCount, enrollmentCount] = await Promise.all([
       this.prisma.schedule.count({ where: { course_id: id } }),

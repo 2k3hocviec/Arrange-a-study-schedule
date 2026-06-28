@@ -48,8 +48,8 @@ import { MajorsModule } from './modules/majors/majors.module';
   controllers: [AppController],
   providers: [
     AppService,
-    { provide: APP_GUARD, useClass: JwtAuthGuard },
-    { provide: APP_GUARD, useClass: RoleGuard },
+    { provide: APP_GUARD, useClass: JwtAuthGuard }, // Thiết lập Auth toàn cục
+    { provide: APP_GUARD, useClass: RoleGuard }, // Thiết lập Role toàn cục
   ],
 })
 export class AppModule {}
