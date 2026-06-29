@@ -2,7 +2,7 @@
   display: flex;
   height: 100vh;
   min-height: 100vh;
-  font-family: 'Be Vietnam Pro', 'Segoe UI', sans-serif;
+  font-family: "Be Vietnam Pro", "Segoe UI", sans-serif;
   background: #f0f2f7;
   color: #1e293b;
   overflow: hidden;
@@ -148,7 +148,7 @@
   display: flex;
   align-items: center;
   gap: 24px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 }
 
 .sys-admin-dashboard__banner-left {
@@ -169,7 +169,7 @@
 }
 
 .sys-admin-dashboard__stat-card {
-  background: linear-gradient(135deg,#4f46e5 0%,#6366f1 100%);
+  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
   border-radius: 16px;
   padding: 20px 28px;
   color: #fff;
@@ -199,7 +199,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
   flex-wrap: wrap;
 }
 
@@ -226,7 +226,7 @@
 .sys-admin-dashboard__table-wrap {
   background: #fff;
   border-radius: 16px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
   overflow: hidden;
 }
 
@@ -298,7 +298,7 @@
   border-radius: 20px;
   width: 480px;
   padding: 32px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
 }
 
 .sys-admin-dashboard__modal-title {
@@ -410,4 +410,145 @@
 .sys-admin-dashboard__inline-731 {
   color: #94a3b8;
   font-weight: 400;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   RESPONSIVE — MOBILE / TABLET
+───────────────────────────────────────────────────────────── */
+
+/* Sidebar slide-in (dùng chung class .sidebar từ responsiveHelpers) */
+@media (max-width: 768px) {
+  .sys-admin-dashboard__sidebar {
+    position: fixed;
+    left: -260px;
+    top: 0;
+    z-index: 200;
+    height: 100vh;
+    width: 240px;
+    transition: left 0.3s ease;
+    box-shadow: none;
+  }
+
+  .sys-admin-dashboard__sidebar.active {
+    left: 0;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15);
+  }
+
+  /* Main chiếm toàn bộ chiều rộng */
+  .sys-admin-dashboard__main {
+    width: 100%;
+  }
+
+  /* Topbar */
+  .sys-admin-dashboard__topbar {
+    padding: 12px 16px 12px 60px; /* chừa chỗ cho MobileMenuButton */
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .sys-admin-dashboard__page-title {
+    font-size: 14px;
+  }
+
+  .sys-admin-dashboard__topbar-right {
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .sys-admin-dashboard__add-btn {
+    font-size: 12px;
+    padding: 8px 12px;
+  }
+
+  .sys-admin-dashboard__logout-btn {
+    font-size: 12px;
+    padding: 7px 10px;
+  }
+
+  /* Content */
+  .sys-admin-dashboard__content {
+    padding: 16px;
+  }
+
+  /* Banner */
+  .sys-admin-dashboard__banner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 20px;
+  }
+
+  .sys-admin-dashboard__stat-card {
+    min-width: unset;
+    width: 100%;
+  }
+
+  /* Toolbar */
+  .sys-admin-dashboard__toolbar-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+  }
+
+  .sys-admin-dashboard__search-wrap {
+    flex: unset;
+    width: 100%;
+  }
+
+  /* Filter buttons scroll ngang */
+  .sys-admin-dashboard__toolbar-row > .sys-admin-dashboard__inline-596 {
+    display: none; /* ẩn label "Vai trò:" trên mobile để tiết kiệm chỗ */
+  }
+
+  /* Table: scroll ngang */
+  .sys-admin-dashboard__table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .sys-admin-dashboard__table {
+    min-width: 640px;
+  }
+
+  .sys-admin-dashboard__th,
+  .sys-admin-dashboard__td {
+    padding: 12px 10px;
+    font-size: 13px;
+  }
+
+  /* Pagination */
+  .sys-admin-dashboard__pagination {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    font-size: 12px;
+  }
+
+  /* Modal */
+  .sys-admin-dashboard__modal {
+    width: calc(100vw - 32px);
+    padding: 24px 20px;
+    border-radius: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .sys-admin-dashboard__topbar {
+    padding-left: 52px;
+  }
+
+  .sys-admin-dashboard__banner-title {
+    font-size: 18px;
+  }
+
+  .sys-admin-dashboard__stat-num {
+    font-size: 28px;
+  }
+
+  .sys-admin-dashboard__modal {
+    width: calc(100vw - 24px);
+    padding: 20px 16px;
+  }
 }
