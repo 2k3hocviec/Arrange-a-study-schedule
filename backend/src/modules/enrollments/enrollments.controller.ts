@@ -20,14 +20,16 @@ export class EnrollmentsController {
   constructor(
     private readonly enrollmentsService: EnrollmentsService,
     private readonly studentsService: StudentsService,
-  ) { }
+  ) {}
 
   private async ensureStudentCanAccess(req: any, studentId: string) {
     if (req.user?.role === 'ministry') {
       return;
     }
 
-    const currentStudent = await this.studentsService.findByUserId(req.user.sub);
+    const currentStudent = await this.studentsService.findByUserId(
+      req.user.sub,
+    );
     if (currentStudent.student_id !== studentId) {
       throw new ForbiddenException('You can only access your own enrollment');
     }

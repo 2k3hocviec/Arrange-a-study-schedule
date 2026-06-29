@@ -13,7 +13,7 @@ export class StudentsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly userService: UsersService,
-  ) { }
+  ) {}
 
   /*
   Kiểm tra xem lớp học có còn chỗ trống không:
@@ -43,13 +43,16 @@ export class StudentsService {
 
     const currentStudent = currentStudentId
       ? await this.prisma.student.findUnique({
-        where: { student_id: currentStudentId },
-        select: { class_id: true },
-      })
+          where: { student_id: currentStudentId },
+          select: { class_id: true },
+        })
       : null;
 
     const alreadyInClass = currentStudent?.class_id === classId;
-    if (!alreadyInClass && studentClass._count.students >= studentClass.capacity) {
+    if (
+      !alreadyInClass &&
+      studentClass._count.students >= studentClass.capacity
+    ) {
       throw new BadRequestException('Student class is full');
     }
   }
@@ -152,7 +155,9 @@ export class StudentsService {
     });
 
     if (enrollmentCount > 0) {
-      throw new BadRequestException('Cannot delete student that has enrollments');
+      throw new BadRequestException(
+        'Cannot delete student that has enrollments',
+      );
     }
 
     await this.prisma.student.delete({ where: { student_id: studentId } });

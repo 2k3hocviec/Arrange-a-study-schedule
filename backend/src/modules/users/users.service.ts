@@ -31,8 +31,7 @@ export class UsersService {
       return;
     }
 
-    const changesEmail =
-      data.email !== undefined && data.email !== user.email;
+    const changesEmail = data.email !== undefined && data.email !== user.email;
     const changesRole = data.role !== undefined && data.role !== user.role;
     if (changesEmail || changesRole) {
       throw new BadRequestException(

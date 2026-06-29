@@ -266,94 +266,174 @@ const teacherProfiles = [
 
 const subjects = [
   {
-    subject_id: 'CTDL',
-    name: 'Cấu trúc dữ liệu',
+    subject_id: 'CSDLPT',
+    name: 'Cơ sở dữ liệu phân tán',
     credits: 3,
     major_id: 'CNTT',
     allow_same_major: false,
     allow_same_department: true,
     required_room_type: 'Practice',
+    semester: 'HK2_2025_2026',
   },
   {
-    subject_id: 'CPP',
-    name: 'Lập trình C++',
+    subject_id: 'NMCNPM',
+    name: 'Nhập môn công nghệ phần mềm',
     credits: 3,
     major_id: 'CNTT',
     allow_same_major: false,
     allow_same_department: true,
-    required_room_type: 'Practice',
-  },
-  {
-    subject_id: 'JAVA',
-    name: 'Lập trình Java',
-    credits: 3,
-    major_id: 'CNTT',
-    allow_same_major: false,
-    allow_same_department: true,
-    required_room_type: 'Practice',
-  },
-  {
-    subject_id: 'PTTKHT',
-    name: 'Phân tích thiết kế hệ thống',
-    credits: 3,
-    major_id: 'CNTT',
-    allow_same_major: true,
-    allow_same_department: false,
     required_room_type: 'Theory',
+    semester: 'HK2_2025_2026',
   },
   {
-    subject_id: 'LTUDDD',
-    name: 'Lập trình ứng dụng di động',
+    subject_id: 'TTCS',
+    name: 'Thực tập cơ sở',
+    credits: 3,
+    major_id: 'CNTT',
+    allow_same_major: false,
+    allow_same_department: true,
+    required_room_type: 'Practice',
+    semester: 'HK2_2025_2026',
+  },
+  {
+    subject_id: 'LTWEB',
+    name: 'Lập trình web',
     credits: 3,
     major_id: 'CNTT',
     allow_same_major: true,
     allow_same_department: false,
     required_room_type: 'Practice',
+    semester: 'HK2_2025_2026',
   },
   {
-    subject_id: 'ANMMT',
-    name: 'An mạng máy tính',
+    subject_id: 'ATBMHTTT',
+    name: 'An toàn bảo mật hệ thống thông tin',
+    credits: 3,
+    major_id: 'CNTT',
+    allow_same_major: false,
+    allow_same_department: true,
+    required_room_type: 'Theory',
+    semester: 'HK2_2025_2026',
+  },
+  {
+    subject_id: 'NMTTNT',
+    name: 'Nhập môn trí tuệ nhân tạo',
+    credits: 3,
+    major_id: 'CNTT',
+    allow_same_major: false,
+    allow_same_department: true,
+    required_room_type: 'Practice',
+    semester: 'HK2_2025_2026',
+  },
+  {
+    subject_id: 'MMH',
+    name: 'Mật mã học',
     credits: 3,
     major_id: 'ATTT',
     allow_same_major: true,
     allow_same_department: false,
-    required_room_type: 'Practice',
+    required_room_type: 'Theory',
+    semester: 'HK2_2025_2026',
   },
   {
-    subject_id: 'QTDN',
-    name: 'Quản trị doanh nghiệp',
+    subject_id: 'GTDKD',
+    name: 'Giao tiếp kinh doanh',
     credits: 3,
     major_id: 'QTKD',
     allow_same_major: false,
     allow_same_department: true,
     required_room_type: 'Theory',
+    semester: 'HK2_2025_2026',
   },
   {
-    subject_id: 'GT',
-    name: 'Giải tích',
+    subject_id: 'PTHVBH',
+    name: 'Phân tích hành vi bán hàng',
+    credits: 3,
+    major_id: 'QTKD',
+    allow_same_major: false,
+    allow_same_department: true,
+    required_room_type: 'Theory',
+    semester: 'HK2_2025_2026',
+  },
+  {
+    subject_id: 'PTDN',
+    name: 'Phân tích doanh nghiệp',
+    credits: 3,
+    major_id: 'QTKD',
+    allow_same_major: true,
+    allow_same_department: false,
+    required_room_type: 'Theory',
+    semester: 'HK2_2025_2026',
+  },
+  {
+    subject_id: 'KNTLVB',
+    name: 'Kĩ năng tạo lập văn bản',
     credits: 3,
     major_id: 'CB',
     allow_same_major: false,
     allow_same_department: false,
     required_room_type: 'Theory',
+    semester: 'HK2_2025_2026',
   },
   {
-    subject_id: 'TCC',
-    name: 'Toán cao cấp',
+    subject_id: 'MMT',
+    name: 'Mạng máy tính',
     credits: 3,
-    major_id: 'CB',
+    major_id: 'CNTT',
     allow_same_major: false,
-    allow_same_department: false,
-    required_room_type: 'Theory',
+    allow_same_department: true,
+    required_room_type: 'Practice',
+    semester: 'HK1_2025_2026',
   },
   {
-    subject_id: 'THCS',
-    name: 'Tin học cơ sở',
+    subject_id: 'HDH',
+    name: 'Hệ điều hành',
     credits: 3,
-    major_id: 'CB',
+    major_id: 'CNTT',
     allow_same_major: false,
+    allow_same_department: true,
+    required_room_type: 'Practice',
+    semester: 'HK1_2025_2026',
+  },
+  {
+    subject_id: 'CSDL',
+    name: 'Cơ sở dữ liệu',
+    credits: 3,
+    major_id: 'CNTT',
+    allow_same_major: false,
+    allow_same_department: true,
+    required_room_type: 'Practice',
+    semester: 'HK1_2025_2026',
+  },
+  {
+    subject_id: 'ATMMT',
+    name: 'An toàn mạng máy tính',
+    credits: 3,
+    major_id: 'ATTT',
+    allow_same_major: true,
     allow_same_department: false,
     required_room_type: 'Practice',
+    semester: 'HK1_2025_2026',
+  },
+  {
+    subject_id: 'QLTKD',
+    name: 'Quản lý trong kinh doanh',
+    credits: 3,
+    major_id: 'QTKD',
+    allow_same_major: false,
+    allow_same_department: true,
+    required_room_type: 'Theory',
+    semester: 'HK1_2025_2026',
+  },
+  {
+    subject_id: 'LSDCSVN',
+    name: 'Lịch sử Đảng Cộng sản Việt Nam',
+    credits: 3,
+    major_id: 'CB',
+    allow_same_major: false,
+    allow_same_department: false,
+    required_room_type: 'Theory',
+    semester: 'HK1_2025_2026',
   },
 ];
 
@@ -384,6 +464,10 @@ const scheduleSlots = [
   { dayOfWeek: '6', start_slot: 3, end_slot: 4 },
   { dayOfWeek: '6', start_slot: 6, end_slot: 7 },
   { dayOfWeek: '6', start_slot: 8, end_slot: 9 },
+  { dayOfWeek: '7', start_slot: 1, end_slot: 2 },
+  { dayOfWeek: '7', start_slot: 3, end_slot: 4 },
+  { dayOfWeek: '7', start_slot: 6, end_slot: 7 },
+  { dayOfWeek: '7', start_slot: 8, end_slot: 9 },
 ];
 
 async function upsertUser(email: string, role: string, password: string) {
@@ -509,14 +593,46 @@ async function main() {
     'D23CQAT01-N',
     'D23CQQT01-N',
   ];
+  const studentEmailPrefixByMajor: Record<string, string> = {
+    CNTT: 'n23dccn',
+    ATTT: 'n23dcat',
+    QTKD: 'n23dcqt',
+  };
+  const studentNumberByMajor: Record<string, number> = {
+    CNTT: 0,
+    ATTT: 0,
+    QTKD: 0,
+  };
+  const studentNumberOverrides: Record<string, Record<number, number>> = {
+    CNTT: {
+      9: 54,
+      10: 166,
+    },
+  };
 
   for (let index = 0; index < 20; index += 1) {
+    const classId = classDistribution[Math.floor(index / 5)];
+    const studentClass = studentClasses.find(
+      (item) => item.class_id === classId,
+    );
+    if (!studentClass) {
+      throw new Error(`Student class ${classId} not found`);
+    }
+
+    const majorId = studentClass.major_id;
+    studentNumberByMajor[majorId] += 1;
+    const studentNumber =
+      studentNumberOverrides[majorId]?.[studentNumberByMajor[majorId]] ??
+      studentNumberByMajor[majorId];
+    const studentEmail = `${studentEmailPrefixByMajor[majorId]}${String(
+      studentNumber,
+    ).padStart(3, '0')}@student.ptithcm.edu.vn`;
+
     const user = await upsertUser(
-      `student${String(index).padStart(2, '0')}@gmail.com`,
+      studentEmail,
       'student',
       password,
     );
-    const classId = classDistribution[Math.floor(index / 5)];
 
     await prisma.student.upsert({
       where: { student_id: `SV${String(index).padStart(3, '0')}` },
@@ -555,7 +671,16 @@ async function main() {
     });
   }
 
-  const activeSemester = await prisma.semester.findUniqueOrThrow({
+  const semester1 = await prisma.semester.findUniqueOrThrow({
+    where: {
+      name_school_year: {
+        name: 'Học kỳ 1',
+        school_year: '2025-2026',
+      },
+    },
+  });
+
+  const semester2 = await prisma.semester.findUniqueOrThrow({
     where: {
       name_school_year: {
         name: 'Học kỳ 2',
@@ -564,13 +689,12 @@ async function main() {
     },
   });
 
-  const futureSemester = await prisma.semester.findFirstOrThrow({
-    where: {
-      school_year: '2026-2027',
-    },
-  });
+  const semesterConfigs = {
+    HK1_2025_2026: { semester: semester1, code: '2025HK1' },
+    HK2_2025_2026: { semester: semester2, code: '2025HK2' },
+  };
 
-  const courseSeeds = subjects.flatMap((subject, subjectIndex) => {
+  const allCourseSeeds = subjects.flatMap((subject, subjectIndex) => {
     const major = majors.find((item) => item.major_id === subject.major_id);
     if (!major) {
       throw new Error(
@@ -578,51 +702,40 @@ async function main() {
       );
     }
 
+    const config =
+      semesterConfigs[subject.semester as keyof typeof semesterConfigs];
     const compatibleTeachers = teacherIdsByDepartment[major.department_id];
+    const subjectsInSemester = subjects.filter(
+      (item) => item.semester === subject.semester,
+    );
+    const semesterSubjectIndex = subjectsInSemester.findIndex(
+      (item) => item.subject_id === subject.subject_id,
+    );
 
     return [0, 1].map((groupIndex) => {
-      const courseIndex = subjectIndex * 2 + groupIndex;
-      const theoryRooms = classrooms.filter((room) => room.type === 'Theory');
-      const practiceRooms = classrooms.filter(
-        (room) => room.type === 'Practice',
+      const courseIndex = semesterSubjectIndex * 2 + groupIndex;
+      const rooms = classrooms.filter(
+        (room) => room.type === subject.required_room_type,
       );
-      const rooms =
-        subject.required_room_type === 'Practice' ? practiceRooms : theoryRooms;
 
       return {
-        course_code: `${subject.subject_id}-${groupIndex + 1}`,
+        course_code: `${subject.subject_id}-${config.code}-${groupIndex + 1}`,
         subject_id: subject.subject_id,
         teacher_id:
           compatibleTeachers[
             (subjectIndex + groupIndex) % compatibleTeachers.length
           ],
-        semester_id: activeSemester.semester_id,
+        semester_id: config.semester.semester_id,
         capacity: 5,
         remaining_capacity: 5,
         required_room_type: subject.required_room_type,
         classroom_id: rooms[courseIndex % rooms.length].classroom_id,
         schedule: scheduleSlots[courseIndex],
-        start_date: activeSemester.start_date,
-        end_date: activeSemester.end_date,
+        start_date: config.semester.start_date,
+        end_date: config.semester.end_date,
       };
     });
   });
-
-  const futureTestCourse = {
-    course_code: 'CTDL-2026HK1-TEST',
-    subject_id: 'CTDL',
-    teacher_id: 'GV00',
-    semester_id: futureSemester.semester_id,
-    capacity: 5,
-    remaining_capacity: 5,
-    required_room_type: 'Theory',
-    classroom_id: 'A101',
-    schedule: { dayOfWeek: '2', start_slot: 1, end_slot: 2 },
-    start_date: futureSemester.start_date,
-    end_date: futureSemester.end_date,
-  };
-
-  const allCourseSeeds = [...courseSeeds, futureTestCourse];
 
   await prisma.schedule.deleteMany({
     where: {
@@ -700,7 +813,7 @@ async function main() {
   }
 
   // --- Add Busy Schedules for giaovien00 (GV00) and giaovien01 (GV01) ---
-  const gv00_busy_date = new Date(activeSemester.start_date);
+  const gv00_busy_date = new Date(semester2.start_date);
   gv00_busy_date.setDate(gv00_busy_date.getDate() + 5);
 
   await prisma.teacherBusySchedule.create({
@@ -714,7 +827,7 @@ async function main() {
     },
   });
 
-  const gv01_busy_date = new Date(activeSemester.start_date);
+  const gv01_busy_date = new Date(semester2.start_date);
   gv01_busy_date.setDate(gv01_busy_date.getDate() + 10);
 
   await prisma.teacherBusySchedule.create({

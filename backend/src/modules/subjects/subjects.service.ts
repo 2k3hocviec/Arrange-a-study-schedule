@@ -9,7 +9,7 @@ export class SubjectsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly majorsService: MajorsService,
-  ) { }
+  ) {}
 
   async create(createSubjectDto: CreateSubjectDto) {
     const subjectOld = await this.findOne(createSubjectDto.subject_id);
@@ -67,7 +67,7 @@ export class SubjectsService {
     const isChangingAllowSameDepartment =
       updateSubjectDto.allow_same_department !== undefined &&
       updateSubjectDto.allow_same_department !==
-      subjectOld.allow_same_department;
+        subjectOld.allow_same_department;
     const isChangingMajor =
       updateSubjectDto.major_id !== undefined &&
       updateSubjectDto.major_id !== subjectOld.major_id;
@@ -77,7 +77,10 @@ export class SubjectsService {
 
     if (
       subjectOld._count.course > 0 &&
-      (isChangingAllowSameMajor || isChangingAllowSameDepartment || isChangingMajor || isChangingCredits)
+      (isChangingAllowSameMajor ||
+        isChangingAllowSameDepartment ||
+        isChangingMajor ||
+        isChangingCredits)
     ) {
       throw new BadRequestException(
         'Cannot change subject registration flags, credits or major when subject has courses',

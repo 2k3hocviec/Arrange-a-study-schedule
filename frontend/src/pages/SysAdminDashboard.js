@@ -5,7 +5,9 @@ import toast from "react-hot-toast";
 import { FaUsers, FaUserPlus, FaPencilAlt, FaTrash, FaUserShield, FaSearch, FaSignOutAlt // Thêm icon đăng xuất
 } from "react-icons/fa";
 import { AuthContext } from "../contexts/AuthContext";
+import { paginate } from "../utils/pagination";
 import "../styles/SysAdminDashboard.css";
+const USERS_PER_PAGE = 10;
 const ROLE_CONFIG = {
   sysadmin: {
     label: "QUẢN TRỊ VIÊN",
@@ -34,7 +36,7 @@ const ROLE_CONFIG = {
 };
 const maskPassword = password => {
   if (!password) return "****";
-  return "$2b$" + "******" + password.slice(-4);
+  return `$2b$******${password.slice(-4)}`;
 };
 const getUserErrorMessage = (err, action = "save") => {
   const rawMessage = err?.response?.data?.message || err?.message || "";
@@ -86,6 +88,7 @@ export default function SysAdminUsers() {
   const [editingSysAdmin, setEditingSysAdmin] = useState(false);
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
   const [formData, setFormData] = useState({
     email: "",
     currentPassword: "",
@@ -219,6 +222,17 @@ export default function SysAdminUsers() {
     const matchSearch = !q || u.email?.toLowerCase().includes(q) || u.phone?.includes(q);
     return matchRole && matchSearch;
   });
+  const {
+    page: safePage,
+    totalPages,
+    startIndex: firstUserIndex,
+    items: paginatedUsers
+  } = paginate(filtered, currentPage, USERS_PER_PAGE);
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
   const styles = {
     navItem: active => ({
       display: "flex",
@@ -338,13 +352,19 @@ export default function SysAdminUsers() {
           <div className="sys-admin-dashboard__toolbar-row">
             <div className="sys-admin-dashboard__search-wrap">
               <FaSearch color="#94a3b8" size={14} />
-              <input placeholder="Tìm kiếm theo email, số điện thoại..." value={search} onChange={e => setSearch(e.target.value)} className="sys-admin-dashboard__search-input" />
+              <input placeholder="Tìm kiếm theo email, số điện thoại..." value={search} onChange={e => {
+              setSearch(e.target.value);
+              setCurrentPage(1);
+            }} className="sys-admin-dashboard__search-input" />
               
             </div>
             <span className="sys-admin-dashboard__inline-596">
               Vai trò:
             </span>
-            {[["all", "Tất cả"], ["sysadmin", "Quản trị viên"], ["ministry", "Giáo vụ"], ["teacher", "Giáo viên"], ["student", "Sinh viên"]].map(([v, l]) => <button key={v} style={styles.filterBtn(roleFilter === v)} onClick={() => setRoleFilter(v)}>
+            {[["all", "Tất cả"], ["sysadmin", "Quản trị viên"], ["ministry", "Giáo vụ"], ["teacher", "Giáo viên"], ["student", "Sinh viên"]].map(([v, l]) => <button key={v} style={styles.filterBtn(roleFilter === v)} onClick={() => {
+              setRoleFilter(v);
+              setCurrentPage(1);
+            }}>
               
                 {l}
               </button>)}
@@ -365,7 +385,7 @@ export default function SysAdminUsers() {
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((user, i) => <tr key={user.id} style={{
+                {paginatedUsers.map((user, i) => <tr key={user.id} style={{
                 background: i % 2 === 0 ? "#fff" : "#fafbfc"
               }}>
                   
@@ -414,8 +434,23 @@ export default function SysAdminUsers() {
             </table>
             <div className="sys-admin-dashboard__pagination">
               <span>
-                Hiển thị 1 – {filtered.length} trên {filtered.length} người dùng
+                Hiển thị {filtered.length === 0 ? 0 : firstUserIndex + 1} –{" "}
+                {Math.min(firstUserIndex + USERS_PER_PAGE, filtered.length)} trên{" "}
+                {filtered.length} người dùng
               </span>
+              <div className="sys-admin-dashboard__pagination-controls">
+                <button type="button" disabled={safePage === 1} onClick={() => setCurrentPage(page => Math.max(1, page - 1))} className="sys-admin-dashboard__page-btn">
+                  Trước
+                </button>
+                {Array.from({
+                length: totalPages
+              }, (_, index) => index + 1).map(page => <button type="button" key={page} onClick={() => setCurrentPage(page)} className={`sys-admin-dashboard__page-btn${page === safePage ? " sys-admin-dashboard__page-btn--active" : ""}`}>
+                    {page}
+                  </button>)}
+                <button type="button" disabled={safePage === totalPages} onClick={() => setCurrentPage(page => Math.min(totalPages, page + 1))} className="sys-admin-dashboard__page-btn">
+                  Sau
+                </button>
+              </div>
             </div>
           </div>
         </div>
