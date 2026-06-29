@@ -40,6 +40,39 @@ export class UsersService {
     }
   }
 
+  private async ensureLinkedProfileRoleIsNotChanged(
+    userId: number,
+    currentRole: string,
+    nextRole?: string,
+  ) {
+    if (nextRole === undefined || nextRole === currentRole) {
+      return;
+    }
+
+    const [student, teacher] = await Promise.all([
+      this.prisma.student.findUnique({
+        where: { user_id: userId },
+        select: { student_id: true },
+      }),
+      this.prisma.teacher.findUnique({
+        where: { user_id: userId },
+        select: { teacher_id: true },
+      }),
+    ]);
+
+    if (student) {
+      throw new BadRequestException(
+        'Cannot change role because this user is linked to a student profile',
+      );
+    }
+
+    if (teacher) {
+      throw new BadRequestException(
+        'Cannot change role because this user is linked to a teacher profile',
+      );
+    }
+  }
+
   /*
   Không thể tạo thêm tài khoản role admin để đảm bảo có duy nhất 1 admin.
   */
@@ -70,6 +103,7 @@ export class UsersService {
 
     const { currentPassword, ...data } = updateUserDto;
     this.ensureSysadminIsNotCredentialEdited(user, data);
+    await this.ensureLinkedProfileRoleIsNotChanged(id, user.role, data.role);
 
     if (user.role === 'sysadmin') {
       delete data.email;

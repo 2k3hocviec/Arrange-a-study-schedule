@@ -68,6 +68,12 @@ const getUserErrorMessage = (err, action = "save") => {
   if (lowerMessage.includes("cannot delete user that is linked")) {
     return "Không thể xóa người dùng vì tài khoản đang liên kết với hồ sơ sinh viên hoặc giảng viên.";
   }
+  if (lowerMessage.includes("linked to a student profile")) {
+    return "Không thể đổi vai trò vì tài khoản đang liên kết với hồ sơ sinh viên.";
+  }
+  if (lowerMessage.includes("linked to a teacher profile")) {
+    return "Không thể đổi vai trò vì tài khoản đang liên kết với hồ sơ giảng viên.";
+  }
   if (lowerMessage.includes("unique") || lowerMessage.includes("duplicate")) {
     return "Email đã tồn tại. Vui lòng kiểm tra lại.";
   }
