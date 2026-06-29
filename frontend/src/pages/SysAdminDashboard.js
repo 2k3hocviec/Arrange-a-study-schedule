@@ -40,6 +40,15 @@ const getUserErrorMessage = (err, action = "save") => {
   const rawMessage = err?.response?.data?.message || err?.message || "";
   const message = Array.isArray(rawMessage) ? rawMessage.join(" ") : String(rawMessage);
   const lowerMessage = message.toLowerCase();
+  if (lowerMessage.includes("current password is required")) {
+    return "Vui lòng nhập mật khẩu hiện tại để đổi mật khẩu quản trị viên.";
+  }
+  if (lowerMessage.includes("current password is incorrect")) {
+    return "Mật khẩu hiện tại không chính xác.";
+  }
+  if (lowerMessage.includes("cannot change email or role of sysadmin")) {
+    return "Không thể thay đổi email hoặc vai trò của quản trị viên.";
+  }
   if (lowerMessage.includes("cannot delete user that is linked")) {
     return "Không thể xóa người dùng vì tài khoản đang liên kết với hồ sơ sinh viên hoặc giảng viên.";
   }
@@ -79,6 +88,7 @@ export default function SysAdminUsers() {
   const [roleFilter, setRoleFilter] = useState("all");
   const [formData, setFormData] = useState({
     email: "",
+    currentPassword: "",
     password: "",
     role: "student",
     phone: "",
@@ -108,6 +118,7 @@ export default function SysAdminUsers() {
   const resetForm = () => {
     setFormData({
       email: "",
+      currentPassword: "",
       password: "",
       role: "student",
       phone: "",
@@ -140,14 +151,25 @@ export default function SysAdminUsers() {
       return;
     }
     try {
-      const dataUpdate = {
+      const dataUpdate = editingSysAdmin ? {
+        phone: formData.phone,
+        address: formData.address
+      } : {
         email: formData.email,
         role: formData.role,
         phone: formData.phone,
         address: formData.address
       };
-      if (!editingSysAdmin && formData.password) {
+
+      if (formData.password) {
+        if (editingSysAdmin && !formData.currentPassword) {
+          toast.error("Vui lòng nhập mật khẩu hiện tại");
+          return;
+        }
         dataUpdate.password = formData.password;
+        if (editingSysAdmin) {
+          dataUpdate.currentPassword = formData.currentPassword;
+        }
       }
       await usersAPI.update(idUpdate, dataUpdate);
       resetForm();
@@ -175,6 +197,7 @@ export default function SysAdminUsers() {
     const u = users.find(u => u.id === id);
     if (u) setFormData({
       email: u.email,
+      currentPassword: "",
       password: "",
       role: u.role,
       phone: u.phone || "",
@@ -413,16 +436,20 @@ export default function SysAdminUsers() {
             }} type="email" name="email" placeholder="example@gmail.com" value={formData.email} onChange={handleInputChange} readOnly={editingSysAdmin} required className="sys-admin-dashboard__field-input" />
               
               </div>
+              {editingSysAdmin && <div className="sys-admin-dashboard__field-wrap">
+                <label className="sys-admin-dashboard__field-label">
+                  Mật khẩu hiện tại
+                </label>
+                <input type="password" name="currentPassword" placeholder="Nhập khi muốn đổi mật khẩu" value={formData.currentPassword} onChange={handleInputChange} required={Boolean(formData.password)} className="sys-admin-dashboard__field-input" />
+              </div>}
               <div className="sys-admin-dashboard__field-wrap">
                 <label className="sys-admin-dashboard__field-label">
-                  Mật khẩu{" "}
+                  {editingSysAdmin ? "Mật khẩu mới" : "Mật khẩu"}{" "}
                   {repair && <span className="sys-admin-dashboard__inline-731">
                       (để trống nếu không đổi)
                     </span>}
                 </label>
-                <input style={{
-              ...(editingSysAdmin ? styles.fieldInputDisabled : {})
-            }} type="password" name="password" placeholder="Mật khẩu" value={formData.password} onChange={handleInputChange} disabled={editingSysAdmin} required={!repair} className="sys-admin-dashboard__field-input" />
+                <input type="password" name="password" placeholder={editingSysAdmin ? "Mật khẩu mới" : "Mật khẩu"} value={formData.password} onChange={handleInputChange} required={!repair} className="sys-admin-dashboard__field-input" />
               
               </div>
               <div className="sys-admin-dashboard__field-wrap">

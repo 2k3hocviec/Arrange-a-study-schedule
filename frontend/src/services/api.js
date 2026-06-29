@@ -129,8 +129,7 @@ export const usersAPI = {
   create: ({ email, password, role, phone, address }) =>
     api.post("/users", { email, password, role, phone, address }),
   delete: (id) => api.delete(`/users/${id}`),
-  update: (id, { email, password, role, phone, address }) =>
-    api.patch(`/users/${id}`, { email, password, role, phone, address }),
+  update: (id, data) => api.patch(`/users/${id}`, data),
 };
 
 export const teachersAPI = {

@@ -24,18 +24,17 @@ export class UsersService {
     - các role khác thì tùy ý nhưng không được chuyển thành role == admin
   */
   private ensureSysadminIsNotCredentialEdited(
-    user: { role: string },
+    user: { email: string; role: string },
     data: Partial<UpdateUserDto>,
   ) {
     if (user.role !== 'sysadmin') {
       return;
     }
 
-    const protectedFields = ['email', 'role'].filter(
-      (field) => data[field] !== undefined,
-    );
-
-    if (protectedFields.length > 0) {
+    const changesEmail =
+      data.email !== undefined && data.email !== user.email;
+    const changesRole = data.role !== undefined && data.role !== user.role;
+    if (changesEmail || changesRole) {
       throw new BadRequestException(
         'Cannot change email or role of sysadmin user',
       );
@@ -70,8 +69,29 @@ export class UsersService {
       throw new NotFoundException('User not found');
     }
 
-    const data = { ...updateUserDto };
+    const { currentPassword, ...data } = updateUserDto;
     this.ensureSysadminIsNotCredentialEdited(user, data);
+
+    if (user.role === 'sysadmin') {
+      delete data.email;
+      delete data.role;
+
+      if (data.password) {
+        if (!currentPassword) {
+          throw new BadRequestException(
+            'Current password is required to change sysadmin password',
+          );
+        }
+
+        const isCurrentPasswordValid = await bcrypt.compare(
+          currentPassword,
+          user.password,
+        );
+        if (!isCurrentPasswordValid) {
+          throw new BadRequestException('Current password is incorrect');
+        }
+      }
+    }
 
     if (data.password) {
       data.password = await bcrypt.hash(data.password, 10);
