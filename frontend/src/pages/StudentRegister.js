@@ -235,6 +235,11 @@ const StudentRegister = ({
     }
   };
   const cancelCourse = async (course) => {
+    if (!activeSemester)
+      return toast.error("Hiện chưa có kỳ học hiện hành để hủy đăng ký.");
+    if (!isRegistrationOpen)
+      return toast.error("Hiện kỳ học này đã đóng đăng ký.");
+
     try {
       await enrollmentsAPI.delete({
         student_id: studentInfo.student_id,
@@ -409,12 +414,19 @@ const StudentRegister = ({
                         </span>
                       </td>
                       <td className="student-register__td">
-                        {isRegistered ? (
+                        {isRegistered && isRegistrationOpen ? (
                           <button
                             onClick={() => cancelCourse(course)}
                             className="student-register__btn-cancel"
                           >
                             Hủy
+                          </button>
+                        ) : isRegistered ? (
+                          <button
+                            disabled
+                            className="student-register__btn-full"
+                          >
+                            Đã đóng
                           </button>
                         ) : !isRegistrationOpen ? (
                           <button

@@ -263,6 +263,10 @@ export class EnrollmentsService {
       );
     }
 
+    if (!allowInactiveSemester && !course.semester?.is_register) {
+      throw new BadRequestException('Registration is closed for this semester');
+    }
+
     const result = await this.prisma.enrollment.deleteMany({
       where: {
         student_id: studentId,
